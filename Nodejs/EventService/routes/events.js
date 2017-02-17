@@ -5,6 +5,7 @@ var router = express.Router();
 var fs = require('fs');
 var bodyPserser = require('body-parser');
 var assert = require('assert');
+var queryString = require('querystring');
 var eventsDatabaseName = 'eventsdatabase';
 var eventsCollectionName = 'eventscollection1';
 var documentClient = require('documentdb').DocumentClient;
@@ -24,9 +25,8 @@ router.get('/:id', function (req, res) {
 });
 
 router.get('/', function (req, res) {
-    var splitStrings = req.query.accountids.split(",");
-
-    findEventsByAccountIds(req.query.accountids, function (err, results) {
+    var accountids = req.query.accountids.split('|');
+    findEventsByAccountIds(accountids, function (err, results) {
         handleResults(err, res, function () {
             res.status(200);
             res.send(results);
@@ -100,17 +100,17 @@ function findEventByEventId(eventId, callback) {
 }
 
 
-function findEventsByAccountIds(accountIds, callback) {
-    var queryString = "SELECT e.name FROM root e WHERE e.accountid IN (" + accountIds + ")";
+function findEventsByAccountIds(accountids, callback) {
+
+    var joinedString = accountids.join(', ');
+    var queryString = "SELECT e.accountid, e.name, e.startTime, e.endTime FROM root e WHERE ARRAY_CONTAINS(@accountids, e.accountid)";
         
     var parameters = [
         {
-            name: '@accountid',
-            value: accountIds
+            name: "@accountids",
+            value: accountids
         }
     ];
-
-    parameters = [];
 
     var querySpec = {
         query: queryString,
