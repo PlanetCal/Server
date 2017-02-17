@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PlanetCalWebService", "PlanetCalWebService\PlanetCalWebService.xproj", "{037BF2C7-B1CA-4FB9-B35E-6B53504A931F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6AB1E510-6FEC-47BB-A20F-111F54FA3E4B}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PlanetCal.Contracts", "PlanetCal.Contracts\PlanetCal.Contracts.xproj", "{E2C90EBE-B3F7-40CA-93F8-30A8C1804BA8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{037BF2C7-B1CA-4FB9-B35E-6B53504A931F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{037BF2C7-B1CA-4FB9-B35E-6B53504A931F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{037BF2C7-B1CA-4FB9-B35E-6B53504A931F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{037BF2C7-B1CA-4FB9-B35E-6B53504A931F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2C90EBE-B3F7-40CA-93F8-30A8C1804BA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2C90EBE-B3F7-40CA-93F8-30A8C1804BA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2C90EBE-B3F7-40CA-93F8-30A8C1804BA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2C90EBE-B3F7-40CA-93F8-30A8C1804BA8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
