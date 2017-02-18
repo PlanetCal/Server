@@ -5,12 +5,10 @@ var router = express.Router();
 var fs = require('fs');
 var bodyPserser = require('body-parser');
 var assert = require('assert');
+
 var eventsDatabaseName = 'eventsdatabase';
 var eventsCollectionName = 'eventscollection1';
 var Dal = require('../../common/dal.js');
-
-var collectionLink = 'dbs/' + eventsDatabaseName + '/colls/' + eventsCollectionName;
-
 var dal = new Dal.DataAccessLayer(eventsDatabaseName, eventsCollectionName);
 
 router.get('/:id', function (req, res) { 
@@ -23,6 +21,16 @@ router.get('/:id', function (req, res) {
 });
 
 router.get('/', function (req, res) {
+    if (!req.query) {
+        res.status(400);
+        res.send('Invalid query string. Query string should include accountids delimited by |.');
+    }
+
+    if (!req.query.accountids) {
+        res.status(400);
+        res.send('Invalid query string. Query string should include accountids delimited by |.');
+    }
+
     var accountids = req.query.accountids.split('|');
     findEventsByAccountIds(accountids, function (err, results) {
         handleResults(err, res, function () {
@@ -99,7 +107,6 @@ function findEventByEventId(eventId, callback) {
 
 function findEventsByAccountIds(accountids, callback) {
 
-    var joinedString = accountids.join(', ');
     var queryString = "SELECT e.accountid, e.id, e._self, e.name, e.startTime, e.endTime FROM root e WHERE ARRAY_CONTAINS(@accountids, e.accountid)";
         
     var parameters = [

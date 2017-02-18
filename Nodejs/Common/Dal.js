@@ -12,15 +12,14 @@ module.exports = {
         var collectionLink = 'dbs/' + databaseName + '/colls/' + collectionName;
 
         this.insert = function insert(obj, callback) {
-            var client = new documentClient(endpoint, { "masterKey": authKey });
+            var client = this.getClient();
             client.createDocument(collectionLink, obj, function (err, document) {
                 callback(err, document);
             });
         }
 
-        // querySpec doesn't seem to be that portable
         this.get = function get(querySpec, callback) {
-            var client = new documentClient(endpoint, { "masterKey": authKey });
+            var client = this.getClient();
             client.queryDocuments(collectionLink,
                 querySpec).toArray(
                 function (err, results) {
@@ -31,7 +30,7 @@ module.exports = {
 
         this.update = function update(obj, callback) {
             // this assumes that all objects have id property
-            var client = new documentClient(endpoint, { "masterKey": authKey });
+            var client = this.getClient();
             var documentLink = collectionLink + '/docs/' + obj.id;
             client.replaceDocument(documentLink, obj, (err, result) => {
                 callback(err, result);
@@ -41,11 +40,15 @@ module.exports = {
         // delete is a reserved keyword
         this.remove = function remove(objectId, callback) {
             // this assumes that all objects have id property
-            var client = new documentClient(endpoint, { "masterKey": authKey });
+            var client = this.getClient();
             var documentLink = collectionLink + '/docs/' + objectId;
             client.deleteDocument(documentLink, function (err) {
                 callback(err);
             });
+        }
+
+        this.getClient = function getClient() {
+            return new documentClient(endpoint, { "masterKey": authKey });
         }
     }
 }

@@ -8,14 +8,9 @@ var assert = require('assert');
 
 var accountsDatabaseName = 'accountsdatabase';
 var accountsCollectionName = 'accountscollection1';
-
 var Dal = require('../../common/dal.js');
-
-var collectionLink = 'dbs/' + accountsDatabaseName + '/colls/' + accountsCollectionName;
-
 var dal = new Dal.DataAccessLayer(accountsDatabaseName, accountsCollectionName);
 
-/* GET accounts listing. */
 router.get('/:id', function (req, res) {
 
     var querySpec = {
