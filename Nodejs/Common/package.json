@@ -1,0 +1,12 @@
+{
+  "name": "Common",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Common",
+  "author": {
+    "name": "yhawong"
+  },
+  "dependencies": {
+    "documentdb": "^1.10.2"
+  }
+}

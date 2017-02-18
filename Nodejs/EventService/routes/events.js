@@ -5,16 +5,14 @@ var router = express.Router();
 var fs = require('fs');
 var bodyPserser = require('body-parser');
 var assert = require('assert');
-var queryString = require('querystring');
 var eventsDatabaseName = 'eventsdatabase';
 var eventsCollectionName = 'eventscollection1';
-var documentClient = require('documentdb').DocumentClient;
-var endpoint = 'https://planetcal.documents.azure.com:443/';
-var authKey = 'UCAhQVjUx8iR4ICIWuF0ElSadxhm1AeIaj62FWRQzkkdYeXaxpaUz8WFFC8jGbdR0P6Jty7ZjGTfRHhC2uoAYQ==';
+var Dal = require('../../common/dal.js');
 
 var collectionLink = 'dbs/' + eventsDatabaseName + '/colls/' + eventsCollectionName;
 
-/* GET events listing. */
+var dal = new Dal.DataAccessLayer(eventsDatabaseName, eventsCollectionName);
+
 router.get('/:id', function (req, res) { 
     findEventByEventId(req.params.id, function (err, results) {
         handleResults(err, res, function () {
@@ -44,12 +42,12 @@ router.put('/', function (req, res) {
         res.send(400);
         res.send('Invalid event in http request body');
     }
-    insertEvent(event, function (err, document) {
+    dal.insert(event, function (err, obj) {
         handleResults(err, res, function () {
             res.status(200);
             res.send({
-                "_self": document._self,
-                "id": document.id,
+                "_self": obj._self,
+                "id": obj.id,
             })
         });
     });
@@ -65,19 +63,19 @@ router.post('/', function (req, res) {
         res.send(400);
         res.send('Invalid event in http request body');
     }
-    replaceEvent(event, function (err, document) {
+    dal.update(event, function (err, obj) {
         handleResults(err, res, function () {
             res.status(200);
             res.send({
-                "_self": document._self,
-                "id": document.id,
+                "_self": obj._self,
+                "id": obj.id,
             })
         });
     });
 });
 
 router.delete('/:id', function (req, res) {
-    deleteEvent(req.params.id, res, function (err) {
+    dal.remove(req.params.id, function (err) {
         handleResults(err, res, function () {
             res.status(200);
             res.send({ "id": req.params.id });
@@ -87,7 +85,7 @@ router.delete('/:id', function (req, res) {
 
 function findEventByEventId(eventId, callback) {
     var querySpec = {
-        query: "SELECT e.accountId, e.name, e.eventType FROM e WHERE e.id = @eventId",
+        query: "SELECT e.accountId, e.id, e._self, e.name, e.eventType FROM e WHERE e.id = @eventId",
         parameters: [
             {
                 name: '@eventId',
@@ -96,14 +94,13 @@ function findEventByEventId(eventId, callback) {
         ]
     };
 
-    findEvents(querySpec, callback);
+    dal.get(querySpec, callback);
 }
-
 
 function findEventsByAccountIds(accountids, callback) {
 
     var joinedString = accountids.join(', ');
-    var queryString = "SELECT e.accountid, e.name, e.startTime, e.endTime FROM root e WHERE ARRAY_CONTAINS(@accountids, e.accountid)";
+    var queryString = "SELECT e.accountid, e.id, e._self, e.name, e.startTime, e.endTime FROM root e WHERE ARRAY_CONTAINS(@accountids, e.accountid)";
         
     var parameters = [
         {
@@ -117,41 +114,8 @@ function findEventsByAccountIds(accountids, callback) {
         parameters: parameters
     };
 
-    findEvents(querySpec, callback);
+    dal.get(querySpec, callback);
 }
-
-function findEvents(querySpec, callback) {
-    var client = new documentClient(endpoint, { "masterKey": authKey });
-    client.queryDocuments(collectionLink,
-        querySpec).toArray(
-            function (err, results) {
-                callback(err, results);
-            }
-        );
-}
-
-function insertEvent(event, callback) {
-    var client = new documentClient(endpoint, { "masterKey": authKey });
-    client.createDocument(collectionLink, event, function (err, document) {
-        callback(err, document);
-    });
-};
-
-function replaceEvent(event, callback) {
-    var client = new documentClient(endpoint, { "masterKey": authKey });
-    var documentLink = collectionLink + '/docs/' + event.id;
-    client.replaceDocument(documentLink, event, (err, result) => {
-        callback(err, result);
-    });
-}
-
-function deleteEvent(eventId, res, callback) {
-    var client = new documentClient(endpoint, { "masterKey": authKey });
-    var documentLink = collectionLink + '/docs/' + eventId;
-    client.deleteDocument(documentLink, function (err) {
-        callback(err);
-    });
-};
 
 function handleResults(err, res, onSuccess) {
     if (err) {
