@@ -12,9 +12,8 @@ var Dal = require('../../common/dal.js');
 var dal = new Dal.DataAccessLayer(accountsDatabaseName, accountsCollectionName);
 
 router.get('/:id', function (req, res) {
-
     var querySpec = {
-        query: "SELECT a.id, a.name, a.accountType, a.events FROM root a WHERE a.id = @id",
+        query: "SELECT a.id, a.name, a.accountType, a.followingAccounts FROM root a WHERE a.id = @id",
         parameters: [
             {
                 name: '@id',
