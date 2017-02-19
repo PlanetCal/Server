@@ -30,6 +30,9 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\Common\HttpWrapper.js">
+      <Link>Dependencies\HttpWrapper.js</Link>
+    </Compile>
     <Compile Include="app.js" />
     <Compile Include="routes\events.js" />
     <Compile Include="routes\accounts.js" />
@@ -44,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="bin\" />
+    <Folder Include="Dependencies\" />
     <Folder Include="public\" />
     <Folder Include="public\images\" />
     <Folder Include="public\javascripts\" />

@@ -40,7 +40,7 @@ router.put('/', function (req, res) {
         res.send(400);
         res.send('Invalid account in http request body');
     }
-    dal.insert(account, function (err, document) {
+    dal.update(account, function (err, document) {
         handleResults(err, res, function () {
             res.status(200);
             res.send({
@@ -61,9 +61,9 @@ router.post('/', function (req, res) {
         res.send(400);
         res.send('Invalid account in http request body');
     }
-    dal.update(account, function (err, document) {
+    dal.insert(account, function (err, document) {
         handleResults(err, res, function () {
-            res.status(200);
+            res.status(201);
             res.send({
                 "_self": document._self,
                 "id": document.id,

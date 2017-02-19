@@ -50,7 +50,7 @@ router.put('/', function (req, res) {
         res.send(400);
         res.send('Invalid event in http request body');
     }
-    dal.insert(event, function (err, obj) {
+    dal.update(event, function (err, obj) {
         handleResults(err, res, function () {
             res.status(200);
             res.send({
@@ -71,9 +71,9 @@ router.post('/', function (req, res) {
         res.send(400);
         res.send('Invalid event in http request body');
     }
-    dal.update(event, function (err, obj) {
+    dal.insert(event, function (err, obj) {
         handleResults(err, res, function () {
-            res.status(200);
+            res.status(201);
             res.send({
                 "_self": obj._self,
                 "id": obj.id,

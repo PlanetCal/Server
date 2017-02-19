@@ -2,7 +2,8 @@
 
 var express = require('express');
 var router = express.Router();
-var http = require('http');
+var HttpWrapper = require('../../common/httpwrapper.js');
+var httpWrapper = new HttpWrapper.HttpWrapper();
 
 router.get('/:id', function (req, res) {
 
@@ -13,20 +14,19 @@ router.get('/:id', function (req, res) {
         method: 'GET'
     };
 
-    http.get(options, function (http_res) {
-        http_res.setEncoding('utf8');
-
-        // initialize the container for our data
-        var data = "";
-
-        http_res.on("data", function (chunk) {
-            data += chunk;
-        });
-
-        http_res.on("end", function () {
-            res.status = http_res.statusCode;
-            res.send(JSON.parse(data));
-        });
+    httpWrapper.get(options, function (httpStatusCode, jsonData, err) {
+        if (err) {
+            res.status = httpStatusCode;
+            res.send([{
+                "httpStatusCode": httpStatusCode,
+                "jsonData" : [],
+                "message": err.message
+            }]);
+        }
+        else {
+            res.status = 200;
+            res.send(jsonData);
+        }
     });
 });
 
