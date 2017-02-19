@@ -37,7 +37,7 @@ router.put('/', function (req, res) {
     }
     var account = req.body;
     if (!account) {
-        res.send(400);
+        res.status(400);
         res.send('Invalid account in http request body');
     }
     dal.update(account, function (err, document) {

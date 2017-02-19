@@ -15,8 +15,9 @@ router.get('/:id', function (req, res) {
     };
 
     httpWrapper.get(options, function (httpStatusCode, jsonData, err) {
+        res.status(httpStatusCode);
+
         if (err) {
-            res.status = httpStatusCode;
             res.send([{
                 "httpStatusCode": httpStatusCode,
                 "jsonData" : [],
@@ -24,7 +25,6 @@ router.get('/:id', function (req, res) {
             }]);
         }
         else {
-            res.status = 200;
             res.send(jsonData);
         }
     });

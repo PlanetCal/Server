@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Gateway", "Gateway.njsproj", "{2BC9B60C-43E2-41D3-944E-5F66D10BAF94}"
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "APIService", "APIService.njsproj", "{2BC9B60C-43E2-41D3-944E-5F66D10BAF94}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
