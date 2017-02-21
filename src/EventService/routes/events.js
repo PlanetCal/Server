@@ -6,7 +6,7 @@ var fs = require('fs');
 var bodyPserser = require('body-parser');
 var assert = require('assert');
 
-var eventsDatabaseName = 'eventsdatabase';
+var eventsDatabaseName = 'planetdatabase';
 var eventsCollectionName = 'eventscollection1';
 var Dal = require('../../common/dal.js');
 var dal = new Dal.DataAccessLayer(eventsDatabaseName, eventsCollectionName);

@@ -6,7 +6,7 @@ var fs = require('fs');
 var bodyPserser = require('body-parser');
 var assert = require('assert');
 
-var accountsDatabaseName = 'accountsdatabase';
+var accountsDatabaseName = 'planetdatabase';
 var accountsCollectionName = 'accountscollection1';
 var Dal = require('../../common/dal.js');
 var dal = new Dal.DataAccessLayer(accountsDatabaseName, accountsCollectionName);
