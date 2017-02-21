@@ -28,10 +28,10 @@ module.exports = {
             );
         }
 
-        this.update = function update(obj, callback) {
+        this.update = function update(id, obj, callback) {
             // this assumes that all objects have id property
             var client = this.getClient();
-            var documentLink = collectionLink + '/docs/' + obj.id;
+            var documentLink = collectionLink + '/docs/' + id;
             client.replaceDocument(documentLink, obj, (err, result) => {
                 callback(err, result);
             });

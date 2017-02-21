@@ -30,7 +30,7 @@ router.get('/:id', function (req, res) {
     });
 });
 
-router.put('/', function (req, res) {
+router.put('/:id', function (req, res) {
     if (!req.body) {
         res.status(400);
         res.send('Invalid account in http request body');
@@ -40,7 +40,7 @@ router.put('/', function (req, res) {
         res.status(400);
         res.send('Invalid account in http request body');
     }
-    dal.update(account, function (err, document) {
+    dal.update(req.params.id, account, function (err, document) {
         handleResults(err, res, function () {
             res.status(200);
             res.send({

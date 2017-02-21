@@ -40,7 +40,7 @@ router.get('/', function (req, res) {
     });
 });
 
-router.put('/', function (req, res) {
+router.put('/:id', function (req, res) {
     if (!req.body) {
         res.status(400);
         res.send('Invalid event in http request body');
@@ -50,7 +50,7 @@ router.put('/', function (req, res) {
         res.send(400);
         res.send('Invalid event in http request body');
     }
-    dal.update(event, function (err, obj) {
+    dal.update(req.params.id, event, function (err, obj) {
         handleResults(err, res, function () {
             res.status(200);
             res.send({
