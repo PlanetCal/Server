@@ -4,6 +4,7 @@ module.exports = function(passport){
 	var config = require('./config.js');
 	var LocalStrategy = require('passport-local').Strategy;
 	var userDetails = require('./model/user.js');
+	var TG = new require('./tokengenerator.js');
 
 	passport.use('local', new LocalStrategy({
 	        // by default, local strategy uses username and password, we will override with email
@@ -18,8 +19,14 @@ module.exports = function(passport){
 	                return done(err, null);
 	            }
 
-	            console.log('user: ' + user);
 	            if (user && user.password === password){
+	            	var tokenGenerator = new TG.TokenGenerator();
+	            	var token = tokenGenerator.encode(user);
+
+	            	/*
+	            	var user1 = JSON.parse(tokenGenerator.decode(token));
+	            	console.log('user1.email: ' + user1.email);
+	            	*/
 	                return done(null, user);
 	            }
 
