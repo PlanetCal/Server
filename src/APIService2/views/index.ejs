@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Test</title>
+</head>
+<body>
+	<% if (!isAuthenticated) {%>
+		<a href="/login">Log in here</a>
+	<% } else { %>
+	 	User: <%= user.name %>
+	<% } %>
+</body>
+</html>
