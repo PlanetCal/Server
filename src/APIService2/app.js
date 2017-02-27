@@ -5,11 +5,12 @@ var session = require('express-session');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var passport = require('passport');
-var apiServicePassport = require('./apiservicepassport.js')(passport);
 
 var app = express();
 
-var events = require('./routes/events.js');
+require('./apiservicepassport.js')(passport);
+var login = require('./routes/login.js')(passport);
+var events = require('./routes/events.js')();
 
 app.set('view engine', 'ejs');
 
@@ -30,14 +31,8 @@ app.get('/', function(req, res){
     res.render('index', { isAuthenticated: req.isAuthenticated(), user: req.user });
 });
 
-app.get('/login', function(req, res){
-    res.render('login');
-});
 
-app.post('/login', passport.authenticate('local'), function(req, res){
-    res.redirect('/');
-});
-
+app.use('/login', login);
 app.use('/events',  events);
 
 app.use(function(req, res, next) {

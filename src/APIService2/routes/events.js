@@ -1,11 +1,12 @@
-"use strict"
+module.exports = function(){
+	"use strict"
 
-var express = require('express');
-var router = express.Router();
+	var express = require('express');
+	var router = express.Router();
 
-/* GET home page. */
-router.get('/', function(req, res) {
-    res.render('events');
-});
+	router.get('/', function(req, res) {
+		res.render('events');
+	});
 
-module.exports = router;
+	return router;	
+}
