@@ -31,7 +31,6 @@ app.get('/', function(req, res){
     res.render('index', { isAuthenticated: req.isAuthenticated(), user: req.user });
 });
 
-
 app.use('/login', login);
 app.use('/events',  events);
 

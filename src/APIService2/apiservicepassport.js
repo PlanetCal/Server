@@ -1,8 +1,8 @@
 module.exports = function(passport){
 	"use strict"
 
-	var LocalStrategy = require('passport-local').Strategy;
 	var config = require('./config.js');
+	var LocalStrategy = require('passport-local').Strategy;
 	var userDetails = require('./model/user.js');
 
 	passport.use('local', new LocalStrategy({

@@ -1,8 +1,7 @@
 module.exports = function(passport){
 	"use strict"
 
-	var express = require('express');
-	var router = express.Router();
+	var router = require('express').Router();
 
 	router.get('/', function(req, res){
 	    res.render('login');
