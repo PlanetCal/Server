@@ -5,7 +5,7 @@ module.exports = function(passport){
 	var LocalStrategy = require('passport-local').Strategy;
 	var BearerStrategy = require('passport-http-bearer').Strategy;
 
-	var userLogin = require('./model/user.js');
+	var userLogin = require('./model/userlogin.js');
 	var TG = new require('./tokengenerator.js');
 
 	passport.use('local', new LocalStrategy({
@@ -21,7 +21,7 @@ module.exports = function(passport){
 	                return done(err, null);
 	            }
 
-	            if (user && user.password === password){
+	            if (user && user.passwordHash === password){
 	                return done(null, user);
 	            }
 

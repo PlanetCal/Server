@@ -17,8 +17,7 @@ mongoose.connect(config.url);
 var userSchema = mongoose.Schema(
 	{
 		email: String,
-	    password: String,
-	    name: String
+	    passwordHash: String
 	},
     {
     	collection : config.userCollection
@@ -51,8 +50,8 @@ userSchema.methods.generateHash = function (password) {
 };
 
 userSchema.methods.validPassword = function (password) {
-    return bcrypt.compareSync(password, this.local.password);
+    return bcrypt.compareSync(password, this.passwordHash);
 };
 
 // create the model for users and expose it to our app
-module.exports = mongoose.model('userDetails', userSchema);
+module.exports = mongoose.model('userLogin', userSchema);
