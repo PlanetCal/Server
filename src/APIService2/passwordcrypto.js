@@ -1,9 +1,7 @@
 "use strict"
-
-var bcrypt = require('bcrypt-nodejs');
-
 module.exports = {
 	PasswordCrypto : function PasswordCrypto(){
+		var bcrypt = require('bcrypt-nodejs');
 
 		this.generateHash = function generateHash(decrytedValue){
 			return bcrypt.hashSync(decrytedValue, bcrypt.genSaltSync(8), null);

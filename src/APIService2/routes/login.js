@@ -11,9 +11,11 @@ module.exports = function(passport){
 	router.post('/', passport.authenticate('local'), function(req, res){
 		if (req.user && req.user.email){
 			var tokenGenerator = new TokenGenerator();
-		    var token = tokenGenerator.encode({ 'email' : req.user.email });
-
-		    res.json({ 'token' : token })
+		    var token = tokenGenerator.encode({ 'email' : req.user.email, 'time': Date.now() });
+		    res.send({ 'token' : token });
+		}
+		else{
+			res.send({ 'message' : 'Unauthorized'});
 		}	
  	});
 
