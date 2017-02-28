@@ -1,12 +1,12 @@
-module.exports = function(passport){
+module.exports = function(passport, userLogin){
 	"use strict"
 
 	var config = require('./config.js');
 	var LocalStrategy = require('passport-local').Strategy;
 	var BearerStrategy = require('passport-http-bearer').Strategy;
 
-	var userLogin = require('./model/userlogin.js');
-	var TG = new require('./tokengenerator.js');
+	var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
+	var TokenGenerator = new require('./tokengenerator.js').TokenGenerator;
 
 	passport.use('local', new LocalStrategy({
 	        // by default, local strategy uses username and password, we will override with email
@@ -15,25 +15,25 @@ module.exports = function(passport){
 	        passReqToCallback: true
 	    },    
 	    function(req, email, password, done){
-
 	        userLogin.findOne({'email': email}, function(err, user) {
 	            if (err){
 	                return done(err, null);
 	            }
+		        var passwordCrypto = new PasswordCrypto();
 
-	            if (user && user.passwordHash === password){
+	            if (user && passwordCrypto.compareValues(password, user.passwordHash)){
 	                return done(null, user);
 	            }
-
 	            return done(null, null);
 	    });
 	}));
 
 	passport.use('token-bearer', new BearerStrategy(
 		function(token, done) {
-			var tokenGenerator = new TG.TokenGenerator();
+			var tokenGenerator = new TokenGenerator();
 			try{
 				var decodedObject = tokenGenerator.decode(token);
+				
 				if (!decodedObject || !decodedObject.email){
 					return done(null, false);
 				}

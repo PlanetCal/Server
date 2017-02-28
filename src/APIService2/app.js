@@ -8,9 +8,13 @@ var passport = require('passport');
 
 var app = express();
 
-require('./apiservicepassport.js')(passport);
+var userLogin = require('./model/userlogin.js');
+require('./apiservicepassport.js')(passport, userLogin);
 var login = require('./routes/login.js')(passport);
 var events = require('./routes/events.js')();
+var users = require('./routes/users.js')();
+
+var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
 
 app.set('view engine', 'ejs');
 
@@ -35,6 +39,32 @@ app.get('/', function(req, res){
 
 // login
 app.use('/login', login);
+
+// intercept just create user. This API is special since
+// it doesn't require API token authentication
+// so it has to be done before token authentication kicks in
+app.post('/users', function(req, res) {
+    if (!req.body || !req.body.email || !req.body.password){
+        res.status(400);
+        res.send({ 'message' : 'Invalid body'})        
+    }
+    else{
+        var passwordCrypto = new PasswordCrypto();
+        var passwordHash = passwordCrypto.generateHash(req.body.password);
+        var userlogin = new userLogin({ email: req.body.email, passwordHash: passwordHash });
+        userlogin.save(function (err) {
+            if (err){
+                // TODO: Is it really 409? What else?
+                res.status(409);
+                res.send({ 'err': err.message });
+            }
+            else{
+                res.status(201);
+                res.send({ 'email' : req.body.email });
+            }
+        });
+    }
+});
 
 // all other urls - all APIs are subject to token authentication
 app.use('/*', passport.authenticate('token-bearer', { session: false }),
