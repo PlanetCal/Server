@@ -20,13 +20,6 @@ module.exports = function(passport){
 	            }
 
 	            if (user && user.password === password){
-	            	var tokenGenerator = new TG.TokenGenerator();
-	            	var token = tokenGenerator.encode(user);
-
-	            	/*
-	            	var user1 = JSON.parse(tokenGenerator.decode(token));
-	            	console.log('user1.email: ' + user1.email);
-	            	*/
 	                return done(null, user);
 	            }
 

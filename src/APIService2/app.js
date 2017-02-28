@@ -32,7 +32,12 @@ app.get('/', function(req, res){
 });
 
 app.use('/login', login);
-app.use('/events',  events);
+
+app.use(function(req, res, next) {    
+    next();
+});
+
+app.use('/events', events);
 
 app.use(function(req, res, next) {
     var err = new Error('Not Found');
