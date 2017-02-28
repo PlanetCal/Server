@@ -27,18 +27,34 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// router set up
+// root
 app.get('/', function(req, res){
     res.render('index', { isAuthenticated: req.isAuthenticated(), user: req.user });
 });
 
+// login
 app.use('/login', login);
 
-app.use(function(req, res, next) {    
-    next();
-});
+// all other urls - all APIs are subject to token authentication
+app.use('/*', passport.authenticate('token-bearer', { session: false }),
+    function(req, res, next){
+        if (!req || !req.user){
+            // token authentication fail.
+            res.json( {'message': 'Token authentication failed.'});
+            res.status(503);
+        }
+        else{
+            // continue calling middleware in line
+            next();
+        }
+    }
+);
 
+// events
 app.use('/events', events);
 
+// error handling for other routes
 app.use(function(req, res, next) {
     var err = new Error('Not Found');
     err.status = 404;
@@ -59,7 +75,17 @@ if (app.get('env') === 'development') {
     });
 }
 
+// production error handler
+// no stacktraces leaked to user
+app.use(function(err, req, res, next) {
+    res.status(err.status || 500);
+    res.render('error', {
+        message: err.message,
+        error: {}
+    });
+});
+
 var port = process.env.PORT || 1337;
-app.listen(port, function(){
-    console.log('http://127.0.0.1:' + port + '/');
+var server = app.listen(port, function(){
+    console.log('http://localhost:' + server.address().port + '/');
 });

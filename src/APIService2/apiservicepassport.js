@@ -3,7 +3,9 @@ module.exports = function(passport){
 
 	var config = require('./config.js');
 	var LocalStrategy = require('passport-local').Strategy;
-	var userDetails = require('./model/user.js');
+	var BearerStrategy = require('passport-http-bearer').Strategy;
+
+	var userLogin = require('./model/user.js');
 	var TG = new require('./tokengenerator.js');
 
 	passport.use('local', new LocalStrategy({
@@ -14,7 +16,7 @@ module.exports = function(passport){
 	    },    
 	    function(req, email, password, done){
 
-	        userDetails.findOne({'email': email}, function(err, user) {
+	        userLogin.findOne({'email': email}, function(err, user) {
 	            if (err){
 	                return done(err, null);
 	            }
@@ -27,15 +29,30 @@ module.exports = function(passport){
 	    });
 	}));
 
+	passport.use('token-bearer', new BearerStrategy(
+		function(token, done) {
+			var tokenGenerator = new TG.TokenGenerator();
+			try{
+				var decodedObject = tokenGenerator.decode(token);
+				if (!decodedObject || !decodedObject.email){
+					return done(null, false);
+				}
+			}
+			catch(err){
+				return done(null, null); 
+			}
+			return done(null, decodedObject.email);
+		}
+	));
 
 	passport.serializeUser(function(user, done) {
-	  done(null, user._id);
+		done(null, user._id);
 	});
 
 	// used to deserialize the user
 	passport.deserializeUser(function(id, done) {
-	  userDetails.findById(id, function(err, user) {
-	    done(err, user);
-	  });
+		userLogin.findById(id, function(err, user) {
+			done(err, user);
+		});
 	});
 }

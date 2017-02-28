@@ -10,7 +10,7 @@ module.exports = {
 		}
 
 		this.decode = function decode(encodedToken){
-			return jwtSimple.decode(encodedToken, config.jwtSecret);
+			return JSON.parse(jwtSimple.decode(encodedToken, config.jwtSecret));
 		}
 	}	
 }
