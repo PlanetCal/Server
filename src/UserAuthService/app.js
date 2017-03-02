@@ -8,9 +8,10 @@ var passport = require('passport');
 
 var app = express();
 
-var UserAuth = require('./model/userauth.js');
+var UserAuthModel = require('./model/userauthmodel.js');
 require('./userauthpassport.js')(passport, UserAuth);
 var UserLogin = require('./routes/login.js')(passport);
+var UserAuth = require('./routes/userauth.js')(passport, UserAuthModel);
 
 var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
 
@@ -32,10 +33,8 @@ app.use(passport.session());
 
 // login
 app.use('/login', UserLogin);
-
-// intercept just create user. This API is special since
-// it doesn't require API token authentication
-// so it has to be done before token authentication kicks in
+app.use('/userauth', UserAuth);
+/*
 app.post('/userauth', function(req, res) {
     if (!req.body || !req.body.email || !req.body.password){
         res.status(400);
@@ -45,7 +44,7 @@ app.post('/userauth', function(req, res) {
         var passwordCrypto = new PasswordCrypto();
         var passwordHash = passwordCrypto.generateHash(req.body.password);
         var Userauth = new UserAuth({ email: req.body.email, passwordHash: passwordHash });
-        Userauth.save(function (err) {
+        UserAuthModel.save(function (err) {
             if (err){
                 // TODO: Is it really 409? What else?
                 res.status(409);
@@ -58,7 +57,7 @@ app.post('/userauth', function(req, res) {
         });
     }
 });
-
+*/
 // error handling for other routes
 app.use(function(req, res, next) {
     var err = new Error('Not Found');

@@ -1,9 +1,8 @@
-module.exports = function(passport, userAuthModel){
+module.exports = function(passport, userAuth){
     "use strict"
 
     var config = require('../common/config.js');
     var LocalStrategy = require('passport-local').Strategy;
-    var BearerStrategy = require('passport-http-bearer').Strategy;
 
     var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
     var TokenGenerator = new require('../common/tokengenerator.js').TokenGenerator;
@@ -15,7 +14,7 @@ module.exports = function(passport, userAuthModel){
             passReqToCallback: true
         },    
         function(req, email, password, done){
-            userAuthModel.findOne({'email': email}, function(err, user) {
+            userAuth.findOne({'email': email}, function(err, user) {
                 if (err){
                     return done(err, null);
                 }
