@@ -1,4 +1,5 @@
 "use strict"
+
 module.exports = {
     PasswordCrypto : function PasswordCrypto(){
         var bcrypt = require('bcrypt-nodejs');

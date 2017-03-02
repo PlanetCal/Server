@@ -12,7 +12,6 @@ var UserAuthModel = require('./model/userauthmodel.js');
 require('./userauthpassport.js')(passport, UserAuth);
 var UserLogin = require('./routes/login.js')(passport);
 var UserAuth = require('./routes/userauth.js')(passport, UserAuthModel);
-
 var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
 
 app.set('view engine', 'ejs');
@@ -34,30 +33,7 @@ app.use(passport.session());
 // login
 app.use('/login', UserLogin);
 app.use('/userauth', UserAuth);
-/*
-app.post('/userauth', function(req, res) {
-    if (!req.body || !req.body.email || !req.body.password){
-        res.status(400);
-        res.send({ 'message' : 'Invalid body'})        
-    }
-    else{
-        var passwordCrypto = new PasswordCrypto();
-        var passwordHash = passwordCrypto.generateHash(req.body.password);
-        var Userauth = new UserAuth({ email: req.body.email, passwordHash: passwordHash });
-        UserAuthModel.save(function (err) {
-            if (err){
-                // TODO: Is it really 409? What else?
-                res.status(409);
-                res.send({ 'err': err.message });
-            }
-            else{
-                res.status(201);
-                res.send({ 'email' : req.body.email });
-            }
-        });
-    }
-});
-*/
+
 // error handling for other routes
 app.use(function(req, res, next) {
     var err = new Error('Not Found');
@@ -66,7 +42,6 @@ app.use(function(req, res, next) {
 });
 
 // error handlers
-
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
@@ -85,7 +60,7 @@ app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     res.render('error', {
         message: err.message,
-        error: err
+        error: {}
     });
 });
 

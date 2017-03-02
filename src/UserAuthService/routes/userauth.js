@@ -1,5 +1,6 @@
+"use strict"
+
 module.exports = function(passport, userAuthModel){
-    "use strict"
 
     var router = require('express').Router();
     var TokenGenerator = new require('../../common/tokengenerator.js').TokenGenerator;
