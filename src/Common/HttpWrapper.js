@@ -1,8 +1,8 @@
 "use strict"
+module.exports = function(){
 
-var http = require('http');
+    var http = require('http');
 
-module.exports = {
     HttpWrapper: function HttpWrapper() {
         this.get = function get(options, callback) {
             try {

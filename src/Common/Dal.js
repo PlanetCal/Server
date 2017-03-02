@@ -1,8 +1,7 @@
 "use strict"
 
 var documentClient = require('documentdb').DocumentClient;
-var endpoint = 'https://planetcal.documents.azure.com:443/';
-var authKey = 'UCAhQVjUx8iR4ICIWuF0ElSadxhm1AeIaj62FWRQzkkdYeXaxpaUz8WFFC8jGbdR0P6Jty7ZjGTfRHhC2uoAYQ==';
+var config = require('./config.js');
 
 module.exports = {
     DataAccessLayer: function DataAccessLayer(databaseName, collectionName) {
@@ -48,7 +47,7 @@ module.exports = {
         }
 
         this.getClient = function getClient() {
-            return new documentClient(endpoint, { "masterKey": authKey });
+            return new documentClient(config.documentdbEndpoint, { "masterKey": config.documentdbAuthKey });
         }
     }
 }
