@@ -3,7 +3,7 @@ module.exports = function(){
 
     var http = require('http');
 
-    HttpWrapper: function HttpWrapper() {
+    HttpForwarder: function HttpForwarder() {
         this.get = function get(options, callback) {
             try {
                 var clientRequest = http.get(options, function (http_res) {
