@@ -1,7 +1,7 @@
 "use strict"
 
 var mongoose = require('mongoose');
-var config = require('../config.js');
+var config = require('../../common/config.js');
 var mongoUrl = config.url;
 
 var db = mongoose.connection;
@@ -14,13 +14,13 @@ mongoose.connect(config.url);
 
 // define the schema for our user model
 var userAuthSchema = mongoose.Schema(
-	{
-		email: String,
-	    passwordHash: String
-	},
     {
-    	collection : config.userCollection
-	}
+        email: String,
+        passwordHash: String
+    },
+    {
+        collection : config.userCollection
+    }
     /*
     ,
     facebook: {
@@ -41,7 +41,7 @@ var userAuthSchema = mongoose.Schema(
         email: String,
         name: String
     }
-	*/
+    */
 );
 
 // create the model for users and expose it to our app

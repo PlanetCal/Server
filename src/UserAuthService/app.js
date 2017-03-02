@@ -20,6 +20,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+// TODO: do we need session?
 app.use(session({
     secret : "PlanetCal",
     saveUninitialized: false,
@@ -28,12 +29,6 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-// router set up
-// root
-app.get('/', function(req, res){
-    res.render('index', { isAuthenticated: req.isAuthenticated(), user: req.user });
-});
 
 // login
 app.use('/login', UserLogin);
@@ -47,16 +42,11 @@ app.post('/userauth', function(req, res) {
         res.send({ 'message' : 'Invalid body'})        
     }
     else{
-        console.log('haha');
         var passwordCrypto = new PasswordCrypto();
-        console.log('haha1');
         var passwordHash = passwordCrypto.generateHash(req.body.password);
-        console.log('haha2');
         var Userauth = new UserAuth({ email: req.body.email, passwordHash: passwordHash });
         Userauth.save(function (err) {
             if (err){
-                console.log('haha3');
-
                 // TODO: Is it really 409? What else?
                 res.status(409);
                 res.send({ 'err': err.message });
