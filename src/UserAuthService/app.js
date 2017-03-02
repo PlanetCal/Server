@@ -9,7 +9,7 @@ var passport = require('passport');
 var app = express();
 
 var UserAuthModel = require('./model/userauthmodel.js');
-require('./userauthpassport.js')(passport, UserAuth);
+require('./userauthpassport.js')(passport, UserAuthModel);
 var UserLogin = require('./routes/login.js')(passport);
 var UserAuth = require('./routes/userauth.js')(passport, UserAuthModel);
 var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
