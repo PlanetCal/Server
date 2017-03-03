@@ -13,6 +13,7 @@ var config = require('../common/config.js');
 var login = require('./routes/login.js')();
 require('./apiservicepassport.js')(passport);
 var userAuth = require('./routes/userauth.js')();
+var userDetails = require('./routes/userdetails.js')();
 var events = require('./routes/events.js')();
 
 app.set('view engine', 'ejs');
@@ -80,8 +81,9 @@ app.use('/*', passport.authenticate('token-bearer', { session: false }),
 );
 
 
+// other routes
 app.use('/userauth', userAuth);
-// events
+app.use('/userdetails', userDetails);
 app.use('/events', events);
 
 // error handling for other routes

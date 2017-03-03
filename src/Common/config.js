@@ -10,7 +10,6 @@ module.exports = {
     'documentdbAuthKey' : 'UCAhQVjUx8iR4ICIWuF0ElSadxhm1AeIaj62FWRQzkkdYeXaxpaUz8WFFC8jGbdR0P6Jty7ZjGTfRHhC2uoAYQ==',
 
     'userAuthServiceEndpoint' : 'http://localhost:1338',
-    'userServiceEndpoint' : 'http://localhost:1339',
-    'eventServiceEndpoint' : 'http://localhost:1340',
-
+    'userDetailsServiceEndpoint' : 'http://localhost:1339',
+    'eventServiceEndpoint' : 'http://localhost:1340'
 };
