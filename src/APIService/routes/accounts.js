@@ -2,8 +2,7 @@
 
 var express = require('express');
 var router = express.Router();
-var HttpWrapper = require('../../common/httpwrapper.js');
-var httpWrapper = new HttpWrapper.HttpWrapper();
+var HttpForwarder = require('../../common/httpforwarder.js').HttpForwarder;
 
 router.get('/:id', function (req, res) {
 
@@ -14,7 +13,8 @@ router.get('/:id', function (req, res) {
         method: 'GET'
     };
 
-    httpWrapper.get(options, function (httpStatusCode, jsonData, err) {
+    var httpForwarder = new HttpForwarder();
+    httpForwarder.get(options, function (httpStatusCode, jsonData, err) {
         res.status(httpStatusCode);
 
         if (err) {

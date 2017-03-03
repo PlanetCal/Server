@@ -5,16 +5,15 @@ var session = require('express-session');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var passport = require('passport');
+var request = require('request');
 
 var app = express();
 
-var userLogin = require('./model/userlogin.js');
-require('./apiservicepassport.js')(passport, userLogin);
-var login = require('./routes/login.js')(passport);
+var config = require('../common/config.js');
+var login = require('./routes/login.js')();
+require('./apiservicepassport.js')(passport);
+var userAuth = require('./routes/userauth.js')();
 var events = require('./routes/events.js')();
-var users = require('./routes/users.js')();
-
-var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
 
 app.set('view engine', 'ejs');
 
@@ -22,6 +21,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+// Do we actually need session?
 app.use(session({
     secret : "PlanetCal",
     saveUninitialized: false,
@@ -40,30 +40,25 @@ app.get('/', function(req, res){
 // login
 app.use('/login', login);
 
-// intercept just create user. This API is special since
-// it doesn't require API token authentication
-// so it has to be done before token authentication kicks in
-app.post('/users', function(req, res) {
-    if (!req.body || !req.body.email || !req.body.password){
-        res.status(400);
-        res.send({ 'message' : 'Invalid body'})        
-    }
-    else{
-        var passwordCrypto = new PasswordCrypto();
-        var passwordHash = passwordCrypto.generateHash(req.body.password);
-        var userlogin = new userLogin({ email: req.body.email, passwordHash: passwordHash });
-        userlogin.save(function (err) {
-            if (err){
-                // TODO: Is it really 409? What else?
-                res.status(409);
-                res.send({ 'err': err.message });
+// forward this to userAuth service before token authenication
+// kicks in because this is userAuth creation
+app.post('/userauth', function(req, res){
+    request.post({
+        headers: {'content-type' : 'application/json; charset=utf-8' },
+        url:     config.userAuthServiceEndpoint + '/userauth',
+        body:    JSON.stringify(req.body)},
+        function(error, response, body){
+            if (error){
+                console.log(error);
+                res.status(500);
+                res.send(error.message);
             }
-            else{
-                res.status(201);
-                res.send({ 'email' : req.body.email });
-            }
-        });
-    }
+            else if (response){
+                console.log(response.body);
+                res.status(response.statusCode);
+                res.send(response.body);
+            }            
+        });    
 });
 
 // all other urls - all APIs are subject to token authentication
@@ -75,12 +70,17 @@ app.use('/*', passport.authenticate('token-bearer', { session: false }),
             res.status(503);
         }
         else{
+            // set auth-identity header so that internal services
+            // know the caller's identity
+            req.headers['auth-identity'] = req.user;
             // continue calling middleware in line
             next();
         }
     }
 );
 
+
+app.use('/userauth', userAuth);
 // events
 app.use('/events', events);
 

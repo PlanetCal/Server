@@ -1,23 +1,35 @@
-module.exports = function(passport){
-	"use strict"
+"use strict"
 
-	var router = require('express').Router();
-	var TokenGenerator = new require('../tokengenerator.js').TokenGenerator;
+module.exports = function(){
 
-	router.get('/', function(req, res){
-	    res.render('login');
-	});
+    var router = require('express').Router();
+    var request = require('request');
+    var config = require('../../common/config.js');
+    var bodyParser = require('body-parser');
 
-	router.post('/', passport.authenticate('local'), function(req, res){
-		if (req.user && req.user.email){
-			var tokenGenerator = new TokenGenerator();
-		    var token = tokenGenerator.encode({ 'email' : req.user.email, 'time': Date.now() });
-		    res.send({ 'token' : token });
-		}
-		else{
-			res.send({ 'message' : 'Unauthorized'});
-		}	
- 	});
+    router.get('/', function(req, res){
+        res.render('login');
+    });
 
-	return router;	
+    router.post('/', function(req, res){
+        // body-parser converts urlencoded string to
+        request.post({
+            headers: {'content-type' : 'application/json; charset=utf-8' },
+            url:     config.userAuthServiceEndpoint + '/login',
+            body:    JSON.stringify(req.body)},
+            function(error, response, body){
+                if (error){
+                    console.log(error);
+                    res.status(500);
+                    res.send(error.message);
+                }
+                else if (response){
+                    console.log(response.body);
+                    res.status(response.statusCode);
+                    res.send(response.body);
+                }
+            });
+    });
+
+    return router;  
 }

@@ -8,8 +8,8 @@ var assert = require('assert');
 
 var eventsDatabaseName = 'planetdatabase';
 var eventsCollectionName = 'eventscollection1';
-var Dal = require('../../common/dal.js');
-var dal = new Dal.DataAccessLayer(eventsDatabaseName, eventsCollectionName);
+var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
+var dal = new DataAccessLayer(eventsDatabaseName, eventsCollectionName);
 
 router.get('/:id', function (req, res) { 
     findEventByEventId(req.params.id, function (err, results) {
