@@ -6,7 +6,7 @@ module.exports = function(passport, userAuth){
     var LocalStrategy = require('passport-local').Strategy;
 
     var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
-    var TokenGenerator = new require('../common/tokengenerator.js').TokenGenerator;
+    var TokenGenerator = require('../common/tokengenerator.js').TokenGenerator;
 
     passport.use('local', new LocalStrategy({
             // by default, local strategy uses username and password, we will override with email
