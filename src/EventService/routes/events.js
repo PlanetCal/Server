@@ -2,16 +2,13 @@
 
 var express = require('express');
 var router = express.Router();
-var fs = require('fs');
-var bodyPserser = require('body-parser');
-var assert = require('assert');
 
-var eventsDatabaseName = 'planetdatabase';
-var eventsCollectionName = 'eventscollection1';
+var databaseName = 'planetdatabase';
+var collectionName = 'eventscollection';
 var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
-var dal = new DataAccessLayer(eventsDatabaseName, eventsCollectionName);
+var dal = new DataAccessLayer(databaseName, collectionName);
 
-router.get('/:id', function (req, res) { 
+router.get('/:id', function (req, res) {
     findEventByEventId(req.params.id, function (err, results) {
         handleResults(err, res, function () {
             res.status(200);
@@ -126,8 +123,8 @@ function findEventsByAccountIds(accountids, callback) {
 
 function handleResults(err, res, onSuccess) {
     if (err) {
-        res.status(err.code);
-        res.send(err.body);
+        res.status(500);
+        res.send('Connection to data persistence failed.');
     }
     else {
         onSuccess();
