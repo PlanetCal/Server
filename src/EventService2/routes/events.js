@@ -8,7 +8,7 @@ var collectionName = 'eventscollection';
 var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName);
 
-router.get('/:id', function (req, res) { 
+router.get('/:id', function (req, res) {
     findEventByEventId(req.params.id, function (err, results) {
         handleResults(err, res, function () {
             res.status(200);
@@ -123,8 +123,8 @@ function findEventsByAccountIds(accountids, callback) {
 
 function handleResults(err, res, onSuccess) {
     if (err) {
-        res.status(err.code);
-        res.send(err.body);
+        res.status(500);
+        res.send('Connection to data persistence failed.');
     }
     else {
         onSuccess();

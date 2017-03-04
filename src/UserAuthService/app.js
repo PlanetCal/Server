@@ -5,6 +5,7 @@ var session = require('express-session');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var passport = require('passport');
+var config = require('../common/config.js');
 
 var app = express();
 
@@ -64,7 +65,7 @@ app.use(function(err, req, res, next) {
     });
 });
 
-var port = process.env.PORT || 1338;
+var port = process.env.PORT || config.userAuthServicePort;
 var server = app.listen(port, function(){
     console.log('http://localhost:' + server.address().port + '/');
 });

@@ -17,7 +17,9 @@ module.exports = function(){
     router.post('/', function(req, res){
         // body-parser converts urlencoded string to
         request.post(helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/login'),
-            helpers.handleResponse(error, responseFromRequest, body, res));
+            function(error, responseFromRequest, body){
+                helpers.handleResponse(error, responseFromRequest, body, res)
+            });
     });
 
     return router;  

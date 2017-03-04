@@ -9,12 +9,14 @@ module.exports = function(passport){
         if (req.user && req.user.email){
             var tokenGenerator = new TokenGenerator();
             var token = tokenGenerator.encode({ 'email' : req.user.email, 'time': Date.now() });
+            res.status(200);
             res.send({ 'token' : token });
         }
         else{
+            res.status(401);
             res.send({ 'message' : 'Unauthorized'});
         }   
     });
 
-    return router;  
+    return router;
 }

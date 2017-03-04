@@ -2,6 +2,7 @@
 
 var express = require('express');
 var bodyParser = require('body-parser');
+var config = require('../common/config.js');
 var UserDetails = require('./routes/userdetails.js');
 
 var app = express();
@@ -43,7 +44,7 @@ app.use(function(err, req, res, next) {
     });
 });
 
-var port = process.env.PORT || 1339;
+var port = process.env.PORT || config.userDetailsServicePort;
 var server = app.listen(port, function(){
     console.log('http://localhost:' + server.address().port + '/');
 });

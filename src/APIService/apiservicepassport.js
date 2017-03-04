@@ -1,5 +1,6 @@
+"use strict"
+
 module.exports = function(passport){
-    "use strict"
 
     var config = require('../common/config.js');
     var BearerStrategy = require('passport-http-bearer').Strategy;

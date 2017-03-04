@@ -50,12 +50,10 @@ app.post('/userauth', function(req, res){
         body:    JSON.stringify(req.body)},
         function(error, response, body){
             if (error){
-                console.log(error);
                 res.status(500);
                 res.send(error.message);
             }
             else if (response){
-                console.log(response.body);
                 res.status(response.statusCode);
                 res.send(response.body);
             }            
@@ -117,7 +115,7 @@ app.use(function(err, req, res, next) {
     });
 });
 
-var port = process.env.PORT || 1337;
+var port = process.env.PORT || config.apiServicePort;
 var server = app.listen(port, function(){
     console.log('http://localhost:' + server.address().port + '/');
 });

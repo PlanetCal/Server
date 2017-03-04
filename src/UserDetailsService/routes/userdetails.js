@@ -19,12 +19,14 @@ router.get('/:id', function (req, res) {
         ]
     };
 
-    dal.get(querySpec, function (err, results) {
-        handleResults(err, res, function () {
-            res.status(200);
-            res.send(results);
+    if (checkCallerPermission(req, req.params.id, res)){
+        dal.get(querySpec, function (err, results) {
+            handleResults(err, res, function () {
+                res.status(200);
+                res.send(results);
+            });
         });
-    });
+    }
 });
 
 router.put('/:id', function (req, res) {
@@ -37,15 +39,17 @@ router.put('/:id', function (req, res) {
         res.status(400);
         res.send('Invalid account in http request body');
     }
-    dal.update(req.params.id, account, function (err, document) {
-        handleResults(err, res, function () {
-            res.status(200);
-            res.send({
-                "_self": document._self,
-                "id": document.id,
-            })
+    if (checkCallerPermission(req, req.params.id, res)){
+        dal.update(req.params.id, account, function (err, document) {
+            handleResults(err, res, function () {
+                res.status(200);
+                res.send({
+                    "_self": document._self,
+                    "id": document.id,
+                })
+            });
         });
-    });
+    }
 });
 
 router.post('/', function (req, res) {
@@ -70,22 +74,35 @@ router.post('/', function (req, res) {
 });
 
 router.delete('/:id', function (req, res) {
-    dal.remove(req.params.id, function (err) {
-        handleResults(err, res, function () {
-            res.status(200);
-            res.send({ "id": req.params.id });
+    if (checkCallerPermission(req, req.params.id, res)){
+        dal.remove(req.params.id, function (err) {
+            handleResults(err, res, function () {
+                res.status(200);
+                res.send({ "id": req.params.id });
+            });
         });
-    });
+    }
 });
 
 function handleResults(err, res, onSuccess) {
     if (err) {
-        res.status(err.code);
-        res.send(err.body);
+        res.status(500);
+        res.send('Connection to data persistence failed.');
     }
     else {
         onSuccess();
     }
 }
 
+function checkCallerPermission(req, id, res){
+    if (req.headers['auth-identity'] !== id){
+        res.status(403);
+        res.send('Forbidden');
+
+        return false;
+    } 
+
+    return true;
+
+}
 module.exports = router;
