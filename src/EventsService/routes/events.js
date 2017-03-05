@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 var express = require('express');
 var router = express.Router();
@@ -12,8 +12,15 @@ var dal = new DataAccessLayer(databaseName, collectionName);
 router.get('/:id', function (req, res) {
     findEventByEventId(req.params.id, function (err, results) {
         handleResults(err, res, function () {
-            res.status(200);
-            res.send(results);
+
+            if (results.length > 0){
+                res.status(200);
+                res.send(results[0]);
+            }
+            else {
+                res.status(404);
+                res.send('');
+            }
         });
     });
 });
@@ -21,19 +28,20 @@ router.get('/:id', function (req, res) {
 router.get('/', function (req, res) {
     if (!req.query) {
         res.status(400);
-        res.send('Invalid query string. Query string should include accountids delimited by |.');
+        res.send('Invalid query string. Query string should include userids delimited by |.');
     }
 
-    if (!req.query.accountids) {
+    if (!req.query.userids) {
         res.status(400);
-        res.send('Invalid query string. Query string should include accountids delimited by |.');
+        res.send('Invalid query string. Query string should include userids delimited by |.');
     }
 
-    var accountids = req.query.accountids.split('|');
-    findEventsByAccountIds(accountids, function (err, results) {
+    console.log(req.query.userids);
+    var userids = req.query.userids.split('|');
+    findEventsByCreatedByIds(userids, function (err, results) {
         handleResults(err, res, function () {
             res.status(200);
-            res.send(results);
+            res.send(results);                
         });
     });
 });
@@ -69,6 +77,8 @@ router.post('/', function (req, res) {
         res.send(400);
         res.send('Invalid event in http request body');
     }
+    event['createdById'] = req.headers['auth-identity'];
+    event['ownedById'] = req.headers['auth-identity'];
     dal.insert(event, function (err, obj) {
         handleResults(err, res, function () {
             res.status(201);
@@ -91,7 +101,7 @@ router.delete('/:id', function (req, res) {
 
 function findEventByEventId(eventId, callback) {
     var querySpec = {
-        query: "SELECT e.accountId, e.id, e._self, e.name, e.eventType FROM e WHERE e.id = @eventId",
+        query: "SELECT e.createdById, e.id, e._self, e.name, e.eventType FROM e WHERE e.id = @eventId",
         parameters: [
             {
                 name: '@eventId',
@@ -103,14 +113,14 @@ function findEventByEventId(eventId, callback) {
     dal.get(querySpec, callback);
 }
 
-function findEventsByAccountIds(accountids, callback) {
+function findEventsByCreatedByIds(createdByIds, callback) {
 
-    var queryString = "SELECT e.accountid, e.id, e._self, e.name, e.startTime, e.endTime FROM root e WHERE ARRAY_CONTAINS(@accountids, e.accountid)";
+    var queryString = "SELECT e.createdById, e.id, e._self, e.name FROM root e WHERE ARRAY_CONTAINS(@createdByIds, e.createdById)";
         
     var parameters = [
         {
-            name: "@accountids",
-            value: accountids
+            name: "@createdByIds",
+            value: createdByIds
         }
     ];
 
@@ -124,6 +134,7 @@ function findEventsByAccountIds(accountids, callback) {
 
 function handleResults(err, res, onSuccess) {
     if (err) {
+        console.log(err);
         res.status(500);
         res.send('Connection to data persistence failed.');
     }

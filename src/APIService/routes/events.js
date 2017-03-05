@@ -17,7 +17,7 @@ module.exports = function(){
     });
 
     router.get('/', function(req, res){
-        request.get(helpers.getRequestOption(req, config.eventServiceEndpoint + '/events?accountids=' + req.query.accountids),
+        request.get(helpers.getRequestOption(req, config.eventServiceEndpoint + '/events?userids=' + req.query.userids),
             function(error, responseFromRequest, body){
                 helpers.handleResponse(error, responseFromRequest, body, res);
             });    

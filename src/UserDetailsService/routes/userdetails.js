@@ -41,15 +41,16 @@ router.get('/:id', function (req, res) {
 router.put('/:id', function (req, res) {
     if (!req.body) {
         res.status(400);
-        res.send('Invalid account in http request body');
+        res.send('Invalid userDetails in http request body');
     }
-    var account = req.body;
-    if (!account) {
+    var userDetails = req.body;
+    if (!userDetails) {
         res.status(400);
-        res.send('Invalid account in http request body');
+        res.send('Invalid userDetails in http request body');
     }
-    if (checkCallerPermission(req, req.params.id, res)){
-        dal.update(req.params.id, account, function (err, document) {
+    if (checkCallerPermission(req, req.params.id, res)
+        && checkCallerPermission(req, req.body.id, res)){
+        dal.update(req.params.id, userDetails, function (err, document) {
             handleResults(err, res, function () {
                 res.status(200);
                 res.send({
@@ -64,15 +65,15 @@ router.put('/:id', function (req, res) {
 router.post('/', function (req, res) {
     if (!req.body) {
         res.send(400);
-        res.send('Invalid account in http request body');
+        res.send('Invalid userDetails in http request body');
     }
-    var account = req.body;
-    if (!account) {
+    var userDetails = req.body;
+    if (!userDetails) {
         res.send(400);
-        res.send('Invalid account in http request body');
+        res.send('Invalid userDetails in http request body');
     }
     if (checkCallerPermission(req, req.body.id, res)){
-        dal.insert(account, function (err, document) {
+        dal.insert(userDetails, function (err, document) {
             handleResults(err, res, function () {
                 res.status(201);
                 res.send({
