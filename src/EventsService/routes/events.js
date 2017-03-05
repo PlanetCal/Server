@@ -38,7 +38,7 @@ router.get('/', function (req, res) {
 
     console.log(req.query.userids);
     var userids = req.query.userids.split('|');
-    findEventsByCreatedByIds(userids, function (err, results) {
+    findEventsByOwnedByIds(userids, function (err, results) {
         handleResults(err, res, function () {
             res.status(200);
             res.send(results);                
@@ -108,7 +108,7 @@ router.delete('/:id', function (req, res) {
 
 function findEventByEventId(eventId, callback) {
     var querySpec = {
-        query: "SELECT e.createdById, e.id, e._self, e.name, e.eventType FROM e WHERE e.id = @eventId",
+        query: "SELECT e.createdById, e.ownedById, e.id, e._self, e.name, e.eventType FROM e WHERE e.id = @eventId",
         parameters: [
             {
                 name: '@eventId',
@@ -120,14 +120,14 @@ function findEventByEventId(eventId, callback) {
     dal.get(querySpec, callback);
 }
 
-function findEventsByCreatedByIds(createdByIds, callback) {
+function findEventsByOwnedByIds(ownedByIds, callback) {
 
-    var queryString = "SELECT e.createdById, e.id, e._self, e.name FROM root e WHERE ARRAY_CONTAINS(@createdByIds, e.createdById)";
+    var queryString = "SELECT e.ownedByIds, e.id, e._self, e.name FROM root e WHERE ARRAY_CONTAINS(@ownedByIds, e.ownedById)";
         
     var parameters = [
         {
-            name: "@createdByIds",
-            value: createdByIds
+            name: "@ownedByIds",
+            value: ownedByIds
         }
     ];
 
