@@ -7,7 +7,10 @@ module.exports = {
     "jwtSecret" : '395b2bdd68bf70b057d49ac75982dda0fdb70cf46b54b9e3476e05e81feceb6f',  //PlanetCal20170227
 
     'documentdbEndpoint' : 'https://planetcal.documents.azure.com:443/',
-    'documentdbAuthKey' : 'UCAhQVjUx8iR4ICIWuF0ElSadxhm1AeIaj62FWRQzkkdYeXaxpaUz8WFFC8jGbdR0P6Jty7ZjGTfRHhC2uoAYQ==',
+    'documentdbAuthKey' : 'scIZw13Y9sSHreezIEOqnXl5t8SajGjdSKRaW5uDPTG7izMIunHlQHG9q80S2e4P5QMsGNPe6bwymDfvrMeByA==',
+    'documentdbDatabaseName' : 'planetcaldatabase',
+    'userDetailsCollectionName' : 'userDetailsCollection',
+    'eventsCollectionName' : 'eventsCollection',
 
     'apiServicePort' : 1337,
     'userAuthServicePort' : 1338,

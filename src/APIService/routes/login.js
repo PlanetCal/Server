@@ -18,7 +18,7 @@ module.exports = function(){
         // body-parser converts urlencoded string to
         request.post(helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/login'),
             function(error, responseFromRequest, body){
-                helpers.handleResponse(error, responseFromRequest, body, res)
+                helpers.handleResponse(error, responseFromRequest, body, res);
             });
     });
 

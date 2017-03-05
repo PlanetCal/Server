@@ -12,14 +12,14 @@ module.exports = function(passport){
             try{
                 var decodedObject = tokenGenerator.decode(token);
                 
-                if (!decodedObject || !decodedObject.email){
+                if (!decodedObject || !decodedObject.id){
                     return done(null, false);
                 }
             }
             catch(err){
                 return done(null, null); 
             }
-            return done(null, decodedObject.email);
+            return done(null, decodedObject.id);
         }
     ));
 }

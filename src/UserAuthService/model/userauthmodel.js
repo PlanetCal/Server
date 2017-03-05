@@ -16,7 +16,8 @@ mongoose.connect(config.url);
 var userAuthSchema = mongoose.Schema(
     {
         email: String,
-        passwordHash: String
+        passwordHash: String,
+        id : String,
     },
     {
         collection : config.userCollection

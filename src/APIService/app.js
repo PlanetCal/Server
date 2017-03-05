@@ -16,6 +16,9 @@ var userAuth = require('./routes/userauth.js')();
 var userDetails = require('./routes/userdetails.js')();
 var events = require('./routes/events.js')();
 
+var Helpers = require('./helpers.js').Helpers;
+var helpers = new Helpers();
+
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.json());
@@ -49,14 +52,7 @@ app.post('/userauth', function(req, res){
         url:     config.userAuthServiceEndpoint + '/userauth',
         body:    JSON.stringify(req.body)},
         function(error, response, body){
-            if (error){
-                res.status(500);
-                res.send(error.message);
-            }
-            else if (response){
-                res.status(response.statusCode);
-                res.send(response.body);
-            }            
+            helpers.handleResponse(error, response, body, res);
         });    
 });
 

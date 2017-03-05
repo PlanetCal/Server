@@ -2,15 +2,16 @@
 
 var express = require('express');
 var router = express.Router();
+var config = require('../../common/config.js');
 
-var databaseName = 'planetdatabase';
-var collectionName = 'accountscollection1';
+var databaseName = config.documentdbDatabaseName;
+var collectionName = config.userDetailsCollectionName;
 var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName);
 
 router.get('/:id', function (req, res) {
     var querySpec = {
-        query: "SELECT a.id, a.name, a.accountType, a.followingAccounts FROM root a WHERE a.id = @id",
+        query: "SELECT a.id, a.email, a.name, a.followingUsers FROM root a WHERE a.id = @id",
         parameters: [
             {
                 name: '@id',
@@ -22,8 +23,16 @@ router.get('/:id', function (req, res) {
     if (checkCallerPermission(req, req.params.id, res)){
         dal.get(querySpec, function (err, results) {
             handleResults(err, res, function () {
-                res.status(200);
-                res.send(results);
+                if (results.length > 0){
+                    res.status(200);
+
+                    // TODO: assert when results has more than 1 element.
+                    res.send(results[0]);
+                }
+                else{
+                    res.status(404);
+                    res.send('');
+                }
             });
         });
     }
@@ -62,15 +71,17 @@ router.post('/', function (req, res) {
         res.send(400);
         res.send('Invalid account in http request body');
     }
-    dal.insert(account, function (err, document) {
-        handleResults(err, res, function () {
-            res.status(201);
-            res.send({
-                "_self": document._self,
-                "id": document.id,
-            })
+    if (checkCallerPermission(req, req.body.id, res)){
+        dal.insert(account, function (err, document) {
+            handleResults(err, res, function () {
+                res.status(201);
+                res.send({
+                    "_self": document._self,
+                    "id": document.id,
+                })
+            });
         });
-    });
+    }
 });
 
 router.delete('/:id', function (req, res) {
@@ -86,6 +97,7 @@ router.delete('/:id', function (req, res) {
 
 function handleResults(err, res, onSuccess) {
     if (err) {
+        console.log(err);
         res.status(500);
         res.send('Connection to data persistence failed.');
     }

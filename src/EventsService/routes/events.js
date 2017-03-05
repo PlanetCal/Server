@@ -2,9 +2,10 @@
 
 var express = require('express');
 var router = express.Router();
+var config = require('../../common/config.js');
 
-var databaseName = 'planetdatabase';
-var collectionName = 'eventscollection';
+var databaseName = config.documentdbDatabaseName;
+var collectionName = config.eventsCollectionName;
 var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName);
 
