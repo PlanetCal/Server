@@ -56,15 +56,22 @@ router.put('/:id', function (req, res) {
         res.send(400);
         res.send('Invalid event in http request body');
     }
-    dal.update(req.params.id, event, function (err, obj) {
-        handleResults(err, res, function () {
-            res.status(200);
-            res.send({
-                "_self": obj._self,
-                "id": obj.id,
-            })
+
+    if (event['ownedById'] !== req.headers['auth-identity']){
+        res.send(403);
+        res.send("Forbidden");
+    }
+    else{
+        dal.update(req.params.id, event, function (err, obj) {
+            handleResults(err, res, function () {
+                res.status(200);
+                res.send({
+                    "_self": obj._self,
+                    "id": obj.id,
+                })
+            });
         });
-    });
+    }
 });
 
 router.post('/', function (req, res) {
