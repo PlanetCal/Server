@@ -73,7 +73,7 @@ router.post('/', function (req, res) {
         res.send('Invalid userDetails in http request body');
     }
     if (checkCallerPermission(req, req.body.id, res)){
-        dal.insert(userDetails, function (err, document) {
+        dal.insert(userDetails, {}, function (err, document) {
             handleResults(err, res, function () {
                 res.status(201);
                 res.send({

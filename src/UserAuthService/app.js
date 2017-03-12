@@ -9,10 +9,9 @@ var config = require('../common/config.js');
 
 var app = express();
 
-var UserAuthModel = require('./model/userauthmodel.js');
-require('./userauthpassport.js')(passport, UserAuthModel);
+require('./userauthpassport.js')(passport);
 var UserLogin = require('./routes/login.js')(passport);
-var UserAuth = require('./routes/userauth.js')(passport, UserAuthModel);
+var UserAuth = require('./routes/userauth.js')(passport);
 var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
 
 app.set('view engine', 'ejs');

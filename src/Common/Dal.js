@@ -10,9 +10,9 @@ module.exports = {
 
         var collectionLink = 'dbs/' + databaseName + '/colls/' + collectionName;
 
-        this.insert = function insert(obj, callback) {
+        this.insert = function insert(obj, options, callback) {
             var client = this.getClient();
-            client.createDocument(collectionLink, obj, function (err, document) {
+            client.createDocument(collectionLink, obj, options, function (err, document) {
                 callback(err, document);
             });
         }

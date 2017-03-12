@@ -10,16 +10,16 @@ var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName);
 
 router.get('/:id', function (req, res) {
+    console.log(req.headers['auth-identity']);
     findEventByEventId(req.params.id, function (err, results) {
         handleResults(err, res, function () {
-
             if (results.length > 0){
                 res.status(200);
                 res.send(results[0]);
             }
             else {
                 res.status(404);
-                res.send('');
+                res.send('Not found');
             }
         });
     });
@@ -36,7 +36,6 @@ router.get('/', function (req, res) {
         res.send('Invalid query string. Query string should include userids delimited by |.');
     }
 
-    console.log(req.query.userids);
     var userids = req.query.userids.split('|');
     findEventsByOwnedByIds(userids, function (err, results) {
         handleResults(err, res, function () {
@@ -53,12 +52,11 @@ router.put('/:id', function (req, res) {
     }
     var event = req.body;
     if (!event) {
-        res.send(400);
+        res.status(400);
         res.send('Invalid event in http request body');
     }
-
-    if (event['ownedById'] !== req.headers['auth-identity']){
-        res.send(403);
+    else if (event['ownedById'] !== req.headers['auth-identity']){
+        res.status(403);
         res.send("Forbidden");
     }
     else{
@@ -67,7 +65,7 @@ router.put('/:id', function (req, res) {
                 res.status(200);
                 res.send({
                     "_self": obj._self,
-                    "id": obj.id,
+                    "id": obj.id
                 })
             });
         });
@@ -76,22 +74,22 @@ router.put('/:id', function (req, res) {
 
 router.post('/', function (req, res) {
     if (!req.body) {
+        res.status('Invalid event in http request body');
         res.send(400);
-        res.send('Invalid event in http request body');
     }
     var event = req.body;
     if (!event) {
-        res.send(400);
+        res.status(400);
         res.send('Invalid event in http request body');
     }
     event['createdById'] = req.headers['auth-identity'];
     event['ownedById'] = req.headers['auth-identity'];
-    dal.insert(event, function (err, obj) {
+    dal.insert(event, {}, function (err, obj) {
         handleResults(err, res, function () {
             res.status(201);
             res.send({
                 "_self": obj._self,
-                "id": obj.id,
+                "id": obj.id
             })
         });
     });
@@ -141,7 +139,6 @@ function findEventsByOwnedByIds(ownedByIds, callback) {
 
 function handleResults(err, res, onSuccess) {
     if (err) {
-        console.log(err);
         res.status(500);
         res.send('Connection to data persistence failed.');
     }
