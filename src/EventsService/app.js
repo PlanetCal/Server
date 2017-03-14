@@ -44,7 +44,7 @@ app.use(function(err, req, res, next) {
     });
 });
 
-var port = process.env.PORT || config.eventServicePort;
+var port = process.env.PORT || config.eventsServicePort;
 var server = app.listen(port, function(){
     console.log('http://localhost:' + server.address().port + '/');
 });

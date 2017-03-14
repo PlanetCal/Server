@@ -31,13 +31,13 @@ router.get('/', function (req, res) {
         res.send('Invalid query string. Query string should include userids delimited by |.');
     }
 
-    if (!req.query.userids) {
+    if (!req.query.groupids) {
         res.status(400);
         res.send('Invalid query string. Query string should include userids delimited by |.');
     }
 
-    var userids = req.query.userids.split('|');
-    findEventsByOwnedByIds(userids, function (err, results) {
+    var groupids = req.query.groupids.split('|');
+    findEventsByGroupsIds(groupids, function (err, results) {
         handleResults(err, res, function () {
             res.status(200);
             res.send(results);                
@@ -106,7 +106,7 @@ router.delete('/:id', function (req, res) {
 
 function findEventByEventId(eventId, callback) {
     var querySpec = {
-        query: "SELECT e.createdById, e.ownedById, e.id, e._self, e.name, e.eventType FROM e WHERE e.id = @eventId",
+        query: "SELECT e.createdById, e.ownedByIds, e.id, e._self, e.name, e.eventType FROM e WHERE e.id = @eventId",
         parameters: [
             {
                 name: '@eventId',
@@ -118,14 +118,14 @@ function findEventByEventId(eventId, callback) {
     dal.get(querySpec, callback);
 }
 
-function findEventsByOwnedByIds(ownedByIds, callback) {
+function findEventsByGroupsIds(groupsIds, callback) {
 
-    var queryString = "SELECT e.ownedByIds, e.id, e._self, e.name FROM root e WHERE ARRAY_CONTAINS(@ownedByIds, e.ownedById)";
+    var queryString = "SELECT e.owningGroups, e.id, e._self, e.name FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g)";
         
     var parameters = [
         {
-            name: "@ownedByIds",
-            value: ownedByIds
+            name: "@groupsIds",
+            value: groupsIds
         }
     ];
 
@@ -134,13 +134,31 @@ function findEventsByOwnedByIds(ownedByIds, callback) {
         parameters: parameters
     };
 
-    dal.get(querySpec, callback);
+    dal.get(querySpec, function (err, results){
+
+        var filteredResults = {};
+
+        if (results){
+
+            // de-dupe uisng dictionary
+            for (var i in results){
+                var obj = results[i];
+                if (!filteredResults.hasOwnProperty(obj.id)){
+                    filteredResults[obj.id] = obj;
+                }
+            }
+
+            filteredResults = Object.keys(filteredResults).map(key => filteredResults[key]);
+        }
+
+        callback(err, filteredResults);
+    });
 }
 
 function handleResults(err, res, onSuccess) {
     if (err) {
         res.status(500);
-        res.send('Connection to data persistence failed.');
+        res.send(err);
     }
     else {
         onSuccess();

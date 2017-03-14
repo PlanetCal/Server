@@ -11,7 +11,7 @@ var dal = new DataAccessLayer(databaseName, collectionName);
 
 router.get('/:id', function (req, res) {
     var querySpec = {
-        query: "SELECT a.id, a.email, a.name, a.followingUsers FROM root a WHERE a.id = @id",
+        query: "SELECT a.id, a.email, a.name, a.followingGroups FROM root a WHERE a.id = @id",
         parameters: [
             {
                 name: '@id',

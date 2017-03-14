@@ -12,12 +12,15 @@ module.exports = {
     'userCollectionName' : 'userCollection',
     'userDetailsCollectionName' : 'userDetailsCollection',
     'eventsCollectionName' : 'eventsCollection',
+    'groupsCollectionName' : 'groupsCollection',
 
     'apiServicePort' : 1337,
     'userAuthServicePort' : 1338,
     'userAuthServiceEndpoint' : 'http://localhost:1338',
     'userDetailsServicePort' : 1339,
     'userDetailsServiceEndpoint' : 'http://localhost:1339',
-    'eventServicePort' : 1340,
-    'eventServiceEndpoint' : 'http://localhost:1340'
+    'eventsServicePort' : 1340,
+    'eventsServiceEndpoint' : 'http://localhost:1340',
+    'groupsServicePort' : 1341,
+    'groupsServiceEndpoint' : 'http://localhost:1341'
 };
