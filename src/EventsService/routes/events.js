@@ -108,7 +108,7 @@ router.delete('/:id', function (req, res) {
 
 function findEventByEventId(eventId, callback) {
     var querySpec = {
-        query: "SELECT e.createdById, e.ownedByIds, e.id, e._self, e.name, e.eventType FROM e WHERE e.id = @eventId",
+        query: "SELECT e.createdById, e.ownedByIds, e.id, e._self, e.name, e.eventType FROM e WHERE e.id = @eventId ORDER BY e.name",
         parameters: [
             {
                 name: '@eventId',
@@ -122,7 +122,7 @@ function findEventByEventId(eventId, callback) {
 
 function findEventsByGroupsIds(groupsIds, callback) {
 
-    var queryString = "SELECT e.owningGroups, e.id, e._self, e.name FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g)";
+    var queryString = "SELECT e.owningGroups, e.id, e._self, e.name FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g) ORDER BY e.name";
         
     var parameters = [
         {

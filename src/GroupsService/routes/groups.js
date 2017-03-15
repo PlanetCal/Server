@@ -75,7 +75,7 @@ router.delete('/:id', function (req, res) {
 
 function findGroupByKeywords(keywords, callback) {
     var querySpec = {
-        query: "SELECT e.id, e._self, e.name, e.keywords FROM e JOIN k IN e.keywords WHERE ARRAY_CONTAINS(@keywords, k)",
+        query: "SELECT e.id, e._self, e.name, e.keywords FROM e JOIN k IN e.keywords WHERE ARRAY_CONTAINS(@keywords, k) ORDER BY e.name",
         parameters: [
             {
                 name: '@keywords',
@@ -92,7 +92,7 @@ function findGroupByKeywords(keywords, callback) {
 
 function findGroupsByGroupIds(groupId, callback) {
 
-    var queryString = "SELECT e.id, e._self, e.name FROM root e WHERE ARRAY_CONTAINS(@groupIds, e.groupdId)";
+    var queryString = "SELECT e.id, e._self, e.name FROM root e WHERE ARRAY_CONTAINS(@groupIds, e.groupdId) ORDER BY e.name";
         
     var parameters = [
         {
