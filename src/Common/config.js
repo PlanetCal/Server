@@ -8,6 +8,7 @@ module.exports = {
 
     'documentdbEndpoint' : 'https://planetcal.documents.azure.com:443/',
     'documentdbAuthKey' : 'scIZw13Y9sSHreezIEOqnXl5t8SajGjdSKRaW5uDPTG7izMIunHlQHG9q80S2e4P5QMsGNPe6bwymDfvrMeByA==',
+    
     'documentdbDatabaseName' : 'planetcaldatabase',
     'userCollectionName' : 'userCollection',
     'userDetailsCollectionName' : 'userDetailsCollection',

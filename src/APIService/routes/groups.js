@@ -9,31 +9,41 @@ var helpers = new Helpers();
 
 module.exports = function(){
 
+    var controllerName = 'groups';
+    var endpoint = config.groupsServiceEndpoint;
+
     router.get('/:id', function(req, res){
-        request.get(helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id),
+        request.get(helpers.getRequestOption(req, config.eventServiceEndpoint + '/groups/' + req.params.id),
+            function(error, responseFromRequest, body){
+                helpers.handleHttpForwardedResponse(error, responseFromRequest, body, res);
+            });    
+    });
+
+    router.get('/', function(req, res){
+        request.get(helpers.getRequestOption(req, config.eventServiceEndpoint + '/events?' + req.query),
             function(error, responseFromRequest, body){
                 helpers.handleHttpForwardedResponse(error, responseFromRequest, body, res);
             });    
     });
 
     router.post('/', function(req, res) {
-        request.post(helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails'),
+        request.post(helpers.getRequestOption(req, config.eventServiceEndpoint + '/events'),
             function(error, responseFromRequest, body){
                 helpers.handleHttpForwardedResponse(error, responseFromRequest, body, res);
             });    
     });
 
     router.put('/:id', function(req, res) {
-        request.put(helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id),
+        request.put(helpers.getRequestOption(req, config.eventServiceEndpoint + '/events/' + req.params.id),
             function(error, responseFromRequest, body){
                 helpers.handleHttpForwardedResponse(error, responseFromRequest, body, res);
             });    
     });
 
     router.delete('/:id', function(req, res) {
-        request.delete(helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id),
+        request.delete(helpers.getRequestOption(req, config.eventServiceEndpoint + '/events/' + req.params.id),
             function(error, responseFromRequest, body){
-                helpers.handleHttpForwardedResponse(error, responseFromRequest, body, res);
+                helpers.handleResponse(error, responseFromRequest, body, res);
             });    
     });
 

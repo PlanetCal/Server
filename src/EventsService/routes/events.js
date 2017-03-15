@@ -8,11 +8,12 @@ var databaseName = config.documentdbDatabaseName;
 var collectionName = config.eventsCollectionName;
 var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName);
+var Helpers = require('../../common/helpers.js').Helpers;
+var helpers = new Helpers();
 
 router.get('/:id', function (req, res) {
-    console.log(req.headers['auth-identity']);
     findEventByEventId(req.params.id, function (err, results) {
-        handleResults(err, res, function () {
+        helpers.handleResults(err, res, function () {
             if (results.length > 0){
                 res.status(200);
                 res.send(results[0]);
@@ -28,21 +29,22 @@ router.get('/:id', function (req, res) {
 router.get('/', function (req, res) {
     if (!req.query) {
         res.status(400);
-        res.send('Invalid query string. Query string should include userids delimited by |.');
+        res.send('Query string must be supplied.');
     }
 
     if (!req.query.groupids) {
         res.status(400);
-        res.send('Invalid query string. Query string should include userids delimited by |.');
+        res.send('Filter string is not valid');
     }
-
-    var groupids = req.query.groupids.split('|');
-    findEventsByGroupsIds(groupids, function (err, results) {
-        handleResults(err, res, function () {
-            res.status(200);
-            res.send(results);                
+    else{
+        var groupids = req.query.groupids.split('|');
+        findEventsByGroupsIds(groupids, function (err, results) {
+            helpers.handleResults(err, res, function () {
+                res.status(200);
+                res.send(results);                
+            });
         });
-    });
+    }
 });
 
 router.put('/:id', function (req, res) {
@@ -60,12 +62,12 @@ router.put('/:id', function (req, res) {
         res.send("Forbidden");
     }
     else{
-        dal.update(req.params.id, event, function (err, obj) {
-            handleResults(err, res, function () {
+        dal.update(req.params.id, event, function (err, result) {
+            helpers.handleResults(err, res, function () {
                 res.status(200);
                 res.send({
-                    "_self": obj._self,
-                    "id": obj.id
+                    "_self": result._self,
+                    "id": result.id
                 })
             });
         });
@@ -84,12 +86,12 @@ router.post('/', function (req, res) {
     }
     event['createdById'] = req.headers['auth-identity'];
     event['ownedById'] = req.headers['auth-identity'];
-    dal.insert(event, {}, function (err, obj) {
-        handleResults(err, res, function () {
+    dal.insert(event, {}, function (err, result) {
+        helpers.handleResults(err, res, function () {
             res.status(201);
             res.send({
-                "_self": obj._self,
-                "id": obj.id
+                "_self": result._self,
+                "id": result.id
             })
         });
     });
@@ -97,7 +99,7 @@ router.post('/', function (req, res) {
 
 router.delete('/:id', function (req, res) {
     dal.remove(req.params.id, function (err) {
-        handleResults(err, res, function () {
+        helpers.handleResults(err, res, function () {
             res.status(200);
             res.send({ "id": req.params.id });
         });
@@ -135,34 +137,9 @@ function findEventsByGroupsIds(groupsIds, callback) {
     };
 
     dal.get(querySpec, function (err, results){
-
-        var filteredResults = {};
-
-        if (results){
-
-            // de-dupe uisng dictionary
-            for (var i in results){
-                var obj = results[i];
-                if (!filteredResults.hasOwnProperty(obj.id)){
-                    filteredResults[obj.id] = obj;
-                }
-            }
-
-            filteredResults = Object.keys(filteredResults).map(key => filteredResults[key]);
-        }
-
+        var filteredResults = helpers.removeDuplicatedItemsById(results);
         callback(err, filteredResults);
     });
-}
-
-function handleResults(err, res, onSuccess) {
-    if (err) {
-        res.status(500);
-        res.send(err);
-    }
-    else {
-        onSuccess();
-    }
 }
 
 module.exports = router;

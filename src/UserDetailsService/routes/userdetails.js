@@ -50,12 +50,12 @@ router.put('/:id', function (req, res) {
     }
     if (checkCallerPermission(req, req.params.id, res)
         && checkCallerPermission(req, req.body.id, res)){
-        dal.update(req.params.id, userDetails, function (err, document) {
+        dal.update(req.params.id, userDetails, function (err, result) {
             handleResults(err, res, function () {
                 res.status(200);
                 res.send({
-                    "_self": document._self,
-                    "id": document.id,
+                    "_self": result._self,
+                    "id": result.id,
                 })
             });
         });
@@ -73,12 +73,12 @@ router.post('/', function (req, res) {
         res.send('Invalid userDetails in http request body');
     }
     if (checkCallerPermission(req, req.body.id, res)){
-        dal.insert(userDetails, {}, function (err, document) {
+        dal.insert(userDetails, {}, function (err, result) {
             handleResults(err, res, function () {
                 res.status(201);
                 res.send({
-                    "_self": document._self,
-                    "id": document.id,
+                    "_self": result._self,
+                    "id": result.id,
                 })
             });
         });

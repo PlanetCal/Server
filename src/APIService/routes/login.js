@@ -6,7 +6,7 @@ module.exports = function(){
     var request = require('request');
     var config = require('../../common/config.js');
     var bodyParser = require('body-parser');
-    var Helpers = require('../helpers.js').Helpers;
+    var Helpers = require('../../common/helpers.js').Helpers;
 
     var helpers = new Helpers();
 
@@ -18,7 +18,7 @@ module.exports = function(){
         // body-parser converts urlencoded string to
         request.post(helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/login'),
             function(error, responseFromRequest, body){
-                helpers.handleResponse(error, responseFromRequest, body, res);
+                helpers.handleHttpForwardedResponse(error, responseFromRequest, body, res);
             });
     });
 

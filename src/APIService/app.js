@@ -52,7 +52,7 @@ app.post('/userauth', function(req, res){
         url:     config.userAuthServiceEndpoint + '/userauth',
         body:    JSON.stringify(req.body)},
         function(error, response, body){
-            helpers.handleResponse(error, response, body, res);
+            helpers.handleHttpForwardedResponse(error, response, body, res);
         });    
 });
 
