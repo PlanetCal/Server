@@ -10,11 +10,12 @@ var request = require('request');
 var app = express();
 
 var config = require('../common/config.js');
-var login = require('./routes/login.js')();
+var login = require('./routes/logincontroller.js')();
 require('./apiservicepassport.js')(passport);
-var userAuth = require('./routes/userauth.js')();
-var userDetails = require('./routes/userdetails.js')();
-var events = require('./routes/events.js')();
+var userAuth = require('./routes/userauthcontroller.js')();
+var userDetails = require('./routes/userdetailscontroller.js')();
+var events = require('./routes/eventscontroller.js')();
+var groups = require('./routes/groupscontroller.js')();
 
 var Helpers = require('./helpers.js').Helpers;
 var helpers = new Helpers();
@@ -79,6 +80,7 @@ app.use('/*', passport.authenticate('token-bearer', { session: false }),
 app.use('/userauth', userAuth);
 app.use('/userdetails', userDetails);
 app.use('/events', events);
+app.use('/groups', groups);
 
 // error handling for other routes
 app.use(function(req, res, next) {

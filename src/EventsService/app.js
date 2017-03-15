@@ -2,7 +2,7 @@
 
 var express = require('express');
 var bodyParser = require('body-parser');
-var Events = require('./routes/events.js');
+var Events = require('./routes/eventscontroller.js');
 var config = require('../common/config.js');
 
 var app = express();

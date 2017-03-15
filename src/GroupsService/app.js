@@ -2,7 +2,7 @@
 
 var express = require('express');
 var bodyParser = require('body-parser');
-var Groups = require('./routes/groups.js');
+var Groups = require('./routes/groupscontroller.js');
 var config = require('../common/config.js');
 
 var app = express();

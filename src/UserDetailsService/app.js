@@ -3,7 +3,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var config = require('../common/config.js');
-var UserDetails = require('./routes/userdetails.js');
+var UserDetails = require('./routes/userdetailscontroller.js');
 
 var app = express();
 
