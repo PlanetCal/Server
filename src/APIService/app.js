@@ -17,7 +17,7 @@ var userDetails = require('./routes/userdetailscontroller.js')();
 var events = require('./routes/eventscontroller.js')();
 var groups = require('./routes/groupscontroller.js')();
 
-var Helpers = require('./helpers.js').Helpers;
+var Helpers = require('../common/helpers.js').Helpers;
 var helpers = new Helpers();
 
 app.set('view engine', 'ejs');

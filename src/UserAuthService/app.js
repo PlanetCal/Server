@@ -10,7 +10,7 @@ var config = require('../common/config.js');
 var app = express();
 
 require('./userauthpassport.js')(passport);
-var UserLogin = require('./routes/logincontrollerjs')(passport);
+var UserLogin = require('./routes/logincontroller.js')(passport);
 var UserAuth = require('./routes/userauthcontroller.js')(passport);
 var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
 
