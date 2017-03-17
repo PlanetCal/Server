@@ -7,7 +7,6 @@ module.exports = function(passport){
     var PasswordCrypto = require('../passwordcrypto.js').PasswordCrypto;
     var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
     var config = require('../../common/config.js');
-    //var uuidGen = require('node-uuid');
     var dal = new DataAccessLayer(config.documentdbDatabaseName, config.usersCollectionName);
 
     router.post('/', function(req, res){

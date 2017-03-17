@@ -8,7 +8,7 @@ module.exports = function(passport){
     var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
     var TokenGenerator = require('../common/tokengenerator.js').TokenGenerator;
     var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
-    var dal = new DataAccessLayer(config.documentdbDatabaseName, config.userCollectionName);
+    var dal = new DataAccessLayer(config.documentdbDatabaseName, config.usersCollectionName);
 
     passport.use('local', new LocalStrategy({
             // by default, local strategy uses username and password, we will override with email
