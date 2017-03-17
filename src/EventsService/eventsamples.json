@@ -1,9 +1,34 @@
 [
   {
+    "id": "61d180c9-dca6-459a-831e-66645fd99d48",
     "name": "TestEvent1",
     "owningGroups": [
       "5dd3d02f-5d9d-4f76-9491-0ba3d77df949",
       "5b378c73-88d3-4ddf-9ba3-5509446cc55c"
+    ]
+  },
+  {
+    "id": "a55887c0-b750-411d-b20f-1039d1b41524",
+    "name": "TestEvent2",
+    "owningGroups": [
+      "27b3950b-edfa-472c-9f57-0680f3327816",
+      "f31d5383-34db-456d-bb0e-a1ce3721186c"
+    ]
+  },
+  {
+    "id": "48fad217-0d1e-42a2-8eb7-9028bcb0d221",
+    "name": "TestEvent3",
+    "owningGroups": [
+      "5dd3d02f-5d9d-4f76-9491-0ba3d77df949",
+      "27b3950b-edfa-472c-9f57-0680f3327816"
+    ]
+  },
+  {
+    "id": "9ad2cde9-18d8-4c17-8163-6b5934826197",
+    "name": "TestEvent4",
+    "owningGroups": [
+      "5dd3d02f-5d9d-4f76-9491-0ba3d77df949",
+      "27b3950b-edfa-472c-9f57-0680f3327816"
     ]
   }
 ]

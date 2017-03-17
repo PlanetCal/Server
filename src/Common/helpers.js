@@ -1,4 +1,4 @@
-"use strict"
+'use strict'
 
 var config = require('./config.js');
 
@@ -26,8 +26,7 @@ module.exports = {
 
         this.handleResults = function handleResults(err, res, onSuccess){
             if (err) {
-                res.status(500);
-                res.send(err.message);
+                this.createError(err)
             }
             else {
                 onSuccess();
@@ -51,6 +50,38 @@ module.exports = {
             }
 
             return [];
+        }
+
+        this.convertErrorToJson = function convertErrorToJson(err, showStack){
+            var obj =  {
+                'name' : err.name,
+                'status' : err.status,
+                'message' : err.message
+            };
+
+            if (showStack){
+                obj.stack = err.stack;
+            }
+
+            return obj;
+        }
+
+        this.createError = function createError(status, name, message){
+            var err = new Error(message);
+            err.name = name;
+            err.status = status;
+
+            return err;
+        }
+
+        this.createErrorFromDocumentDbError = function createErrorFromDocumentDbError(err){
+            var body = JSON.parse(err.body);
+            var err = new Error(body.message);
+            err.name = body.code;
+            err.status = err.code;
+            err.innertError = body;
+
+            return err;
         }
     }
 }

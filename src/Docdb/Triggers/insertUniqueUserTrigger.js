@@ -1,34 +1,47 @@
-function insertUniqueUser() {
-    var context = getContext();
-    var request = context.getRequest();
+'use strict'
 
-    var userToCreate = request.getBody();
+var config = require('../../common/config.js');
+//var AzureDocuments = require('documentdb').AzureDocuments;
+//var azureDocuments = new AzureDocuments();
 
-    var collection = context.getCollection();
-    var collectionLink = collection.getSelfLink();
-    var userEmail = userToCreate["email"];
+module.exports = {
+    'insertUniqueUserTrigger': {
+        id: config.insertUniqueUserTriggerName,
+        serverScript: function insertUniqueUser() {
+            var context = getContext();
+            var request = context.getRequest();
 
-    var accepted = collection.queryDocuments(collectionLink,
-        'SELECT * FROM p where p.email = "' + userEmail + '"',
-        function (err, documents, responseOptions) {
-            if (err) {
-                var error = new Error(err);
-                error.code = 503;
-                throw err;
-            }
+            var userToCreate = request.getBody();
 
-            if (documents.length > 0) {
-                var error = new Error('User ' + userEmail + ' already exists');
-                error.httpStatusCode = 409;
+            var collection = context.getCollection();
+            var collectionLink = collection.getSelfLink();
+            var userEmail = userToCreate["email"];
+
+            var accepted = collection.queryDocuments(collectionLink,
+                'SELECT * FROM p where p.email = "' + userEmail + '"',
+                function (err, documents, responseOptions) {
+                    if (err) {
+                        var error = new Error(err);
+                        error.code = 503;
+                        throw err;
+                    }
+
+                    if (documents.length > 0) {
+                        var error = new Error('User ' + userEmail + ' already exists');
+                        error.httpStatusCode = 409;
+                        throw error;
+                    }
+                    else {
+                        request.setBody(userToCreate);
+                    }
+                });
+            if (!accepted) {
+                var error = new Error('Unable to complete user query.');
+                error.http = 503;
                 throw error;
             }
-            else {
-                request.setBody(userToCreate);
-            }
-        });
-    if (!accepted) {
-        var error = new Error('Unable to complete user query.');
-        error.http = 503;
-        throw error;
+        },
+        triggerType: "pre",
+        triggerOperation : "create"
     }
 }

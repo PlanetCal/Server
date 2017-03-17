@@ -13,63 +13,70 @@ var helpers = new Helpers();
 
 router.get('/', function (req, res) {
     if (!req.query) {
-        res.status(400);
-        res.send('Invalid query string. Query string should include ids delimited by |.');
+        throw helpers.createError(400, 'InvalidQueryString', 'No query string found.');
     }
-
-    if (!req.query.ids && !req.query.keywords) {
-        res.status(400);
-        res.send('Invalid query string. Query string should include ids delimited by |.');
+    else if (!req.query.ids && !req.query.keywords) {
+        throw helpers.createError(400, 'InvalidQueryString', 'Query string should include group ids delimited by |.');
     }
     else if (req.query.ids) {
         var groupIds = req.query.ids.split('|');
         findGroupsByGroupIds(groupIds, function (err, results) {
-            helpers.handleResults(err, res, function () {
+            if (err){
+                throw helpers.createError(err);
+            }
+            else{
                 res.status(200);
-                res.send(results);                
-            });
+                res.send(results);
+            }                
         });
     }
     else if (req.query.keywords) {
         var keywords = req.query.keywords.split('|');
         findGroupByKeywords(keywords, function (err, results) {
-            helpers.handleResults(err, res, function () {
+            if (err){
+                throw helpers.createError(err);
+            }
+            else{
                 res.status(200);
                 res.send(results);                
-            });
+            }
         });
     }
 });
 
 router.post('/', function (req, res) {
     if (!req.body) {
-        res.status('Invalid event in http request body');
-        res.send(400);
+        throw helpers.createError(400, 'InvalidRequestBody', 'Request body is empty.');
     }
     var group = req.body;
     if (!group) {
-        res.status(400);
-        res.send('Invalid event in http request body');
+        throw helpers.createError(400, 'InvalidRequestBody', 'Request body is invalid.');
     }
     group['createdById'] = req.headers['auth-identity'];
     group['ownedById'] = req.headers['auth-identity'];
     dal.insert(group, {}, function (err, obj) {
-        helpers.handleResults(err, res, function () {
+        if (err){
+            throw helpers.createError(err);
+        }
+        else{
             res.status(201);
             res.send({
                 "_self": obj._self,
                 "id": obj.id
             })
-        });
+        }
     });
 });
 
 router.delete('/:id', function (req, res) {
     dal.remove(req.params.id, function (err) {
-        helpers.handleResults(err, res, function () {
+        if (err){
+            throw helpers.createError(err);
+        }
+        else{
             res.status(200);
             res.send({ "id": req.params.id });
-        });
+        }
     });
 });
 

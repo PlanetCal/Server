@@ -1,6 +1,6 @@
-"use strict"
+'use strict'
 
-var documentClient = require('documentdb').DocumentClient;
+var DocumentClient = require('documentdb').DocumentClient;
 var config = require('./config.js');
 
 module.exports = {
@@ -47,7 +47,7 @@ module.exports = {
         }
 
         this.getClient = function getClient() {
-            return new documentClient(config.documentdbEndpoint, { "masterKey": config.documentdbAuthKey });
+            return new DocumentClient(config.documentdbEndpoint, { "masterKey": config.documentdbAuthKey });
         }
     }
 }

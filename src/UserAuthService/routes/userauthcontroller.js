@@ -1,4 +1,4 @@
-"use strict"
+'use strict'
 
 module.exports = function(passport){
 
@@ -8,7 +8,7 @@ module.exports = function(passport){
     var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
     var config = require('../../common/config.js');
     //var uuidGen = require('node-uuid');
-    var dal = new DataAccessLayer(config.documentdbDatabaseName, config.userCollectionName);
+    var dal = new DataAccessLayer(config.documentdbDatabaseName, config.usersCollectionName);
 
     router.post('/', function(req, res){
         if (!req.body || !req.body.email || !req.body.password){
@@ -18,8 +18,7 @@ module.exports = function(passport){
         else{
             var passwordCrypto = new PasswordCrypto();
             var passwordHash = passwordCrypto.generateHash(req.body.password);
-            //var guid = uuidGen.v4();
-            var options = { preTriggerInclude: "insertUniqueUser" };            
+            var options = { preTriggerInclude: config.insertUniqueUserTriggerName };            
             dal.insert({ email: req.body.email, passwordHash: passwordHash }, options, function(err, document){
                 if (err){
                     res.status(err.code);

@@ -4,6 +4,8 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var Groups = require('./routes/groupscontroller.js');
 var config = require('../common/config.js');
+var Helpers = require('../common/helpers.js').Helpers;
+var helpers = new Helpers();
 
 var app = express();
 
@@ -27,10 +29,7 @@ app.use(function(req, res, next) {
 if (app.get('env') === 'development') {
     app.use(function(err, req, res, next) {
         res.status(err.status || 500);
-        res.render('error', {
-            message: err.message,
-            error: err
-        });
+        res.send(helpers.convertErrorToJson(err, true));
     });
 }
 
@@ -38,10 +37,7 @@ if (app.get('env') === 'development') {
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
-    res.render('error', {
-        message: err.message,
-        error: {}
-    });
+    res.send(helpers.convertErrorToJson(err, false));
 });
 
 var port = process.env.PORT || config.groupsServicePort;
