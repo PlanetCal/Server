@@ -36,8 +36,7 @@ app.use('/userauth', UserAuth);
 
 // error handling for other routes
 app.use(function(req, res, next) {
-    var err = new Error('Not Found');
-    err.status = 404;
+    var err = helpers.createError(404, 'ResourceNotFound', 'Resource specified by URL cannot be located.');
     next(err);
 });
 
@@ -47,7 +46,7 @@ app.use(function(req, res, next) {
 if (app.get('env') === 'development') {
     app.use(function(err, req, res, next) {
         res.status(err.status || 500);
-        res.send(JSON.stringify(err));
+        res.send(helpers.convertErrorToJson(err, true));
     });
 }
 
@@ -55,10 +54,7 @@ if (app.get('env') === 'development') {
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
-    res.render('error', {
-        message: err.message,
-        error: {}
-    });
+    res.send(helpers.convertErrorToJson(err, false));
 });
 
 var port = process.env.PORT || config.userAuthServicePort;

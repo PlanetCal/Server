@@ -18,8 +18,7 @@ app.use('/groups', Groups);
 
 // error handling for other routes
 app.use(function(req, res, next) {
-    var err = new Error('Not Found');
-    err.status = 404;
+    var err = helpers.createError(404, 'ResourceNotFound', 'Resource specified by URL cannot be located.');
     next(err);
 });
 
