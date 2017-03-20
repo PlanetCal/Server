@@ -1,6 +1,6 @@
 'use strict'
 
-var DocumentClient = require('documentdb').DocumentClient;
+var DocumentClient = require('documentdb-q-promises').DocumentClientWrapper;
 var config = require('../../common/config.js');
 var triggers = require('../triggers/insertuniqueusertrigger.js');
 
@@ -10,74 +10,39 @@ var helpers = new Helpers();
 
 var dbDefinition = {id : config.documentdbDatabaseName};
 
-client.createDatabase(dbDefinition, function (err, createdDatabase) {
-    if (err) {
-        throw helpers.convertErrorToJson(helpers.createErrorFromDocumentDbError(err), true);
-    }
-
-    console.log('Creating database ' + config.documentdbDatabaseName + '....');
-    client.readDatabase('dbs/' + config.documentdbDatabaseName, function (err, db) {
-        if (err) {
-            throw helpers.convertErrorToJson(helpers.createErrorFromDocumentDbError(err), true);
-        }
-
+var database;
+console.log('Creating database ' + config.documentdbDatabaseName + '....');
+client.createDatabaseAsync(dbDefinition)
+    .then(function(databaseResponse) {
+        database = databaseResponse.resource;
         console.log(config.documentdbDatabaseName + ' created successfully.');
-
-        var dbLink = db._self;
-
         console.log('Creating collection ' + config.usersCollectionName + '....');
-        createPlanetcalCollection(dbLink, config.usersCollectionName, function(err, collection){
-            if (err) {
-                throw helpers.convertErrorToJson(helpers.createErrorFromDocumentDbError(err), true);
-            }            
-            console.log(config.usersCollectionName + ' created successfully.');
-
-            var usersCollectionLink = 'dbs/' + config.documentdbDatabaseName + '/colls/' + config.usersCollectionName;
-            console.log('Creating trigger insertUniqueUserTrigger on collection ' + config.usersCollectionName + '....');
-            
-            client.createTrigger(usersCollectionLink, triggers.insertUniqueUserTrigger, {}, function(err, trigger){
-                console.log('Trigger insertUniqueUserTrigger on collection ' + config.usersCollectionName + 'created successfully.');
-    
-                console.log('Creating collection ' + config.userDetailsCollectionName + '....');
-                createPlanetcalCollection(dbLink, config.userDetailsCollectionName, function(err, collection){
-                    if (err) {
-                        throw helpers.convertErrorToJson(helpers.createErrorFromDocumentDbError(err), true);
-                    }
-                    console.log(config.userDetailsCollectionName + ' created successfully.');
-
-                    console.log('Creating collection ' + config.eventsCollectionName + '....');
-                    createPlanetcalCollection(dbLink, config.eventsCollectionName, function(err, collection){
-                        if (err) {
-                            throw helpers.convertErrorToJson(helpers.createErrorFromDocumentDbError(err), true);
-                        }
-                        console.log(config.eventsCollectionName + ' created successfully.');
-
-                        console.log('Creating collection ' + config.groupsCollectionName + '....');
-                        createPlanetcalCollection(dbLink, config.groupsCollectionName, function(err, collection){
-                            if (err) {
-                                throw helpers.convertErrorToJson(helpers.createErrorFromDocumentDbError(err), true);
-                            } 
-                            console.log(config.groupsCollectionName + ' created successfully.');
-                        });
-                    });
-                });
-            });
-        });
+        return client.createCollectionAsync(database._self, {id: config.usersCollectionName});
+    })
+    .then(function(collectionResponse) {
+        var collection = collectionResponse.resource;
+        console.log(collection.id + ' created successfully.');
+        console.log('Creating trigger insertUniqueUserTrigger on collection ' + config.usersCollectionName + '....');
+        return client.createTriggerAsync(collection._self, triggers.insertUniqueUserTrigger, {});
+    })
+    .then(function(triggerResponse) {
+        var trigger = triggerResponse.resource;
+        console.log('Trigger insertUniqueUserTrigger on collection ' + config.usersCollectionName + 'created successfully.');
+        console.log('Creating collection ' + config.userDetailsCollectionName + '....');        
+        return client.createCollectionAsync(database._self, {id: config.userDetailsCollectionName});
+    })
+    .then(function(collectionResponse) {
+        var collection = collectionResponse.resource;
+        console.log(collection.id + ' created successfully.');
+        console.log('Creating collection ' + config.eventsCollectionName + '....');        
+        return client.createCollectionAsync(database._self, {id: config.eventsCollectionName});
+    })
+    .then(function(collectionResponse) {
+        var collection = collectionResponse.resource;
+        console.log(collection.id + ' created successfully.');
+        console.log('Creating collection ' + config.groupsCollectionName + '....');        
+        return client.createCollectionAsync(database._self, {id: config.groupsCollectionName});
+    })
+    .fail(function(error) {
+        console.log("An error occured", error);
     });
-});
-
-function createPlanetcalCollection(databaseLink, collectionId, callback){
-    var collSpec = { id: collectionId };
-
-    var options = { offerType: "S1" };
-
-    client.createCollection(databaseLink, collSpec, options, callback);
-}
-
-function createCollectionCallback(err, collection, continueCallback){
-    if (err){
-        throw helpers.convertErrorToJson(err, true);
-    }
-
-    continueCallback(collection);
-}

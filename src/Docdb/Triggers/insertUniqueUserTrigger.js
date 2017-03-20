@@ -1,8 +1,6 @@
 'use strict'
 
 var config = require('../../common/config.js');
-//var AzureDocuments = require('documentdb').AzureDocuments;
-//var azureDocuments = new AzureDocuments();
 
 module.exports = {
     'insertUniqueUserTrigger': {
@@ -21,24 +19,18 @@ module.exports = {
                 'SELECT * FROM p where p.email = "' + userEmail + '"',
                 function (err, documents, responseOptions) {
                     if (err) {
-                        var error = new Error(err);
-                        error.code = 503;
-                        throw err;
+                        throw new Error(err);
                     }
 
                     if (documents.length > 0) {
-                        var error = new Error('User ' + userEmail + ' already exists');
-                        error.httpStatusCode = 409;
-                        throw error;
+                        throw new Error('User ' + userEmail + ' already exists');
                     }
                     else {
                         request.setBody(userToCreate);
                     }
                 });
             if (!accepted) {
-                var error = new Error('Unable to complete user query.');
-                error.http = 503;
-                throw error;
+                throw new Error('Unable to complete user query.');
             }
         },
         triggerType: "pre",
