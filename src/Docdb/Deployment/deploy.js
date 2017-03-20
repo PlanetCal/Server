@@ -22,12 +22,12 @@ client.createDatabaseAsync(dbDefinition)
     .then(function(collectionResponse) {
         var collection = collectionResponse.resource;
         console.log(collection.id + ' created successfully.');
-        console.log('Creating trigger insertUniqueUserTrigger on collection ' + config.usersCollectionName + '....');
+        console.log('Creating trigger ' + config.insertUniqueUserTriggerName + ' on collection ' + config.usersCollectionName + '....');
         return client.createTriggerAsync(collection._self, triggers.insertUniqueUserTrigger, {});
     })
     .then(function(triggerResponse) {
         var trigger = triggerResponse.resource;
-        console.log('Trigger insertUniqueUserTrigger on collection ' + config.usersCollectionName + 'created successfully.');
+        console.log('Trigger ' + config.insertUniqueUserTriggerName + ' on collection ' + config.usersCollectionName + 'created successfully.');
         console.log('Creating collection ' + config.userDetailsCollectionName + '....');        
         return client.createCollectionAsync(database._self, {id: config.userDetailsCollectionName});
     })
