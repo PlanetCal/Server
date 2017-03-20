@@ -20,7 +20,7 @@ module.exports = function(){
     });
 
     router.get('/', function(req, res){
-        request.get(helpers.getRequestOption(req, endpoint + '/' + controllerName + '?' + req.query),
+        request.get(helpers.getRequestOption(req, endpoint + '/' + controllerName + '?' + JSON.stringify(req.query)),
             function(error, responseFromRequest, body){
                 helpers.handleHttpForwardedResponse(error, responseFromRequest, body, res);
             });    
