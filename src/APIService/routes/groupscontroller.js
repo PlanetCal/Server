@@ -1,4 +1,4 @@
-"use strict"
+'use strict'
 
 var config = require('../../common/config.js');
 var router = require('express').Router();

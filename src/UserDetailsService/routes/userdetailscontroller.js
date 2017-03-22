@@ -1,4 +1,4 @@
-﻿"use strict";
+﻿'use strict'
 
 var express = require('express');
 var router = express.Router();
@@ -6,8 +6,10 @@ var config = require('../../common/config.js');
 
 var databaseName = config.documentdbDatabaseName;
 var collectionName = config.userDetailsCollectionName;
-var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
+var DataAccessLayer = require('../../common/dal2.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName);
+var Helpers = require('../../common/helpers.js').Helpers;
+var helpers = new Helpers();
 
 router.get('/:id', function (req, res) {
     var querySpec = {
@@ -21,96 +23,91 @@ router.get('/:id', function (req, res) {
     };
 
     if (checkCallerPermission(req, req.params.id, res)){
-        dal.get(querySpec, function (err, results) {
-            handleResults(err, res, function () {
+        dal.get(querySpec)
+            .then(function(documentResponse){
+                var results = documentResponse.feed;
                 if (results.length > 0){
                     res.status(200);
-
                     // TODO: assert when results has more than 1 element.
                     res.send(results[0]);
                 }
                 else{
                     res.status(404);
-                    res.send('');
+                    res.json({ code : 404, name: 'NotFound', messae: 'Resource ' + req.params.id + ' not found.'});
                 }
+            })
+            .fail(function(err){
+                res.status(err.code);
+                res.json(helpers.createErrorJson(err));
             });
-        });
     }
 });
 
 router.put('/:id', function (req, res) {
     if (!req.body) {
         res.status(400);
-        res.send('Invalid userDetails in http request body');
+        res.json({ code : 400, name: 'BadRequest', messae: 'Request body not found.'});
     }
     var userDetails = req.body;
     if (!userDetails) {
         res.status(400);
-        res.send('Invalid userDetails in http request body');
+        res.json({ code : 400, name: 'BadRequest', messae: 'UserDetails in body not found.'});
     }
     if (checkCallerPermission(req, req.params.id, res)
         && checkCallerPermission(req, req.body.id, res)){
-        dal.update(req.params.id, userDetails, function (err, result) {
-            handleResults(err, res, function () {
+        dal.update(req.params.id, userDetails)
+            .then(function(documentResponse){
                 res.status(200);
-                res.send({
-                    "_self": result._self,
-                    "id": result.id,
-                })
+                res.json({ id : documentResponse.resource.id });
+            })
+            .fail(function(err){
+                res.status(err.code);
+                res.json(helpers.createErrorJson(err));
             });
-        });
     }
 });
 
 router.post('/', function (req, res) {
     if (!req.body) {
         res.send(400);
-        res.send('Invalid userDetails in http request body');
+        res.json({ code : 400, name: 'BadRequest', messae: 'Request body not found.'});
     }
     var userDetails = req.body;
     if (!userDetails) {
         res.send(400);
-        res.send('Invalid userDetails in http request body');
+        res.json({ code : 400, name: 'BadRequest', messae: 'UserDetails in body not found.'});
     }
     if (checkCallerPermission(req, req.body.id, res)){
-        dal.insert(userDetails, {}, function (err, result) {
-            handleResults(err, res, function () {
+        dal.insert(userDetails, {})
+            .then(function(documentResponse){
                 res.status(201);
-                res.send({
-                    "_self": result._self,
-                    "id": result.id,
-                })
+                res.json({ id : documentResponse.resource.id });
+            })
+            .fail(function(err){
+                res.status(err.code);
+                res.json(helpers.createErrorJson(err));
             });
-        });
     }
 });
 
 router.delete('/:id', function (req, res) {
     if (checkCallerPermission(req, req.params.id, res)){
-        dal.remove(req.params.id, function (err) {
-            handleResults(err, res, function () {
+        dal.remove(req.params.id)
+            .then(function(){
                 res.status(200);
-                res.send({ "id": req.params.id });
+                res.json({ id : req.params.id });                    
+            })
+            .fail(function(err){
+                res.status(err.code);
+                res.json(helpers.createErrorJson(err));
             });
-        });
     }
 });
-
-function handleResults(err, res, onSuccess) {
-    if (err) {
-        console.log(err);
-        res.status(500);
-        res.send('Connection to data persistence failed.');
-    }
-    else {
-        onSuccess();
-    }
-}
 
 function checkCallerPermission(req, id, res){
     if (req.headers['auth-identity'] !== id){
         res.status(403);
-        res.send('Forbidden');
+        res.json({ code : 403, name: 'Forbidden', messae: 'Operation forbidden.'});
 
         return false;
     } 

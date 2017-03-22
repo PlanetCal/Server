@@ -1,4 +1,4 @@
-"use strict";
+'use strict'
 
 var express = require('express');
 var router = express.Router();
@@ -6,42 +6,45 @@ var config = require('../../common/config.js');
 
 var databaseName = config.documentdbDatabaseName;
 var collectionName = config.eventsCollectionName;
-var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
+var DataAccessLayer = require('../../common/dal2.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName);
 var Helpers = require('../../common/helpers.js').Helpers;
 var helpers = new Helpers();
 
 router.get('/:id', function (req, res) {
-    findEventByEventId(req.params.id, function (err, results) {
-        helpers.handleResults(err, res, function () {
-            if (results.length > 0){
-                res.status(200);
-                res.send(results[0]);
-            }
-            else {
-                res.status(404);
-                res.send('Not found');
-            }
+    findEventByEventId(req.params.id)
+        .then(function(documentResponse){
+            res.status(200);
+            // TODO: assert when results has more than 1 element.
+            res.send(documentResponse.feed[0]);
+        })
+        .fail(function(err){
+            res.status(err.code);
+            res.json(helpers.createErrorJson(err));
         });
-    });
 });
 
 router.get('/', function (req, res) {
     if (!req.query) {
         res.status(400);
-        res.send('Query string must be supplied.');
+        res.json({ code : 400, name: 'BadRequest', messae: 'Query in request not found.'});
     }
 
     if (!req.query.groupids) {
         res.status(400);
-        res.send('Filter string is not valid');
+        res.json({ code : 400, name: 'BadRequest', messae: 'Query string should contain groupids.'});
     }
     else{
         var groupids = req.query.groupids.split('|');
-        findEventsByGroupsIds(groupids, function (err, results) {
-            helpers.handleResults(err, res, function () {
+        findEventsByGroupsIds(groupids) {
+            .then(function(documentResponse){
                 res.status(200);
-                res.send(results);                
+                // TODO: assert when results has more than 1 element.
+                res.send(documentResponse.feed);
+            })
+            .fail(function(err){
+                res.status(err.code);
+                res.json(helpers.createErrorJson(err));
             });
         });
     }
@@ -50,60 +53,62 @@ router.get('/', function (req, res) {
 router.put('/:id', function (req, res) {
     if (!req.body) {
         res.status(400);
-        res.send('Invalid event in http request body');
+        res.json({ code : 400, name: 'BadRequest', messae: 'Empty body.'});
     }
     var event = req.body;
     if (!event) {
         res.status(400);
-        res.send('Invalid event in http request body');
+        res.json({ code : 400, name: 'BadRequest', messae: 'Event cannot be found in body.'});
     }
     else if (event['ownedById'] !== req.headers['auth-identity']){
-        res.status(403);
-        res.send("Forbidden");
+        res.status(400);
+        res.json({ code : 400, name: 'Forbidden', messae: 'Oepration forbidden.'});
     }
     else{
-        dal.update(req.params.id, event, function (err, result) {
-            helpers.handleResults(err, res, function () {
+        dal.update(req.params.id, event)
+            .then(function(documentResponse){
                 res.status(200);
-                res.send({
-                    "_self": result._self,
-                    "id": result.id
-                })
+                res.send({ _self : documentResponse.resource._self, id : documentResponse.resource.id });
+            })
+            .fail(function(err){
+                res.status(err.code);
+                res.json(helpers.createErrorJson(err));
             });
-        });
     }
 });
 
 router.post('/', function (req, res) {
     if (!req.body) {
-        res.status('Invalid event in http request body');
-        res.send(400);
+        res.status(400);
+        res.json({ code : 400, name: 'BadRequest', messae: 'Empty body.'});
     }
     var event = req.body;
     if (!event) {
         res.status(400);
-        res.send('Invalid event in http request body');
+        res.json({ code : 400, name: 'BadRequest', messae: 'Event cannot be found in body.'});
     }
     event['createdById'] = req.headers['auth-identity'];
     event['ownedById'] = req.headers['auth-identity'];
-    dal.insert(event, {}, function (err, result) {
-        helpers.handleResults(err, res, function () {
-            res.status(201);
-            res.send({
-                "_self": result._self,
-                "id": result.id
-            })
+    dal.insert(event, {})
+        .then(function(documentResponse){
+            res.status(200);
+            res.send({ _self: documentResponse.resource._self, id : documentResponse.resource.id });
+        })
+        .fail(function(err){
+            res.status(err.code);
+            res.json(helpers.createErrorJson(err));
         });
-    });
 });
 
 router.delete('/:id', function (req, res) {
-    dal.remove(req.params.id, function (err) {
-        helpers.handleResults(err, res, function () {
+    dal.remove(req.params.id)
+        .then(function(){
             res.status(200);
-            res.send({ "id": req.params.id });
+            res.send({ id: req.params.id });
+        .fail(function(err){
+            res.status(err.code);
+            res.json(helpers.createErrorJson(err));
         });
-    });
 });
 
 function findEventByEventId(eventId, callback) {
@@ -117,7 +122,7 @@ function findEventByEventId(eventId, callback) {
         ]
     };
 
-    dal.get(querySpec, callback);
+    return dal.get(querySpec);
 }
 
 function findEventsByGroupsIds(groupsIds, callback) {
@@ -136,10 +141,7 @@ function findEventsByGroupsIds(groupsIds, callback) {
         parameters: parameters
     };
 
-    dal.get(querySpec, function (err, results){
-        var filteredResults = helpers.removeDuplicatedItemsById(results);
-        callback(err, filteredResults);
-    });
+    return dal.get(querySpec);
 }
 
 module.exports = router;

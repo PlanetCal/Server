@@ -1,4 +1,4 @@
-"use strict";
+'use strict'
 
 var express = require('express');
 var router = express.Router();
@@ -6,27 +6,30 @@ var config = require('../../common/config.js');
 
 var databaseName = config.documentdbDatabaseName;
 var collectionName = config.groupsCollectionName;
-var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
+var DataAccessLayer = require('../../common/dal2.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName);
 var Helpers = require('../../common/helpers.js').Helpers;
 var helpers = new Helpers();
 
 router.get('/', function (req, res) {
     if (!req.query) {
-        throw helpers.createError(400, 'InvalidQueryString', 'No query string found.');
+        res.status(400);
+        res.json({ code : 400, name: 'BadRequest', messae: 'Query in request not found.'});
     }
     else if (!req.query.ids && !req.query.keywords) {
-        throw helpers.createError(400, 'InvalidQueryString', 'Query string should include group ids delimited by |.');
+        res.status(400);
+        res.json({ code : 400, name: 'BadRequest', messae: 'Either ids or keywords should be found in query string.'});
     }
     else if (req.query.ids) {
         var groupIds = req.query.ids.split('|');
         findGroupsByGroupIds(groupIds, function (err, results) {
             if (err){
-                throw helpers.createError(err);
+                res.status(err.code);
+                res.json(helpers.createErrorJson(err));
             }
             else{
                 res.status(200);
-                res.send(results);
+                res.json(results);
             }                
         });
     }
@@ -34,11 +37,12 @@ router.get('/', function (req, res) {
         var keywords = req.query.keywords.split('|');
         findGroupByKeywords(keywords, function (err, results) {
             if (err){
-                throw helpers.createError(err);
+                res.status(err.code);
+                res.json(helpers.createErrorJson(err));
             }
             else{
                 res.status(200);
-                res.send(results);                
+                res.json(results);                
             }
         });
     }
@@ -46,38 +50,37 @@ router.get('/', function (req, res) {
 
 router.post('/', function (req, res) {
     if (!req.body) {
-        throw helpers.createError(400, 'InvalidRequestBody', 'Request body is empty.');
+        res.status(400);
+        res.json({ code : 400, name: 'BadRequest', messae: 'Empty body.'});
     }
     var group = req.body;
     if (!group) {
-        throw helpers.createError(400, 'InvalidRequestBody', 'Request body is invalid.');
+        res.status(400);
+        res.json({ code : 400, name: 'BadRequest', messae: 'Group is missing in body.'});
     }
     group['createdById'] = req.headers['auth-identity'];
     group['ownedById'] = req.headers['auth-identity'];
-    dal.insert(group, {}, function (err, obj) {
-        if (err){
-            throw helpers.createError(err);
-        }
-        else{
+    dal.insert(group, {})
+        .then(function(documentResponse){
             res.status(201);
-            res.send({
-                "_self": obj._self,
-                "id": obj.id
-            })
-        }
-    });
+            res.send({ _self : documentResponse.response._self, id : documentResponse.response.id });                        
+        })
+        .fail(function(err){
+            res.status(err.code);
+            res.json(helpers.createErrorJson(err));
+        });
 });
 
 router.delete('/:id', function (req, res) {
-    dal.remove(req.params.id, function (err) {
-        if (err){
-            throw helpers.createError(err);
-        }
-        else{
+    dal.remove(req.params.id)
+        .then(function(){
             res.status(200);
-            res.send({ "id": req.params.id });
-        }
-    });
+            res.send({ id: req.params.id });
+        })
+        .fail(function(err){
+            res.status(err.code);
+            res.json(helpers.createErrorJson(err));
+        });
 });
 
 function findGroupByKeywords(keywords, callback) {
@@ -91,10 +94,15 @@ function findGroupByKeywords(keywords, callback) {
         ]
     };
 
-    dal.get(querySpec, function(err, results){
-        var filteredResults = helpers.removeDuplicatedItemsById(results);
-        callback(err, filteredResults);
-    });
+    dal.get(querySpec)
+        .then(function(documentResponse){
+            var results = documentResponse.feed;
+            var filteredResults = helpers.removeDuplicatedItemsById(results);
+            callback(err, filteredResults);
+        })
+        .fail(function(err){
+            callback(err);
+        });
 }
 
 function findGroupsByGroupIds(groupId, callback) {
@@ -113,7 +121,15 @@ function findGroupsByGroupIds(groupId, callback) {
         parameters: parameters
     };
 
-    dal.get(querySpec, callback);
+    dal.get(querySpec)
+        .then(function(documentResponse){
+            var results = documentResponse.feed;
+            var filteredResults = helpers.removeDuplicatedItemsById(results);
+            callback(err, filteredResults);
+        })
+        .fail(function(err){
+            callback(err);
+        });
 }
 
 module.exports = router;

@@ -1,4 +1,4 @@
-"use strict"
+'use strict'
 
 var express = require('express');
 var session = require('express-session');
@@ -13,6 +13,8 @@ require('./userauthpassport.js')(passport);
 var UserLogin = require('./routes/logincontroller.js')(passport);
 var UserAuth = require('./routes/userauthcontroller.js')(passport);
 var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
+var Helpers = require('../common/helpers.js').Helpers;
+var helpers = new Helpers();
 
 app.set('view engine', 'ejs');
 
@@ -45,7 +47,7 @@ app.use(function(req, res, next) {
 // will print stacktrace
 if (app.get('env') === 'development') {
     app.use(function(err, req, res, next) {
-        res.status(err.status || 500);
+        res.status(err.code || 500);
         res.send(helpers.convertErrorToJson(err, true));
     });
 }
@@ -53,7 +55,7 @@ if (app.get('env') === 'development') {
 // production error handler
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
+    res.status(err.code || 500);
     res.send(helpers.convertErrorToJson(err, false));
 });
 

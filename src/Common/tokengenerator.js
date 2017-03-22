@@ -1,4 +1,4 @@
-"use strict"
+'use strict'
 module.exports = {
     TokenGenerator : function TokenGenerator(){
         var jwtSimple = require('jwt-simple');

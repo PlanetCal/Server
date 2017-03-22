@@ -54,8 +54,8 @@ module.exports = {
 
         this.convertErrorToJson = function convertErrorToJson(err, showStack){
             var obj =  {
+                'code' : err.code,
                 'name' : err.name,
-                'status' : err.status,
                 'message' : err.message
             };
 
@@ -66,22 +66,13 @@ module.exports = {
             return obj;
         }
 
-        this.createError = function createError(status, name, message){
-            var err = new Error(message);
-            err.name = name;
-            err.status = status;
-
-            return err;
+        this.createError = function createError(code, name, message){
+            return { code : code, name: name, message: message };
         }
 
-        this.createErrorFromDocumentDbError = function createErrorFromDocumentDbError(err){
+        this.createErrorJson = function createError(err){
             var body = JSON.parse(err.body);
-            var err = new Error(body.message);
-            err.name = body.code;
-            err.status = err.code;
-            err.innertError = body;
-
-            return err;
+            return { code : err.code, name: body.code, message: body.message };
         }
     }
 }

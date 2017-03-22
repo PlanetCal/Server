@@ -1,9 +1,11 @@
-"use strict"
+'use strict'
 
 var express = require('express');
 var bodyParser = require('body-parser');
 var config = require('../common/config.js');
 var UserDetails = require('./routes/userdetailscontroller.js');
+var Helpers = require('../common/helpers.js').Helpers;
+var helpers = new Helpers();
 
 var app = express();
 

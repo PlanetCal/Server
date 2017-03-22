@@ -8,13 +8,13 @@ module.exports = function(passport){
     router.post('/', passport.authenticate('local'), function(req, res){
         if (req.user && req.user.email && req.user.id){
             var tokenGenerator = new TokenGenerator();
-            var token = tokenGenerator.encode({ 'email' : req.user.email, 'id' : req.user.id, 'time': Date.now() });
+            var token = tokenGenerator.encode({ email : req.user.email, id : req.user.id, time : Date.now() });
             res.status(200);
-            res.send({ 'token' : token });
+            res.json({ token : token });
         }
         else{
             res.status(401);
-            res.send({ 'message' : 'Unauthorized'});
+            res.json({ code : 401, name: 'Unauthorized', message: 'Operation unauthorized.'});
         }   
     });
 
