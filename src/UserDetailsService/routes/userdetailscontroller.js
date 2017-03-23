@@ -6,7 +6,7 @@ var config = require('../../common/config.js');
 
 var databaseName = config.documentdbDatabaseName;
 var collectionName = config.userDetailsCollectionName;
-var DataAccessLayer = require('../../common/dal2.js').DataAccessLayer;
+var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName);
 var Helpers = require('../../common/helpers.js').Helpers;
 var helpers = new Helpers();
@@ -111,8 +111,7 @@ function checkCallerPermission(req, id, res){
 
         return false;
     } 
-
     return true;
-
 }
+
 module.exports = router;

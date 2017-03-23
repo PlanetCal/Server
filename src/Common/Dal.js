@@ -1,6 +1,6 @@
 'use strict'
 
-var DocumentClient = require('documentdb').DocumentClient;
+var DocumentClient = require('documentdb-q-promises').DocumentClientWrapper;
 var config = require('./config.js');
 
 module.exports = {
@@ -10,40 +10,41 @@ module.exports = {
 
         var collectionLink = 'dbs/' + databaseName + '/colls/' + collectionName;
 
-        this.insert = function insert(obj, options, callback) {
+        this.insert = function insert(obj, options) {
             var client = this.getClient();
-            client.createDocument(collectionLink, obj, options, function (err, document) {
-                callback(err, document);
-            });
+            if (typeof options === 'undefined'){
+            	options = {};
+            }
+            return client.createDocumentAsync(collectionLink, obj, options);
         }
 
-        this.get = function get(querySpec, callback) {
+        this.get = function get(querySpec, options) {
             var client = this.getClient();
-            client.queryDocuments(collectionLink,
-                querySpec).toArray(
-                function (err, results) {
-                    callback(err, results);
-                }
-            );
+            if (typeof options === 'undefined'){
+            	options = {};
+            }
+            return client.queryDocuments(collectionLink, querySpec, options).toArrayAsync();
         }
 
-        this.update = function update(objectId, obj, callback) {
+        this.update = function update(id, document, options) {
             // this assumes that all objects have id property
             var client = this.getClient();
-            var documentLink = collectionLink + '/docs/' + objectId;
-            client.replaceDocument(documentLink, obj, function (err, result) {
-                callback(err, result);
-            });
+            var documentLink = collectionLink + '/docs/' + id;
+            if (typeof options === 'undefined'){
+            	options = {};
+            }
+            return client.replaceDocumentAsync(documentLink, document);
         }
 
         // delete is a reserved keyword
-        this.remove = function remove(objectId, callback) {
+        this.remove = function remove(id, options) {
             // this assumes that all objects have id property
             var client = this.getClient();
-            var documentLink = collectionLink + '/docs/' + objectId;
-            client.deleteDocument(documentLink, function (err) {
-                callback(err);
-            });
+            var documentLink = collectionLink + '/docs/' + id;
+            if (typeof options === 'undefined'){
+            	options = {};
+            }
+            return client.deleteDocumentAsync(documentLink, options);
         }
 
         this.getClient = function getClient() {

@@ -20,22 +20,23 @@ module.exports = function(passport){
         },    
         function(req, email, password, done){
             var querySpec = getUserQuerySpecFromEmail(email);
-            dal.get(querySpec, function(err, results){
-                if (err){
-                    return done(err, null);
-                }
-                var passwordCrypto = new PasswordCrypto();
+            dal.get(querySpec)
+                .then(function(documentResponse){
+                    var passwordCrypto = new PasswordCrypto();
 
-                if (results && results.length > 0){
-                    // should yield only one result if found
-                    var user = results[0];
+                    if (results && results.length > 0){
+                        // should yield only one result if found
+                        var user = results[0];
 
-                    if (passwordCrypto.compareValues(password, user.passwordHash)){
-                        return done(null, user);
+                        if (passwordCrypto.compareValues(password, user.passwordHash)){
+                            return done(null, user);
+                        }
                     }
-                }
-                return done(null, null);
-            });
+                    return done(null, null);                    
+                })
+                .fail(function(err){
+                    return done(err, null);
+                });
     }));
 
     passport.serializeUser(function(user, done) {
@@ -45,9 +46,13 @@ module.exports = function(passport){
     // used to deserialize the user
     passport.deserializeUser(function(id, done) {
         var querySpec = getUserQuerySpecFromId(id);
-        dal.get(querySpec, function(err, user){
-            done(err, user);
-        });
+        dal.get(querySpec)
+            .then(function(documentResponse){
+                done(err, user);
+            })
+            .fail(function(err){
+                done(err, user);
+            });
     });
 }
 

@@ -7,7 +7,6 @@ module.exports = function(){
     var config = require('../../common/config.js');
     var bodyParser = require('body-parser');
     var Helpers = require('../../common/helpers.js').Helpers;
-
     var helpers = new Helpers();
 
     router.get('/', function(req, res){
