@@ -9,6 +9,8 @@ module.exports = function(passport){
     var TokenGenerator = require('../common/tokengenerator.js').TokenGenerator;
     var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
     var dal = new DataAccessLayer(config.documentdbDatabaseName, config.usersCollectionName);
+    var Helpers = require('../common/helpers.js').Helpers;
+    var helpers = new Helpers();
 
     passport.use('local', new LocalStrategy({
             // by default, local strategy uses username and password, we will override with email
@@ -50,6 +52,10 @@ module.exports = function(passport){
 }
 
 function getUserQuerySpecFromEmail(email){
+    if (typeof email !== 'object'){
+        throw helpers.createError(500, 'InvalidArgument', 'email is not a proper object.');
+    }
+
     var queryString = "SELECT e.id, e.email, e.passwordHash FROM root e WHERE e.email = @email";
                     
     var parameters = [
@@ -66,6 +72,10 @@ function getUserQuerySpecFromEmail(email){
 }
 
 function getUserQuerySpecFromId(id){
+    if (typeof id !== 'object'){
+        throw helpers.createError(500, 'InvalidArgument', 'id is not a proper object.');
+    }
+
     var queryString = "SELECT e.id, e._self, e.email, e.passwordHash FROM root e WHERE e.id = @id";
                     
     var parameters = [

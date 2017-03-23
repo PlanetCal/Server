@@ -13,10 +13,9 @@ module.exports = {
             };
         }
 
-        this.handleHttpForwardedResponse = function handleHttpForwardedResponse(error, responseFromRequest, body, res){
-            if (error){
-                res.status(500);
-                res.send(error.message);
+        this.handleHttpForwardedResponse = function handleHttpForwardedResponse(err, responseFromRequest, body, res){
+            if (err){
+                throw this.createError(err);
             }
             else if (responseFromRequest){
                 res.status(responseFromRequest.statusCode);
@@ -24,9 +23,9 @@ module.exports = {
             }
         }
 
-        this.handleResults = function handleResults(err, res, onSuccess){
+        this.handleResults = function handleResults(err, res, next, onSuccess){
             if (err) {
-                this.createError(err)
+                next(this.createError(err));
             }
             else {
                 onSuccess();
@@ -67,10 +66,15 @@ module.exports = {
         }
 
         this.createError = function createError(code, name, message){
-            return { code : code, name: name, message: message };
+            var err = new Error();
+            err.code = code;
+            err.name = name;
+            err.message = message;
+
+            return err;
         }
 
-        this.createErrorJson = function createError(err){
+        this.createErrorJson = function createErrorJson(err){
             var body = JSON.parse(err.body);
             return { code : err.code, name: body.code, message: body.message };
         }
