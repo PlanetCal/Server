@@ -36,7 +36,7 @@ router.get('/', function (req, res) {
     }
     else{
         var groupids = req.query.groupids.split('|');
-        findEventsByGroupsIds(groupids) {
+        findEventsByGroupsIds(groupids)
             .then(function(documentResponse){
                 res.status(200);
                 // TODO: assert when results has more than 1 element.
@@ -46,7 +46,6 @@ router.get('/', function (req, res) {
                 res.status(err.code);
                 res.json(helpers.createErrorJson(err));
             });
-        });
     }
 });
 
@@ -105,6 +104,7 @@ router.delete('/:id', function (req, res) {
         .then(function(){
             res.status(200);
             res.send({ id: req.params.id });
+        })
         .fail(function(err){
             res.status(err.code);
             res.json(helpers.createErrorJson(err));

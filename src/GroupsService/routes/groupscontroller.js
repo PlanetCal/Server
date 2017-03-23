@@ -22,29 +22,31 @@ router.get('/', function (req, res) {
     }
     else if (req.query.ids) {
         var groupIds = req.query.ids.split('|');
-        findGroupsByGroupIds(groupIds, function (err, results) {
-            if (err){
-                res.status(err.code);
-                res.json(helpers.createErrorJson(err));
-            }
-            else{
+        findGroupsByGroupIds(groupIds)
+            .then(function(documentResponse){
+                var results = documentResponse.feed;
+                var filteredResults = helpers.removeDuplicatedItemsById(results);
                 res.status(200);
                 res.json(results);
-            }                
-        });
+            })
+            .fail(function(err){
+                res.status(err.code);
+                res.json(helpers.createErrorJson(err));
+            });
     }
     else if (req.query.keywords) {
         var keywords = req.query.keywords.split('|');
-        findGroupByKeywords(keywords, function (err, results) {
-            if (err){
+        findGroupByKeywords(keywords)
+            .then(function(documentResponse){
+                var results = documentResponse.feed;
+                var filteredResults = helpers.removeDuplicatedItemsById(results);
+                res.status(200);
+                res.json(results);
+            })
+            .fail(function(err){
                 res.status(err.code);
                 res.json(helpers.createErrorJson(err));
-            }
-            else{
-                res.status(200);
-                res.json(results);                
-            }
-        });
+            });
     }
 });
 
@@ -83,7 +85,7 @@ router.delete('/:id', function (req, res) {
         });
 });
 
-function findGroupByKeywords(keywords, callback) {
+function findGroupByKeywords(keywords) {
     var querySpec = {
         query: "SELECT e.id, e._self, e.name, e.keywords FROM e JOIN k IN e.keywords WHERE ARRAY_CONTAINS(@keywords, k) ORDER BY e.name",
         parameters: [
@@ -94,18 +96,10 @@ function findGroupByKeywords(keywords, callback) {
         ]
     };
 
-    dal.get(querySpec)
-        .then(function(documentResponse){
-            var results = documentResponse.feed;
-            var filteredResults = helpers.removeDuplicatedItemsById(results);
-            callback(err, filteredResults);
-        })
-        .fail(function(err){
-            callback(err);
-        });
+    return dal.get(querySpec);
 }
 
-function findGroupsByGroupIds(groupId, callback) {
+function findGroupsByGroupIds(groupId) {
 
     var queryString = "SELECT e.id, e._self, e.name FROM root e WHERE ARRAY_CONTAINS(@groupIds, e.groupdId) ORDER BY e.name";
         
@@ -121,15 +115,7 @@ function findGroupsByGroupIds(groupId, callback) {
         parameters: parameters
     };
 
-    dal.get(querySpec)
-        .then(function(documentResponse){
-            var results = documentResponse.feed;
-            var filteredResults = helpers.removeDuplicatedItemsById(results);
-            callback(err, filteredResults);
-        })
-        .fail(function(err){
-            callback(err);
-        });
+    return dal.get(querySpec);
 }
 
 module.exports = router;

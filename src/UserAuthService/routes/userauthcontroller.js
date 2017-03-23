@@ -11,7 +11,7 @@ module.exports = function(passport){
     var Helpers = require('../../common/helpers.js').Helpers;
     var helpers = new Helpers();
 
-    router.post('/', function(req, res, next){
+    router.post('/', function(req, res){
         if (!req.body || !req.body.email || !req.body.password){
             res.status(400);
             res.json({ code: 400, name: 'BadRequest', message: 'Cannot find email and password in body.'});

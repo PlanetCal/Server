@@ -20,7 +20,7 @@ module.exports = function(){
     });
 
     router.get('/', function(req, res){
-        request.get(helpers.getRequestOption(req, endpoint + '/' + controllerName + '?' + JSON.stringify(req.query),
+        request.get(helpers.getRequestOption(req, endpoint + '/' + controllerName + '?' + JSON.stringify(req.query)),
             function(error, responseFromRequest, body){
                 helpers.handleHttpForwardedResponse(error, responseFromRequest, body, res);
             });    
@@ -37,7 +37,7 @@ module.exports = function(){
         request.put(helpers.getRequestOption(req, endpoint + '/' + controllerName + '/' + req.params.id),
             function(error, responseFromRequest, body){
                 helpers.handleHttpForwardedResponse(error, responseFromRequest, body, res);
-            });    
+            });
     });
 
     router.delete('/:id', function(req, res) {
