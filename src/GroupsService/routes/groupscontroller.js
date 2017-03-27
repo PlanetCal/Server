@@ -20,23 +20,19 @@ router.get('/', helpers.wrap(function *(req, res) {
         throw new BadRequestError('Either ids or keywords should be found in query string.');
     }
 
+    var documentResponse;
     if (req.query.ids) {
         var groupIds = req.query.ids.split('|');
-        var documentResponse = yield findGroupsByGroupIds(groupIds);
-        var results = documentResponse.feed;
-
-        var filteredResults = helpers.removeDuplicatedItemsById(results);
-        res.status(200);
-        res.json(filteredResults);
+        documentResponse = yield findGroupsByGroupIdsAsync(groupIds);
     }
     else if (req.query.keywords) {
         var keywords = req.query.keywords.split('|');
-        var documentResponse = yield findGroupByKeywords(groupIds);
-        var results = documentResponse.feed;
-        var filteredResults = helpers.removeDuplicatedItemsById(results);
-        res.status(200);
-        res.json(filteredResults);
+        documentResponse = yield findGroupByKeywordsAsync(groupIds);
     }
+    var results = documentResponse.feed;
+    var filteredResults = helpers.removeDuplicatedItemsById(results);
+    res.status(200);
+    res.json(filteredResults);
 }));
 
 router.put('/', helpers.wrap(function *(req, res) {
@@ -77,7 +73,7 @@ router.delete('/:id', helpers.wrap(function *(req, res) {
     res.send({ id : documentResponse.resource.id });                        
 }));
 
-function findGroupByKeywords(keywords) {
+function findGroupByKeywordsAsync(keywords) {
     var querySpec = {
         query: "SELECT e.id, e._self, e.name, e.keywords FROM e JOIN k IN e.keywords WHERE ARRAY_CONTAINS(@keywords, k) ORDER BY e.name",
         parameters: [
@@ -91,7 +87,7 @@ function findGroupByKeywords(keywords) {
     return dal.get(querySpec);
 }
 
-function findGroupsByGroupIds(groupId) {
+function findGroupsByGroupIdsAsync(groupId) {
 
     var queryString = "SELECT e.id, e._self, e.name FROM root e WHERE ARRAY_CONTAINS(@groupIds, e.groupdId) ORDER BY e.name";
         

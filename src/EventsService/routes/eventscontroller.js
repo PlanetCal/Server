@@ -14,7 +14,7 @@ var ForbiddenError = require('../../common/error.js').ForbiddenError;
 var NotFoundError = require('../../common/error.js').NotFoundError;
 
 router.get('/:id', helpers.wrap(function *(req, res) {
-    var documentResponse = yield findEventByEventId(req.params.id);
+    var documentResponse = yield findEventByEventIdAsync(req.params.id);
     var results = documentResponse.feed;
 
     if (results.length <= 0){
@@ -36,7 +36,7 @@ router.get('/', helpers.wrap(function *(req, res) {
     }
     else{
         var groupids = req.query.groupids.split('|');
-        var documentResponse = yield findEventsByGroupsIds(groupids);
+        var documentResponse = yield findEventsByGroupsIdsAsync(groupids);
         var results = documentResponse.feed;
         var filteredResults = helpers.removeDuplicatedItemsById(results);
 
@@ -90,7 +90,7 @@ router.delete('/:id', helpers.wrap(function *(req, res) {
     res.send({ id : req.params.id });
 }));
 
-function findEventByEventId(eventId) {
+function findEventByEventIdAsync(eventId) {
     var querySpec = {
         query: "SELECT e.createdById, e.ownedByIds, e.id, e.name, e.eventType FROM e WHERE e.id = @eventId",
         parameters: [
@@ -101,11 +101,10 @@ function findEventByEventId(eventId) {
         ]
     };
 
-    console.log('eventid ' + eventId);
     return dal.get(querySpec);
 }
 
-function findEventsByGroupsIds(groupsIds) {
+function findEventsByGroupsIdsAsync(groupsIds) {
 
     var queryString = "SELECT e.owningGroups, e.id, e.name FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g)";
         

@@ -15,66 +15,29 @@ var ForbiddenError = require('../../common/error.js').ForbiddenError;
 var NotFoundError = require('../../common/error.js').NotFoundError;
 
 router.get('/:id/events', helpers.wrap(function *(req, res) {
-    var querySpec = {
-        query: "SELECT a.id, a.email, a.name, a.followingGroups FROM root a WHERE a.id = @id",
-        parameters: [
-            {
-                name: '@id',
-                value: req.params.id
-            }
-        ]
-    };
+    var result = yield *getUserDetailsBasicAsync(req);
 
-    checkCallerPermission(req, req.params.id);
+    // result must not be undefined
+    // we need to retrieve events given userDetails.
+    var groupIds = result.followingGroups.join('|');
+    var options = helpers.getRequestOption(req, config.eventsServiceEndpoint + '/events?groupids=' + groupIds, 'GET');
+    var events = yield request(options);
 
-    var documentResponse = yield dal.get(querySpec);
-
-    var results = documentResponse.feed;
-    if (results.length > 0){
-        var result = results[0];
-        var groupIds = result.followingGroups.join('|');
-        var options = helpers.getRequestOption(req, config.eventsServiceEndpoint + '/events?groupids=' + groupIds, 'GET');
-        var events = yield request(options);
-
-        if (events.length > 0){
-            result.events = JSON.parse(events);
-        }
-        else{
-            result.events = [];
-        }
-
-        res.status(200);
-        res.send(result);
+    if (events.length > 0){
+        result.events = JSON.parse(events);
     }
     else{
-        throw new NotFoundError('UserDetails with id ' + req.params.id + ' not found.');
+        result.events = [];
     }
+    
+    res.status(200);
+    res.send(result);
 }));
 
 router.get('/:id', helpers.wrap(function *(req, res) {
-    var querySpec = {
-        query: "SELECT a.id, a.email, a.name, a.followingGroups FROM root a WHERE a.id = @id",
-        parameters: [
-            {
-                name: '@id',
-                value: req.params.id
-            }
-        ]
-    };
-
-    checkCallerPermission(req, req.params.id);
-
-    var documentResponse = yield dal.get(querySpec);
-
-    var results = documentResponse.feed;
-    if (results.length > 0){
-        var result = results[0];
-        res.status(200);
-        res.send(result);
-    }
-    else{
-        throw new NotFoundError('UserDetails with id ' + req.params.id + ' not found.');
-    }
+    var result = yield *getUserDetailsBasicAsync(req);
+    res.status(200);
+    res.send(result);
 }));
 
 router.put('/:id', helpers.wrap(function *(req, res) {
@@ -112,7 +75,7 @@ router.post('/', helpers.wrap(function *(req, res) {
     res.json({ id : documentResponse.resource.id });
 }));
 
-router.delete('/:id', helpers.wrap(function * (req, res) {
+router.delete('/:id', helpers.wrap(function *(req, res) {
     checkCallerPermission(req, req.params.id);
 
     var documentResponse = yield dal.remove(req.params.id);
@@ -125,5 +88,29 @@ function checkCallerPermission(req, id){
     if (req.headers['auth-identity'] !== id){
         throw new ForbiddenError('Forbidden');
     } 
+}
+
+function *getUserDetailsBasicAsync(req){
+    var querySpec = {
+        query: "SELECT a.id, a.email, a.name, a.followingGroups FROM root a WHERE a.id = @id",
+        parameters: [
+            {
+                name: '@id',
+                value: req.params.id
+            }
+        ]
+    };
+
+    checkCallerPermission(req, req.params.id);
+
+    var documentResponse = yield dal.get(querySpec);
+
+    var results = documentResponse.feed;
+    if (results.length > 0){
+        return results[0];
+    }
+    else{
+        throw new NotFoundError('UserDetails with id ' + req.params.id + ' not found.');
+    }    
 }
 module.exports = router;

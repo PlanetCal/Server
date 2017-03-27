@@ -58,8 +58,8 @@ module.exports = function(passport){
 }
 
 function getUserQuerySpecFromEmail(email){
-    if (typeof email !== 'string'){
-        throw helpers.createError(500, 'InvalidArgument', 'email is not a proper object.');
+    if (typeof(email) !== 'string'){
+        throw helpers.createError(500, 'email is not a string.');
     }
 
     var queryString = "SELECT e.id, e.email, e.passwordHash FROM root e WHERE e.email = @email";
@@ -78,8 +78,8 @@ function getUserQuerySpecFromEmail(email){
 }
 
 function getUserQuerySpecFromId(id){
-    if (typeof id !== 'object'){
-        throw helpers.createError(500, 'InvalidArgument', 'id is not a proper object.');
+    if (typeof(id) !== 'string'){
+        throw helpers.createError(500, 'id is not a string.');
     }
 
     var queryString = "SELECT e.id, e._self, e.email, e.passwordHash FROM root e WHERE e.id = @id";

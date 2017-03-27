@@ -12,7 +12,7 @@ module.exports = {
 
         this.insert = function insert(obj, options) {
             var client = this.getClient();
-            if (typeof options === 'undefined'){
+            if (typeof(options) === 'undefined'){
             	options = {};
             }
             return client.createDocumentAsync(collectionLink, obj, options);
@@ -20,7 +20,7 @@ module.exports = {
 
         this.get = function get(querySpec, options) {
             var client = this.getClient();
-            if (typeof options === 'undefined'){
+            if (typeof(options) === 'undefined'){
             	options = {};
             }
             return client.queryDocuments(collectionLink, querySpec, options).toArrayAsync();
@@ -30,7 +30,7 @@ module.exports = {
             // this assumes that all objects have id property
             var client = this.getClient();
             var documentLink = collectionLink + '/docs/' + id;
-            if (typeof options === 'undefined'){
+            if (typeof(options) === 'undefined'){
             	options = {};
             }
             return client.replaceDocumentAsync(documentLink, document);
@@ -41,7 +41,7 @@ module.exports = {
             // this assumes that all objects have id property
             var client = this.getClient();
             var documentLink = collectionLink + '/docs/' + id;
-            if (typeof options === 'undefined'){
+            if (typeof(options) === 'undefined'){
             	options = {};
             }
             return client.deleteDocumentAsync(documentLink, options);
