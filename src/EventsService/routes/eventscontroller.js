@@ -78,7 +78,7 @@ router.post('/', helpers.wrap(function *(req, res) {
     event['createdById'] = req.headers['auth-identity'];
     event['ownedById'] = req.headers['auth-identity'];
     */
-    
+
     var documentResponse = yield dal.insert(event, {});
     res.status(200);
     res.send({ id : documentResponse.resource.id });
@@ -92,7 +92,7 @@ router.delete('/:id', helpers.wrap(function *(req, res) {
 
 function findEventByEventId(eventId) {
     var querySpec = {
-        query: "SELECT e.createdById, e.ownedByIds, e.id, e._self, e.name, e.eventType FROM e WHERE e.id = @eventId",
+        query: "SELECT e.createdById, e.ownedByIds, e.id, e.name, e.eventType FROM e WHERE e.id = @eventId",
         parameters: [
             {
                 name: '@eventId',
@@ -107,7 +107,7 @@ function findEventByEventId(eventId) {
 
 function findEventsByGroupsIds(groupsIds) {
 
-    var queryString = "SELECT e.owningGroups, e.id, e._self, e.name FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g)";
+    var queryString = "SELECT e.owningGroups, e.id, e.name FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g)";
         
     var parameters = [
         {

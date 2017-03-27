@@ -51,6 +51,32 @@ router.get('/:id/events', helpers.wrap(function *(req, res) {
     }
 }));
 
+router.get('/:id', helpers.wrap(function *(req, res) {
+    var querySpec = {
+        query: "SELECT a.id, a.email, a.name, a.followingGroups FROM root a WHERE a.id = @id",
+        parameters: [
+            {
+                name: '@id',
+                value: req.params.id
+            }
+        ]
+    };
+
+    checkCallerPermission(req, req.params.id);
+
+    var documentResponse = yield dal.get(querySpec);
+
+    var results = documentResponse.feed;
+    if (results.length > 0){
+        var result = results[0];
+        res.status(200);
+        res.send(result);
+    }
+    else{
+        throw new NotFoundError('UserDetails with id ' + req.params.id + ' not found.');
+    }
+}));
+
 router.put('/:id', helpers.wrap(function *(req, res) {
     if (!req.body) {
         throw new BadRequestError('Empty body.');
@@ -100,5 +126,4 @@ function checkCallerPermission(req, id){
         throw new ForbiddenError('Forbidden');
     } 
 }
-
 module.exports = router;
