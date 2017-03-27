@@ -7,34 +7,41 @@ var helpers = require('../../common/helpers.js');
 
 module.exports = function(){
 
-    router.get('/:id', function(req, res){
-        var url = config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id;
-        if (req.query){
-            url = url + '?' + JSON.stringify(req.query);
-        }
-        var options = helpers.getRequestOption(req, url, 'GET'); 
-        var results = request(options);
+    router.get('/:id', helpers.wrap(function *(req, res){
+        var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'GET'); 
+        var results = yield request(options);
         res.status(200);
         res.json(JSON.parse(results));
-    });
+    }));
 
-    router.post('/', function(req, res) {
+    router.get('/:id/events', helpers.wrap(function *(req, res){
+        var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id + '/events', 'GET'); 
+        var results = yield request(options);
+        res.status(200);
+        res.json(JSON.parse(results));
+    }));
+
+    router.post('/', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails', 'POST'); 
-        res.status(200);
+        console.log(JSON.stringify(options));
+        var results = yield request(options);
+        res.status(201);
         res.json(JSON.parse(results));
-    });
+    }));
 
-    router.put('/:id', function(req, res) {
+    router.put('/:id', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req,  config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'PUT'); 
+        var results = yield request(options);
         res.status(200);
         res.json({id : id});
-    });
+    }));
 
-    router.delete('/:id', function(req, res) {
+    router.delete('/:id', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req,  config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'DELETE'); 
+        var results = yield request(options);
         res.status(200);
         res.json({id : req.params.id});
-    });
+    }));
 
     return router;  
 }

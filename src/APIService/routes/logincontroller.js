@@ -8,16 +8,16 @@ module.exports = function(){
     var bodyParser = require('body-parser');
     var helpers = require('../../common/helpers.js');
 
-    router.get('/', function(req, res){
+    router.get('/', helpers.wrap(function *(req, res){
         res.render('login');
-    });
+    }));
 
-    router.post('/', function(req, res){
+    router.post('/', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/login', 'POST');
-        var results = request(options);
+        var results = yield request(options);
         res.status(200);
         res.json(JSON.parse(results));
-    });
+    }));
 
     return router;  
 }

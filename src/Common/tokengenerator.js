@@ -6,7 +6,7 @@ module.exports = {
         var helpers = require('./helpers.js');
 
         this.encode = function encode(decodedObject){
-            if (typeof decodedObject !== 'object'){
+            if (typeof(decodedObject) !== 'string'){
                 throw helpers.createError(500, 'decodedObject passed in is not an object.');
             }
 
@@ -14,7 +14,7 @@ module.exports = {
         }
 
         this.decode = function decode(encodedToken){
-            if (typeof decodedObject !== 'object'){
+            if (typeof(encodedToken) !== 'string'){
                 throw helpers.createError(500, 'encodedToken passed in is not an object.');
             }
             return JSON.parse(jwtSimple.decode(encodedToken, config.jwtSecret));

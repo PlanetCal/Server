@@ -57,15 +57,16 @@ app.post('/userauth', helpers.wrap(function *(req, res){
         url:     config.userAuthServiceEndpoint + '/userauth',
         body:    JSON.stringify(req.body)};
 
-    var results = request(options);
+    var results = yield request(options);
 
     res.status(200);
-    res.json(JSON.parse(results));
+    res.send(JSON.parse(results));
 }));
 
 // all other urls - all APIs are subject to token authentication
 app.use('/*', passport.authenticate('token-bearer', { session: false }),
-    helpers.wrap(function *(req, res, next){
+    function (req, res, next){
+        console.log('adsadsad: ' + JSON.stringify(req.user));
         if (!req || !req.user){
             // token authentication fail.
             throw new UnauthorizedError('Token authentication failed.');
@@ -78,8 +79,7 @@ app.use('/*', passport.authenticate('token-bearer', { session: false }),
             next();
         }
     }
-));
-
+);
 
 // other routes
 app.use('/userauth', userAuth);
@@ -98,27 +98,9 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    res.status(err.code || 500);
-
-    var body;
-    try{
-        body = JSON.parse(err.body);
-    }
-    catch(e){            
-        body = err.body;
-    }
-
-    var message = err.message || 'Unknown error';
-    if (body && body.message){
-        message = body.message;
-    }
-
-    if (app.get('env') === 'development') {
-        res.json({ message : message, stack : err.stack });
-    }
-    else{
-        res.json({ message : message });
-    }
+    console.log(err);
+    res.status(err.statusCode || 500);
+    res.send(err.error);
 });
 
 var port = process.env.PORT || config.apiServicePort;
