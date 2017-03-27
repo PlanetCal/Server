@@ -8,82 +8,74 @@ var databaseName = config.documentdbDatabaseName;
 var collectionName = config.groupsCollectionName;
 var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName);
-var Helpers = require('../../common/helpers.js').Helpers;
-var helpers = new Helpers();
+var helpers = require('../../common/helpers.js');
+var BadRequestError = require('../../common/error.js').BadRequestError;
 
-router.get('/', function (req, res) {
+router.get('/', helpers.wrap(function *(req, res) {
     if (!req.query) {
-        res.status(400);
-        res.json({ code : 400, name: 'BadRequest', messae: 'Query in request not found.'});
+        throw new BadRequestError('Cannot find email and password in body.');
     }
-    else if (!req.query.ids && !req.query.keywords) {
-        res.status(400);
-        res.json({ code : 400, name: 'BadRequest', messae: 'Either ids or keywords should be found in query string.'});
+    
+    if (!req.query.ids && !req.query.keywords) {
+        throw new BadRequestError('Either ids or keywords should be found in query string.');
     }
-    else if (req.query.ids) {
+
+    if (req.query.ids) {
         var groupIds = req.query.ids.split('|');
-        findGroupsByGroupIds(groupIds)
-            .then(function(documentResponse){
-                var results = documentResponse.feed;
-                var filteredResults = helpers.removeDuplicatedItemsById(results);
-                res.status(200);
-                res.json(results);
-            })
-            .fail(function(err){
-                res.status(err.code);
-                res.json(helpers.createErrorJson(err));
-            });
+        var documentResponse = yield findGroupsByGroupIds(groupIds);
+        var results = documentResponse.feed;
+
+        var filteredResults = helpers.removeDuplicatedItemsById(results);
+        res.status(200);
+        res.json(filteredResults);
     }
     else if (req.query.keywords) {
         var keywords = req.query.keywords.split('|');
-        findGroupByKeywords(keywords)
-            .then(function(documentResponse){
-                var results = documentResponse.feed;
-                var filteredResults = helpers.removeDuplicatedItemsById(results);
-                res.status(200);
-                res.json(results);
-            })
-            .fail(function(err){
-                res.status(err.code);
-                res.json(helpers.createErrorJson(err));
-            });
+        var documentResponse = yield findGroupByKeywords(groupIds);
+        var results = documentResponse.feed;
+        var filteredResults = helpers.removeDuplicatedItemsById(results);
+        res.status(200);
+        res.json(filteredResults);
     }
-});
+}));
 
-router.post('/', function (req, res) {
+router.put('/', helpers.wrap(function *(req, res) {
     if (!req.body) {
-        res.status(400);
-        res.json({ code : 400, name: 'BadRequest', messae: 'Empty body.'});
+        throw new BadRequestError('Empty body.');
     }
     var group = req.body;
     if (!group) {
-        res.status(400);
-        res.json({ code : 400, name: 'BadRequest', messae: 'Group is missing in body.'});
+        throw new BadRequestError('Group is not found in body.');        
     }
     group['createdById'] = req.headers['auth-identity'];
     group['ownedById'] = req.headers['auth-identity'];
-    dal.insert(group, {})
-        .then(function(documentResponse){
-            res.status(201);
-            res.send({ _self : documentResponse.response._self, id : documentResponse.response.id });                        
-        })
-        .fail(function(err){
-            res.status(err.code);
-            res.json(helpers.createErrorJson(err));
-        });
-});
+    var documentResponse = yield dal.update(group, {});
 
-router.delete('/:id', function (req, res) {
-    dal.remove(req.params.id)
-        .then(function(){
-            res.status(200);
-            res.send({ id: req.params.id });
-        })
-        .fail(function(err){
-            res.status(err.code);
-            res.json(helpers.createErrorJson(err));
-        });
-});
+    res.status(201);
+    res.send({ id : documentResponse.resource.id });                        
+}));
+
+router.post('/', helpers.wrap(function *(req, res) {
+    if (!req.body) {
+        throw new BadRequestError('Empty body.');
+    }
+    var group = req.body;
+    if (!group) {
+        throw new BadRequestError('Group is not found in body.');        
+    }
+    group['createdById'] = req.headers['auth-identity'];
+    group['ownedById'] = req.headers['auth-identity'];
+    var documentResponse = yield dal.insert(group, {});
+
+    res.status(201);
+    res.send({ id : documentResponse.resource.id });
+}));
+
+router.delete('/:id', helpers.wrap(function *(req, res) {
+    var documentResponse = yield dal.remove(req.params.id);
+    res.status(200);
+    res.send({ id : documentResponse.resource.id });                        
+}));
 
 function findGroupByKeywords(keywords) {
     var querySpec = {

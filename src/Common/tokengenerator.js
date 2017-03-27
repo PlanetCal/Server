@@ -3,12 +3,11 @@ module.exports = {
     TokenGenerator : function TokenGenerator(){
         var jwtSimple = require('jwt-simple');
         var config = require('./config.js');
-        var Helpers = require('./helpers.js').Helpers;
-        var helpers  = new Helpers();
+        var helpers = require('./helpers.js');
 
         this.encode = function encode(decodedObject){
             if (typeof decodedObject !== 'object'){
-                throw helpers.createError(500, 'InvalidArgument', 'decodedObject passed in is not an object.');
+                throw helpers.createError(500, 'decodedObject passed in is not an object.');
             }
 
             return jwtSimple.encode(JSON.stringify(decodedObject), config.jwtSecret)
@@ -16,7 +15,7 @@ module.exports = {
 
         this.decode = function decode(encodedToken){
             if (typeof decodedObject !== 'object'){
-                throw helpers.createError(500, 'InvalidArgument', 'encodedToken passed in is not an object.');
+                throw helpers.createError(500, 'encodedToken passed in is not an object.');
             }
             return JSON.parse(jwtSimple.decode(encodedToken, config.jwtSecret));
         }

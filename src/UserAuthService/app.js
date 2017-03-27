@@ -13,8 +13,7 @@ require('./userauthpassport.js')(passport);
 var UserLogin = require('./routes/logincontroller.js')(passport);
 var UserAuth = require('./routes/userauthcontroller.js')(passport);
 var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
-var Helpers = require('../common/helpers.js').Helpers;
-var helpers = new Helpers();
+var helpers = require('../common/helpers.js');
 
 app.set('view engine', 'ejs');
 
@@ -36,27 +35,38 @@ app.use(passport.session());
 app.use('/login', UserLogin);
 app.use('/userauth', UserAuth);
 
+app.use(function(err, req, res, next) {
+    return helpers.handleError(res, err, next);
+});
+
 // error handling for other routes
 app.use(function(req, res, next) {
-    var err = helpers.createError(404, 'ResourceNotFound', 'Resource specified by URL cannot be located.');
+    var err = helpers.createError(404, 'Resource specified by URL cannot be located.');
     next(err);
 });
 
-// error handlers
-// development error handler
-// will print stacktrace
-if (app.get('env') === 'development') {
-    app.use(function(err, req, res, next) {
-        res.status(err.code || 500);
-        res.send(helpers.convertErrorToJson(err, true));
-    });
-}
-
-// production error handler
-// no stacktraces leaked to user
 app.use(function(err, req, res, next) {
     res.status(err.code || 500);
-    res.send(helpers.convertErrorToJson(err, false));
+
+    var body;
+    try{
+        body = JSON.parse(err.body);
+    }
+    catch(e){            
+        body = err.body;
+    }
+
+    var message = err.message || 'Unknown error';
+    if (body && body.message){
+        message = body.message;
+    }
+
+    if (app.get('env') === 'development') {
+        res.json({ message : message, stack : err.stack });
+    }
+    else{
+        res.json({ message : message });
+    }
 });
 
 var port = process.env.PORT || config.userAuthServicePort;

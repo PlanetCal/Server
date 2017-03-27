@@ -4,8 +4,10 @@ module.exports = function(passport){
 
     var router = require('express').Router();
     var TokenGenerator = new require('../../common/tokengenerator.js').TokenGenerator;
+    var helpers = require('../../common/helpers.js');
+    var ForbiddenError = require('../../common/error.js').ForbiddenError;
 
-    router.post('/', passport.authenticate('local'), function(req, res){
+    router.post('/', passport.authenticate('local'), helpers.wrap(function *(req, res){
         if (req.user && req.user.email && req.user.id){
             var tokenGenerator = new TokenGenerator();
             var token = tokenGenerator.encode({ email : req.user.email, id : req.user.id, time : Date.now() });
@@ -13,10 +15,9 @@ module.exports = function(passport){
             res.json({ token : token });
         }
         else{
-            res.status(401);
-            res.json({ code : 401, name: 'Unauthorized', message: 'Operation unauthorized.'});
+            throw new ForbiddenError('Forbidden.');
         }   
-    });
+    }));
 
     return router;
 }

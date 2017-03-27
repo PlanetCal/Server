@@ -1,5 +1,7 @@
 'use strict'
 
+var helpers = require('../common/helpers.js');
+
 module.exports = function(passport){
 
     var config = require('../common/config.js');
@@ -9,8 +11,6 @@ module.exports = function(passport){
     var TokenGenerator = require('../common/tokengenerator.js').TokenGenerator;
     var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
     var dal = new DataAccessLayer(config.documentdbDatabaseName, config.usersCollectionName);
-    var Helpers = require('../common/helpers.js').Helpers;
-    var helpers = new Helpers();
 
     passport.use('local', new LocalStrategy({
             // by default, local strategy uses username and password, we will override with email
@@ -22,6 +22,7 @@ module.exports = function(passport){
             var querySpec = getUserQuerySpecFromEmail(email);
             dal.get(querySpec)
                 .then(function(documentResponse){
+                    var results = documentResponse.feed;
                     var passwordCrypto = new PasswordCrypto();
 
                     if (results && results.length > 0){
@@ -57,7 +58,7 @@ module.exports = function(passport){
 }
 
 function getUserQuerySpecFromEmail(email){
-    if (typeof email !== 'object'){
+    if (typeof email !== 'string'){
         throw helpers.createError(500, 'InvalidArgument', 'email is not a proper object.');
     }
 

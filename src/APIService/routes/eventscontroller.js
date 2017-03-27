@@ -2,10 +2,8 @@
 
 var config = require('../../common/config.js');
 var router = require('express').Router();
-var request = require('request');
-var Helpers = require('../../common/helpers.js').Helpers;
-
-var helpers = new Helpers();
+var request = require('request-promise');
+var helpers = require('../../common/helpers.js');
 
 module.exports = function(){
 
@@ -13,38 +11,38 @@ module.exports = function(){
     var endpoint = config.eventsServiceEndpoint;
 
     router.get('/:id', function(req, res){
-        request.get(helpers.getRequestOption(req, endpoint + '/' + controllerName + '/' + req.params.id),
-            function(error, responseFromRequest, body){
-                helpers.handleHttpForwardedResponse(error, responseFromRequest, body, res);
-            });    
-    });
+        var options = helpers.getRequestOption(req, endpoint + '/' + controllerName + '/' + req.params.id, 'GET'); 
+        var results = request(options);
+        res.status(200);
+        res.json(JSON.parse(results));
+    });            
 
     router.get('/', function(req, res){
-        request.get(helpers.getRequestOption(req, endpoint + '/' + controllerName + '?' + JSON.stringify(req.query)),
-            function(error, responseFromRequest, body){
-                helpers.handleHttpForwardedResponse(error, responseFromRequest, body, res);
-            });    
+        var options = helpers.getRequestOption(req, endpoint + '/' + controllerName + '?' + JSON.stringify(req.query), 'GET'); 
+        var results = request(options);
+        res.status(200);
+        res.json(JSON.parse(results));
     });
 
     router.post('/', function(req, res) {
-        request.post(helpers.getRequestOption(req, endpoint + '/' + controllerName),
-            function(error, responseFromRequest, body){
-                helpers.handleHttpForwardedResponse(error, responseFromRequest, body, res);
-            });    
+        var options = helpers.getRequestOption(req, endpoint + '/' + controllerName, 'POST'); 
+        var results = request(options);
+        res.status(200);
+        res.json(JSON.parse(results));
     });
 
     router.put('/:id', function(req, res) {
-        request.put(helpers.getRequestOption(req, endpoint + '/' + controllerName + '/' + req.params.id),
-            function(error, responseFromRequest, body){
-                helpers.handleHttpForwardedResponse(error, responseFromRequest, body, res);
-            });    
+        var options = helpers.getRequestOption(req,  endpoint + '/' + controllerName + '/' + req.params.id, 'PUT'); 
+        var results = request(options);
+        res.status(200);
+        res.json({id : id});
     });
 
     router.delete('/:id', function(req, res) {
-        request.delete(helpers.getRequestOption(req, endpoint + '/' + controllerName + '/' + req.params.id),
-            function(error, responseFromRequest, body){
-                helpers.handleResponse(error, responseFromRequest, body, res);
-            });    
+        var options = helpers.getRequestOption(req,  endpoint + '/' + controllerName + '/' + req.params.id, 'DELETE'); 
+        var results = request(options);
+        res.status(200);
+        res.json({id : req.params.id});
     });
 
     return router;  

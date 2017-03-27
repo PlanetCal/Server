@@ -1,12 +1,11 @@
-'use strict'
+﻿'use strict'
 
 var DocumentClient = require('documentdb-q-promises').DocumentClientWrapper;
 var config = require('../../common/config.js');
 var triggers = require('../triggers/insertuniqueusertrigger.js');
 
 var client = new DocumentClient(config.documentdbEndpoint, { "masterKey": config.documentdbAuthKey });
-var Helpers = require('../../common/helpers.js').Helpers;
-var helpers = new Helpers();
+var helpers = require('../../common/helpers.js');
 
 var dbDefinition = {id : config.documentdbDatabaseName};
 

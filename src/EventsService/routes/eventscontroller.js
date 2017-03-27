@@ -8,112 +8,91 @@ var databaseName = config.documentdbDatabaseName;
 var collectionName = config.eventsCollectionName;
 var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName);
-var Helpers = require('../../common/helpers.js').Helpers;
-var helpers = new Helpers();
+var helpers = require('../../common/helpers.js');
+var BadRequestError = require('../../common/error.js').BadRequestError;
+var ForbiddenError = require('../../common/error.js').ForbiddenError;
+var NotFoundError = require('../../common/error.js').NotFoundError;
 
-router.get('/:id', function (req, res) {
-    findEventByEventId(req.params.id)
-        .then(function(documentResponse){
-            res.status(200);
-            // TODO: assert when results has more than 1 element.
-            res.send(documentResponse.feed[0]);
-        })
-        .fail(function(err){
-            res.status(err.code);
-            res.json(helpers.createErrorJson(err));
-        });
-});
+router.get('/:id', helpers.wrap(function *(req, res) {
+    var documentResponse = yield findEventByEventId(req.params.id);
+    var results = documentResponse.feed;
 
-router.get('/', function (req, res) {
+    if (results.length <= 0){
+        throw new NotFoundError('Event with id ' + req.params.id + ' not found.');
+    }
+
+    res.status(200);
+    // TODO: assert when results has more than 1 element.
+    res.send(results[0]);
+}));
+
+router.get('/', helpers.wrap(function *(req, res) {
     if (!req.query) {
-        res.status(400);
-        res.json({ code : 400, name: 'BadRequest', messae: 'Query in request not found.'});
+        throw new BadRequestError('Query string is invalid.');
     }
 
     if (!req.query.groupids) {
-        res.status(400);
-        res.json({ code : 400, name: 'BadRequest', messae: 'Query string should contain groupids.'});
+        throw new BadRequestError('GroupIds not found in query string.');
     }
     else{
         var groupids = req.query.groupids.split('|');
-        findEventsByGroupsIds(groupids)
-            .then(function(documentResponse){
-                res.status(200);
-                // TODO: assert when results has more than 1 element.
-                res.send(documentResponse.feed);
-            })
-            .fail(function(err){
-                res.status(err.code);
-                res.json(helpers.createErrorJson(err));
-            });
-    }
-});
+        var documentResponse = yield findEventsByGroupsIds(groupids);
+        var results = documentResponse.feed;
+        var filteredResults = helpers.removeDuplicatedItemsById(results);
 
-router.put('/:id', function (req, res) {
+        res.status(200);
+        // TODO: assert when results has more than 1 element.
+        res.send(filteredResults);
+    }
+}));
+
+router.put('/:id', helpers.wrap(function *(req, res) {
     if (!req.body) {
-        res.status(400);
-        res.json({ code : 400, name: 'BadRequest', messae: 'Empty body.'});
+        throw new BadRequestError('Empty body.');
     }
     var event = req.body;
     if (!event) {
-        res.status(400);
-        res.json({ code : 400, name: 'BadRequest', messae: 'Event cannot be found in body.'});
+        throw new BadRequestError('Event is not found in body.');
     }
-    else if (event['ownedById'] !== req.headers['auth-identity']){
-        res.status(400);
-        res.json({ code : 400, name: 'Forbidden', messae: 'Oepration forbidden.'});
+    
+    /*
+    if (event['ownedById'] !== req.headers['auth-identity']){
+        throw new ForbiddenError('Forbidden');
     }
-    else{
-        dal.update(req.params.id, event)
-            .then(function(documentResponse){
-                res.status(200);
-                res.send({ _self : documentResponse.resource._self, id : documentResponse.resource.id });
-            })
-            .fail(function(err){
-                res.status(err.code);
-                res.json(helpers.createErrorJson(err));
-            });
-    }
-});
+    */
+    var documentResponse = yield dal.update(req.params.id, event);
+    res.status(200);
+    res.send({ id : documentResponse.resource.id });
+}));
 
-router.post('/', function (req, res) {
+router.post('/', helpers.wrap(function *(req, res) {
     if (!req.body) {
-        res.status(400);
-        res.json({ code : 400, name: 'BadRequest', messae: 'Empty body.'});
+        throw new BadRequestError('Empty body.');
     }
     var event = req.body;
     if (!event) {
-        res.status(400);
-        res.json({ code : 400, name: 'BadRequest', messae: 'Event cannot be found in body.'});
+        throw new BadRequestError('Event is not found in body.');
     }
+
+    /*
     event['createdById'] = req.headers['auth-identity'];
     event['ownedById'] = req.headers['auth-identity'];
-    dal.insert(event, {})
-        .then(function(documentResponse){
-            res.status(200);
-            res.send({ _self: documentResponse.resource._self, id : documentResponse.resource.id });
-        })
-        .fail(function(err){
-            res.status(err.code);
-            res.json(helpers.createErrorJson(err));
-        });
-});
+    */
+    
+    var documentResponse = yield dal.insert(event, {});
+    res.status(200);
+    res.send({ id : documentResponse.resource.id });
+}));
 
-router.delete('/:id', function (req, res) {
-    dal.remove(req.params.id)
-        .then(function(){
-            res.status(200);
-            res.send({ id: req.params.id });
-        })
-        .fail(function(err){
-            res.status(err.code);
-            res.json(helpers.createErrorJson(err));
-        });
-});
+router.delete('/:id', helpers.wrap(function *(req, res) {
+    var documentResponse = yield dal.remove(req.params.id);
+    res.status(200);
+    res.send({ id : req.params.id });
+}));
 
-function findEventByEventId(eventId, callback) {
+function findEventByEventId(eventId) {
     var querySpec = {
-        query: "SELECT e.createdById, e.ownedByIds, e.id, e._self, e.name, e.eventType FROM e WHERE e.id = @eventId ORDER BY e.name",
+        query: "SELECT e.createdById, e.ownedByIds, e.id, e._self, e.name, e.eventType FROM e WHERE e.id = @eventId",
         parameters: [
             {
                 name: '@eventId',
@@ -122,12 +101,13 @@ function findEventByEventId(eventId, callback) {
         ]
     };
 
+    console.log('eventid ' + eventId);
     return dal.get(querySpec);
 }
 
-function findEventsByGroupsIds(groupsIds, callback) {
+function findEventsByGroupsIds(groupsIds) {
 
-    var queryString = "SELECT e.owningGroups, e.id, e._self, e.name FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g) ORDER BY e.name";
+    var queryString = "SELECT e.owningGroups, e.id, e._self, e.name FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g)";
         
     var parameters = [
         {

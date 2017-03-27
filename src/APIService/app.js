@@ -5,7 +5,7 @@ var session = require('express-session');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var passport = require('passport');
-var request = require('request');
+var request = require('request-promise');
 
 var app = express();
 
@@ -17,8 +17,11 @@ var userDetails = require('./routes/userdetailscontroller.js')();
 var events = require('./routes/eventscontroller.js')();
 var groups = require('./routes/groupscontroller.js')();
 
-var Helpers = require('../common/helpers.js').Helpers;
-var helpers = new Helpers();
+var helpers = require('../common/helpers.js');
+var BadRequestError = require('../common/error.js').BadRequestError;
+var NotFoundError = require('../common/error.js').NotFoundError;
+var ForbiddenError = require('../common/error.js').ForbiddenError;
+var UnauthorizedError = require('../common/error.js').UnauthorizedError;
 
 app.set('view engine', 'ejs');
 
@@ -47,23 +50,25 @@ app.use('/login', login);
 
 // forward this to userAuth service before token authenication
 // kicks in because this is userAuth creation
-app.post('/userauth', function(req, res){
-    request.post({
+app.post('/userauth', helpers.wrap(function *(req, res){
+    var options = {
+        method : 'POST',
         headers: {'content-type' : 'application/json; charset=utf-8' },
         url:     config.userAuthServiceEndpoint + '/userauth',
-        body:    JSON.stringify(req.body)},
-        function(error, response, body){
-            helpers.handleHttpForwardedResponse(error, response, body, res);
-        });    
-});
+        body:    JSON.stringify(req.body)};
+
+    var results = request(options);
+
+    res.status(200);
+    res.json(JSON.parse(results));
+}));
 
 // all other urls - all APIs are subject to token authentication
 app.use('/*', passport.authenticate('token-bearer', { session: false }),
-    function(req, res, next){
+    helpers.wrap(function *(req, res, next){
         if (!req || !req.user){
             // token authentication fail.
-            res.json( {'message': 'Token authentication failed.'});
-            res.status(503);
+            throw new UnauthorizedError('Token authentication failed.');
         }
         else{
             // set auth-identity header so that internal services
@@ -73,7 +78,7 @@ app.use('/*', passport.authenticate('token-bearer', { session: false }),
             next();
         }
     }
-);
+));
 
 
 // other routes
@@ -82,27 +87,38 @@ app.use('/userdetails', userDetails);
 app.use('/events', events);
 app.use('/groups', groups);
 
+app.use(function(err, req, res, next) {
+    return helpers.handleError(res, err, next);
+});
+
 // error handling for other routes
 app.use(function(req, res, next) {
-    var err = helpers.createError(404, 'ResourceNotFound', 'Resource specified by URL cannot be located.');
+    var err = helpers.createError(404, 'Resource specified by URL cannot be located.');
     next(err);
 });
 
-// error handlers
-// development error handler
-// will print stacktrace
-if (app.get('env') === 'development') {
-    app.use(function(err, req, res, next) {
-        res.status(err.status || 500);
-        res.send(helpers.convertErrorToJson(err, true));
-    });
-}
-
-// production error handler
-// no stacktraces leaked to user
 app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.send(helpers.convertErrorToJson(err, false));
+    res.status(err.code || 500);
+
+    var body;
+    try{
+        body = JSON.parse(err.body);
+    }
+    catch(e){            
+        body = err.body;
+    }
+
+    var message = err.message || 'Unknown error';
+    if (body && body.message){
+        message = body.message;
+    }
+
+    if (app.get('env') === 'development') {
+        res.json({ message : message, stack : err.stack });
+    }
+    else{
+        res.json({ message : message });
+    }
 });
 
 var port = process.env.PORT || config.apiServicePort;

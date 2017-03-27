@@ -3,15 +3,18 @@
 var express = require('express');
 var router = express.Router();
 var config = require('../../common/config.js');
+var request = require('request-promise');
 
 var databaseName = config.documentdbDatabaseName;
 var collectionName = config.userDetailsCollectionName;
 var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName);
-var Helpers = require('../../common/helpers.js').Helpers;
-var helpers = new Helpers();
+var helpers = require('../../common/helpers.js');
+var BadRequestError = require('../../common/error.js').BadRequestError;
+var ForbiddenError = require('../../common/error.js').ForbiddenError;
+var NotFoundError = require('../../common/error.js').NotFoundError;
 
-router.get('/:id', function (req, res) {
+router.get('/:id/events', helpers.wrap(function *(req, res) {
     var querySpec = {
         query: "SELECT a.id, a.email, a.name, a.followingGroups FROM root a WHERE a.id = @id",
         parameters: [
@@ -22,96 +25,80 @@ router.get('/:id', function (req, res) {
         ]
     };
 
-    if (checkCallerPermission(req, req.params.id, res)){
-        dal.get(querySpec)
-            .then(function(documentResponse){
-                var results = documentResponse.feed;
-                if (results.length > 0){
-                    res.status(200);
-                    // TODO: assert when results has more than 1 element.
-                    res.send(results[0]);
-                }
-                else{
-                    res.status(404);
-                    res.json({ code : 404, name: 'NotFound', messae: 'Resource ' + req.params.id + ' not found.'});
-                }
-            })
-            .fail(function(err){
-                res.status(err.code);
-                res.json(helpers.createErrorJson(err));
-            });
-    }
-});
+    checkCallerPermission(req, req.params.id);
 
-router.put('/:id', function (req, res) {
+    var documentResponse = yield dal.get(querySpec);
+
+    var results = documentResponse.feed;
+    if (results.length > 0){
+        var result = results[0];
+        var groupIds = result.followingGroups.join('|');
+        var options = helpers.getRequestOption(req, config.eventsServiceEndpoint + '/events?groupids=' + groupIds, 'GET');
+        var events = yield request(options);
+
+        if (events.length > 0){
+            result.events = JSON.parse(events);
+        }
+        else{
+            result.events = [];
+        }
+
+        res.status(200);
+        res.send(result);
+    }
+    else{
+        throw new NotFoundError('UserDetails with id ' + req.params.id + ' not found.');
+    }
+}));
+
+router.put('/:id', helpers.wrap(function *(req, res) {
     if (!req.body) {
-        res.status(400);
-        res.json({ code : 400, name: 'BadRequest', messae: 'Request body not found.'});
+        throw new BadRequestError('Empty body.');
     }
     var userDetails = req.body;
     if (!userDetails) {
-        res.status(400);
-        res.json({ code : 400, name: 'BadRequest', messae: 'UserDetails in body not found.'});
+        throw new BadRequestError('UserDetails object is not found in body.');
     }
-    if (checkCallerPermission(req, req.params.id, res)
-        && checkCallerPermission(req, req.body.id, res)){
-        dal.update(req.params.id, userDetails)
-            .then(function(documentResponse){
-                res.status(200);
-                res.json({ id : documentResponse.resource.id });
-            })
-            .fail(function(err){
-                res.status(err.code);
-                res.json(helpers.createErrorJson(err));
-            });
-    }
-});
 
-router.post('/', function (req, res) {
+    checkCallerPermission(req, req.params.id);
+    checkCallerPermission(req, req.body.id);
+
+    var documentResponse = yield dal.update(req.params.id, userDetails);
+
+    res.status(200);
+    res.json({ id : documentResponse.resource.id });
+}));
+
+router.post('/', helpers.wrap(function *(req, res) {
     if (!req.body) {
-        res.send(400);
-        res.json({ code : 400, name: 'BadRequest', messae: 'Request body not found.'});
+        throw new BadRequestError('Empty body.');
     }
     var userDetails = req.body;
     if (!userDetails) {
-        res.send(400);
-        res.json({ code : 400, name: 'BadRequest', messae: 'UserDetails in body not found.'});
+        throw new BadRequestError('UserDetails object is not found in body.');
     }
-    if (checkCallerPermission(req, req.body.id, res)){
-        dal.insert(userDetails, {})
-            .then(function(documentResponse){
-                res.status(201);
-                res.json({ id : documentResponse.resource.id });
-            })
-            .fail(function(err){
-                res.status(err.code);
-                res.json(helpers.createErrorJson(err));
-            });
-    }
-});
 
-router.delete('/:id', function (req, res) {
-    if (checkCallerPermission(req, req.params.id, res)){
-        dal.remove(req.params.id)
-            .then(function(){
-                res.status(200);
-                res.json({ id : req.params.id });                    
-            })
-            .fail(function(err){
-                res.status(err.code);
-                res.json(helpers.createErrorJson(err));
-            });
-    }
-});
+    checkCallerPermission(req, req.body.id);
 
-function checkCallerPermission(req, id, res){
+    var documentResponse = yield dal.insert(userDetails, {});
+
+    res.status(200);
+    res.json({ id : documentResponse.resource.id });
+}));
+
+router.delete('/:id', helpers.wrap(function * (req, res) {
+    checkCallerPermission(req, req.params.id);
+
+    var documentResponse = yield dal.remove(req.params.id);
+
+    res.status(200);
+    res.json({ id : req.params.id });                    
+}));
+
+function checkCallerPermission(req, id){
     if (req.headers['auth-identity'] !== id){
-        res.status(403);
-        res.json({ code : 403, name: 'Forbidden', messae: 'Operation forbidden.'});
-
-        return false;
+        throw new ForbiddenError('Forbidden');
     } 
-    return true;
 }
 
 module.exports = router;

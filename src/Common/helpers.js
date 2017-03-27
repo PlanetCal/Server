@@ -1,38 +1,31 @@
 'use strict'
 
 var config = require('./config.js');
+var Promise = require('bluebird');
+var BadRequestError = require('./error.js').BadRequestError;
+var ForbiddenError = require('./error.js').ForbiddenError;
+var NotFoundError = require('./error.js').NotFoundError;
+var UnauthorizedError = require('./error.js').UnauthorizedError;
 
 module.exports = {
-    Helpers : function Helpers(){
-        this.getRequestOption = function getRequestOption(req, targetEndpoint){
+    'wrap' : function (genFn) { 
+        var cr = Promise.coroutine(genFn) 
+        return function (req, res, next) {
+            cr(req, res, next).catch(next);
+        }
+    },
+
+    'getRequestOption' : function (req, targetEndpoint, method){
             return {
+                method : method,
                 headers: {'content-type' : 'application/json; charset=utf-8',
                           'auth-identity' : req.headers['auth-identity']},
                 url: targetEndpoint,
                 body: JSON.stringify(req.body)
             };
-        }
+        },
 
-        this.handleHttpForwardedResponse = function handleHttpForwardedResponse(err, responseFromRequest, body, res){
-            if (err){
-                throw this.createError(err);
-            }
-            else if (responseFromRequest){
-                res.status(responseFromRequest.statusCode);
-                res.send(responseFromRequest.body);
-            }
-        }
-
-        this.handleResults = function handleResults(err, res, next, onSuccess){
-            if (err) {
-                next(this.createError(err));
-            }
-            else {
-                onSuccess();
-            }
-        }
-
-        this.removeDuplicatedItemsById = function removeDuplicatedItemsById(results){
+    'removeDuplicatedItemsById' : function (results){
             if (results){
 
                 var filteredResults = {};
@@ -49,34 +42,37 @@ module.exports = {
             }
 
             return [];
-        }
+        },
 
-        this.convertErrorToJson = function convertErrorToJson(err, showStack){
-            var obj =  {
-                'code' : err.code,
-                'name' : err.name,
-                'message' : err.message
-            };
-
-            if (showStack){
-                obj.stack = err.stack;
-            }
-
-            return obj;
-        }
-
-        this.createError = function createError(code, name, message){
-            var err = new Error();
+    'createError' : function (code, message){
+            var err = new Error(message);
             err.code = code;
-            err.name = name;
             err.message = message;
-
             return err;
-        }
+        },
 
-        this.createErrorJson = function createErrorJson(err){
+    'createErrorJson' : function (err){
             var body = JSON.parse(err.body);
             return { code : err.code, name: body.code, message: body.message };
+        },
+
+    'handleError' : function(res, err, next){
+        if (err instanceof(BadRequestError)) {
+            res.status(400);
+            return res.send({message: err.message});
         }
+        if (err instanceof(NotFoundError)){
+            res.status(404);
+            return res.send({message: err.message});
+        }    
+        if (err instanceof(ForbiddenError)){
+            res.status(403);
+            return res.send({message: err.message});
+        }
+        if (err instanceof(UnauthorizedError)){
+            res.status(401);
+            return res.send({message: err.message});
+        }
+        next(err);
     }
 }

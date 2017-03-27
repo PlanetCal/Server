@@ -4,8 +4,10 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var Events = require('./routes/eventscontroller.js');
 var config = require('../common/config.js');
-var Helpers = require('../common/helpers.js').Helpers;
-var helpers = new Helpers();
+var helpers = require('../common/helpers.js');
+var BadRequestError = require('../common/error.js').BadRequestError;
+var ForbiddenError = require('../common/error.js').ForbiddenError;
+var NotFoundError = require('../common/error.js').NotFoundError;
 
 var app = express();
 
@@ -16,27 +18,38 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use('/events', Events);
 
+app.use(function(err, req, res, next) {
+    return helpers.handleError(res, err, next);
+});
+
 // error handling for other routes
 app.use(function(req, res, next) {
-    var err = helpers.createError(404, 'ResourceNotFound', 'Resource specified by URL cannot be located.');
+    var err = helpers.createError(404, 'Resource specified by URL cannot be located.');
     next(err);
 });
 
-// error handlers
-// development error handler
-// will print stacktrace
-if (app.get('env') === 'development') {
-    app.use(function(err, req, res, next) {
-        res.status(err.status || 500);
-        res.send(helpers.convertErrorToJson(err, true));
-    });
-}
-
-// production error handler
-// no stacktraces leaked to user
 app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.send(helpers.convertErrorToJson(err, false));
+    res.status(err.code || 500);
+
+    var body;
+    try{
+        body = JSON.parse(err.body);
+    }
+    catch(e){            
+        body = err.body;
+    }
+
+    var message = err.message || 'Unknown error';
+    if (body && body.message){
+        message = body.message;
+    }
+
+    if (app.get('env') === 'development') {
+        res.json({ message : message, stack : err.stack });
+    }
+    else{
+        res.json({ message : message });
+    }
 });
 
 var port = process.env.PORT || config.eventsServicePort;
