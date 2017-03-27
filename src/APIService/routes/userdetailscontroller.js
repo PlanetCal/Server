@@ -23,7 +23,6 @@ module.exports = function(){
 
     router.post('/', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails', 'POST'); 
-        console.log(JSON.stringify(options));
         var results = yield request(options);
         res.status(201);
         res.json(JSON.parse(results));
@@ -33,7 +32,7 @@ module.exports = function(){
         var options = helpers.getRequestOption(req,  config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'PUT'); 
         var results = yield request(options);
         res.status(200);
-        res.json({id : id});
+        res.json({id : req.params.id});
     }));
 
     router.delete('/:id', helpers.wrap(function *(req, res){
