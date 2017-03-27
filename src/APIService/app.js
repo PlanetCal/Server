@@ -98,7 +98,6 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    console.log(err);
     res.status(err.statusCode || 500);
     res.send(err.error);
 });

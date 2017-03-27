@@ -52,7 +52,7 @@ router.put('/:id', helpers.wrap(function *(req, res) {
     checkCallerPermission(req, req.params.id);
     checkCallerPermission(req, req.body.id);
 
-    var documentResponse = yield dal.update(req.params.id, userDetails);
+    var documentResponse = yield dal.updateAsync(req.params.id, userDetails);
 
     res.status(200);
     res.json({ id : documentResponse.resource.id });
@@ -69,7 +69,7 @@ router.post('/', helpers.wrap(function *(req, res) {
 
     checkCallerPermission(req, req.body.id);
 
-    var documentResponse = yield dal.insert(userDetails, {});
+    var documentResponse = yield dal.insertAsync(userDetails, {});
 
     res.status(200);
     res.json({ id : documentResponse.resource.id });
@@ -78,7 +78,7 @@ router.post('/', helpers.wrap(function *(req, res) {
 router.delete('/:id', helpers.wrap(function *(req, res) {
     checkCallerPermission(req, req.params.id);
 
-    var documentResponse = yield dal.remove(req.params.id);
+    var documentResponse = yield dal.removeAsync(req.params.id);
 
     res.status(200);
     res.json({ id : req.params.id });                    
@@ -103,7 +103,7 @@ function *getUserDetailsBasicAsync(req){
 
     checkCallerPermission(req, req.params.id);
 
-    var documentResponse = yield dal.get(querySpec);
+    var documentResponse = yield dal.getAsync(querySpec);
 
     var results = documentResponse.feed;
     if (results.length > 0){

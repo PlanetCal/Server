@@ -21,7 +21,7 @@ module.exports = function(passport){
             var passwordHash = passwordCrypto.generateHash(req.body.password);
             var options = { preTriggerInclude: config.insertUniqueUserTriggerName };   
 
-            var documentResponse = yield dal.insert({ email: req.body.email, passwordHash: passwordHash }, options);
+            var documentResponse = yield dal.insertAsync({ email: req.body.email, passwordHash: passwordHash }, options);
             res.status(201);
             res.json({ email : documentResponse.resource.email, id : documentResponse.resource.id });                
         }
@@ -38,7 +38,7 @@ module.exports = function(passport){
             var passwordCrypto = new PasswordCrypto();
             var passwordHash = passwordCrypto.generateHash(req.body.password);
 
-            var documentResponse = yield dal.update(req.params.id, { email: req.body.email, passwordHash: passwordHash, id: req.params.id});
+            var documentResponse = yield dal.updateAsync(req.params.id, { email: req.body.email, passwordHash: passwordHash, id: req.params.id});
             res.status(200);
             res.json({ id : documentResponse.resource.id });
         }
@@ -50,7 +50,7 @@ module.exports = function(passport){
             throw new ForbiddenError('Forbidden.');
         }
         else {
-            var documentResponse = yield dal.remove(req.params.id);
+            var documentResponse = yield dal.removeAsync(req.params.id);
             res.status(200);
             res.json({ id : req.params.id });
         }

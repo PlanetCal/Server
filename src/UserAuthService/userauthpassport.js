@@ -20,7 +20,7 @@ module.exports = function(passport){
         },    
         function(req, email, password, done){
             var querySpec = getUserQuerySpecFromEmail(email);
-            dal.get(querySpec)
+            dal.getAsync(querySpec)
                 .then(function(documentResponse){
                     var results = documentResponse.feed;
                     var passwordCrypto = new PasswordCrypto();
@@ -47,7 +47,7 @@ module.exports = function(passport){
     // used to deserialize the user
     passport.deserializeUser(function(id, done) {
         var querySpec = getUserQuerySpecFromId(id);
-        dal.get(querySpec)
+        dal.getAsync(querySpec)
             .then(function(documentResponse){
                 done(err, user);
             })

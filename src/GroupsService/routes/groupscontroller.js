@@ -45,7 +45,7 @@ router.put('/', helpers.wrap(function *(req, res) {
     }
     group['createdById'] = req.headers['auth-identity'];
     group['ownedById'] = req.headers['auth-identity'];
-    var documentResponse = yield dal.update(group, {});
+    var documentResponse = yield dal.updateAsync(group, {});
 
     res.status(201);
     res.send({ id : documentResponse.resource.id });                        
@@ -61,14 +61,14 @@ router.post('/', helpers.wrap(function *(req, res) {
     }
     group['createdById'] = req.headers['auth-identity'];
     group['ownedById'] = req.headers['auth-identity'];
-    var documentResponse = yield dal.insert(group, {});
+    var documentResponse = yield dal.insertAsync(group, {});
 
     res.status(201);
     res.send({ id : documentResponse.resource.id });
 }));
 
 router.delete('/:id', helpers.wrap(function *(req, res) {
-    var documentResponse = yield dal.remove(req.params.id);
+    var documentResponse = yield dal.removeAsync(req.params.id);
     res.status(200);
     res.send({ id : documentResponse.resource.id });                        
 }));
@@ -84,7 +84,7 @@ function findGroupByKeywordsAsync(keywords) {
         ]
     };
 
-    return dal.get(querySpec);
+    return dal.getAsync(querySpec);
 }
 
 function findGroupsByGroupIdsAsync(groupId) {
@@ -103,7 +103,7 @@ function findGroupsByGroupIdsAsync(groupId) {
         parameters: parameters
     };
 
-    return dal.get(querySpec);
+    return dal.getAsync(querySpec);
 }
 
 module.exports = router;

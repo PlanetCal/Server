@@ -60,7 +60,7 @@ router.put('/:id', helpers.wrap(function *(req, res) {
         throw new ForbiddenError('Forbidden');
     }
     */
-    var documentResponse = yield dal.update(req.params.id, event);
+    var documentResponse = yield dal.updateAsync(req.params.id, event);
     res.status(200);
     res.send({ id : documentResponse.resource.id });
 }));
@@ -79,13 +79,13 @@ router.post('/', helpers.wrap(function *(req, res) {
     event['ownedById'] = req.headers['auth-identity'];
     */
 
-    var documentResponse = yield dal.insert(event, {});
+    var documentResponse = yield dal.insertAsync(event, {});
     res.status(200);
     res.send({ id : documentResponse.resource.id });
 }));
 
 router.delete('/:id', helpers.wrap(function *(req, res) {
-    var documentResponse = yield dal.remove(req.params.id);
+    var documentResponse = yield dal.removeAsync(req.params.id);
     res.status(200);
     res.send({ id : req.params.id });
 }));
@@ -101,7 +101,7 @@ function findEventByEventIdAsync(eventId) {
         ]
     };
 
-    return dal.get(querySpec);
+    return dal.getAsync(querySpec);
 }
 
 function findEventsByGroupsIdsAsync(groupsIds) {
@@ -120,7 +120,7 @@ function findEventsByGroupsIdsAsync(groupsIds) {
         parameters: parameters
     };
 
-    return dal.get(querySpec);
+    return dal.getAsync(querySpec);
 }
 
 module.exports = router;

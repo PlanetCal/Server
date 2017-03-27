@@ -10,7 +10,7 @@ module.exports = {
 
         var collectionLink = 'dbs/' + databaseName + '/colls/' + collectionName;
 
-        this.insert = function insert(obj, options) {
+        this.insertAsync = function insertAsync(obj, options) {
             var client = this.getClient();
             if (typeof(options) === 'undefined'){
             	options = {};
@@ -18,7 +18,7 @@ module.exports = {
             return client.createDocumentAsync(collectionLink, obj, options);
         }
 
-        this.get = function get(querySpec, options) {
+        this.getAsync = function getAsync(querySpec, options) {
             var client = this.getClient();
             if (typeof(options) === 'undefined'){
             	options = {};
@@ -26,7 +26,7 @@ module.exports = {
             return client.queryDocuments(collectionLink, querySpec, options).toArrayAsync();
         }
 
-        this.update = function update(id, document, options) {
+        this.updateAsync = function updateAsync(id, document, options) {
             // this assumes that all objects have id property
             var client = this.getClient();
             var documentLink = collectionLink + '/docs/' + id;
@@ -37,7 +37,7 @@ module.exports = {
         }
 
         // delete is a reserved keyword
-        this.remove = function remove(id, options) {
+        this.removeAsync = function removeAsync(id, options) {
             // this assumes that all objects have id property
             var client = this.getClient();
             var documentLink = collectionLink + '/docs/' + id;
