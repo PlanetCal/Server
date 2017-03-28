@@ -105,9 +105,7 @@ function findEventByEventIdAsync(eventId) {
 }
 
 function findEventsByGroupsIdsAsync(groupsIds) {
-
-    var queryString = "SELECT e.owningGroups, e.id, e.name FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g)";
-        
+    var queryString = "SELECT e.owningGroups, e.id, e.name FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g)";        
     var parameters = [
         {
             name: "@groupsIds",
@@ -119,7 +117,6 @@ function findEventsByGroupsIdsAsync(groupsIds) {
         query: queryString,
         parameters: parameters
     };
-
     return dal.getAsync(querySpec);
 }
 

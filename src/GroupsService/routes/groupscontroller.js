@@ -88,9 +88,7 @@ function findGroupByKeywordsAsync(keywords) {
 }
 
 function findGroupsByGroupIdsAsync(groupId) {
-
-    var queryString = "SELECT e.id, e._self, e.name FROM root e WHERE ARRAY_CONTAINS(@groupIds, e.groupdId) ORDER BY e.name";
-        
+    var queryString = "SELECT e.id, e._self, e.name FROM root e WHERE ARRAY_CONTAINS(@groupIds, e.groupdId) ORDER BY e.name";        
     var parameters = [
         {
             name: "@groupIds",
@@ -102,7 +100,6 @@ function findGroupsByGroupIdsAsync(groupId) {
         query: queryString,
         parameters: parameters
     };
-
     return dal.getAsync(querySpec);
 }
 

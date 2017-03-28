@@ -66,7 +66,6 @@ app.post('/userauth', helpers.wrap(function *(req, res){
 // all other urls - all APIs are subject to token authentication
 app.use('/*', passport.authenticate('token-bearer', { session: false }),
     function (req, res, next){
-        console.log('adsadsad: ' + JSON.stringify(req.user));
         if (!req || !req.user){
             // token authentication fail.
             throw new UnauthorizedError('Token authentication failed.');

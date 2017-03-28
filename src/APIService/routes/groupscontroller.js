@@ -4,6 +4,7 @@ var config = require('../../common/config.js');
 var router = require('express').Router();
 var request = require('request-promise');
 var helpers = require('../../common/helpers.js');
+var qs = require('qs');
 
 module.exports = function(){
 
@@ -18,7 +19,7 @@ module.exports = function(){
     }));
 
     router.get('/', helpers.wrap(function *(req, res){
-        var options = helpers.getRequestOption(req, endpoint + '/' + controllerName + '?' + JSON.stringify(req.query), 'GET'); 
+        var options = helpers.getRequestOption(req, endpoint + '/' + controllerName + '?' + qs.stringify(req.query), 'GET'); 
         var results = yield request(options);
         res.status(200);
         res.json(JSON.parse(results));
