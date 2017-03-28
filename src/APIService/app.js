@@ -22,6 +22,7 @@ var BadRequestError = require('../common/error.js').BadRequestError;
 var NotFoundError = require('../common/error.js').NotFoundError;
 var ForbiddenError = require('../common/error.js').ForbiddenError;
 var UnauthorizedError = require('../common/error.js').UnauthorizedError;
+var VersionNotFoundError = require('../common/error.js').VersionNotFoundError;
 
 app.set('view engine', 'ejs');
 
@@ -39,6 +40,16 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use('/*', function (req, res, next){
+    if (!req.headers['version']){
+        console.log('version: ' + req.headers.version);
+        throw new VersionNotFoundError('Cannot find version in header.');
+    }
+    else{
+        next();
+    }
+});
+
 // router set up
 // root
 app.get('/', function(req, res){
@@ -51,12 +62,7 @@ app.use('/login', login);
 // forward this to userAuth service before token authenication
 // kicks in because this is userAuth creation
 app.post('/userauth', helpers.wrap(function *(req, res){
-    var options = {
-        method : 'POST',
-        headers: {'content-type' : 'application/json; charset=utf-8' },
-        url:     config.userAuthServiceEndpoint + '/userauth',
-        body:    JSON.stringify(req.body)};
-
+    var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth', 'POST'); 
     var results = yield request(options);
 
     res.status(200);
@@ -68,7 +74,7 @@ app.use('/*', passport.authenticate('token-bearer', { session: false }),
     function (req, res, next){
         if (!req || !req.user){
             // token authentication fail.
-            throw new UnauthorizedError('Token authentication failed.');
+            return new UnauthorizedError('Token authentication failed.');
         }
         else{
             // set auth-identity header so that internal services
@@ -97,8 +103,33 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    res.status(err.statusCode || 500);
-    res.send(err.error);
+    if (err.error){
+        res.status(err.statusCode || 500);
+        res.send(err.error);
+    }
+    else{
+        res.status(err.code || 500);
+
+        var body;
+        try{
+            body = JSON.parse(err.body);
+        }
+        catch(e){            
+            body = err.body;
+        }
+
+        var message = err.message || 'Unknown error';
+        if (body && body.message){
+            message = body.message;
+        }
+
+        if (app.get('env') === 'development') {
+            res.json({ message : message, stack : err.stack });
+        }
+        else{
+            res.json({ message : message });
+        }        
+    }
 });
 
 var port = process.env.PORT || config.apiServicePort;
