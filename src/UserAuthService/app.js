@@ -14,6 +14,7 @@ var UserLogin = require('./routes/logincontroller.js')(passport);
 var UserAuth = require('./routes/userauthcontroller.js')(passport);
 var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
 var helpers = require('../common/helpers.js');
+var NotFoundError = require('../common/error.js').NotFoundError;
 
 app.set('view engine', 'ejs');
 
@@ -41,8 +42,7 @@ app.use(function(err, req, res, next) {
 
 // error handling for other routes
 app.use(function(req, res, next) {
-    var err = helpers.createError(404, 'Resource specified by URL cannot be located.');
-    next(err);
+    next(new NotFoundError('Resource specified by URL cannot be located.'));
 });
 
 app.use(function(err, req, res, next) {

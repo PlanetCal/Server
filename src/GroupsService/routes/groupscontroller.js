@@ -10,24 +10,41 @@ var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName);
 var helpers = require('../../common/helpers.js');
 var BadRequestError = require('../../common/error.js').BadRequestError;
+var NotFoundError = require('../../common/error.js').NotFoundError;
+
+router.get('/:id', helpers.wrap(function *(req, res) {
+    var fields 
+    if (req.query.fields){
+        fields = req.query.fields.split('|');
+    }
+    var documentResponse = yield findGroupsByGroupIdsAsync(req.params.id, fields);
+    if (results.length <= 0){
+        throw new NotFoundError('Group with id ' + req.params.id + ' not found.');
+    }
+
+    res.status(200);
+    // TODO: assert when results has more than 1 element.
+    res.send(results[0]);
+}));
 
 router.get('/', helpers.wrap(function *(req, res) {
     if (!req.query) {
         throw new BadRequestError('Cannot find email and password in body.');
     }
     
-    if (!req.query.ids && !req.query.keywords) {
-        throw new BadRequestError('Either ids or keywords should be found in query string.');
+    if (!req.query.keywords) {
+        throw new BadRequestError('Keywords should be found in query string.');
     }
 
     var documentResponse;
-    if (req.query.ids) {
-        var groupIds = req.query.ids.split('|');
-        documentResponse = yield findGroupsByGroupIdsAsync(groupIds);
-    }
-    else if (req.query.keywords) {
+    if (req.query.keywords) {
         var keywords = req.query.keywords.split('|');
-        documentResponse = yield findGroupByKeywordsAsync(groupIds);
+        var fields 
+        if (req.query.fields){
+            fields = req.query.fields.split('|');
+        }
+
+        documentResponse = yield findGroupByKeywordsAsync(keywords, fields);
     }
     var results = documentResponse.feed;
     var filteredResults = helpers.removeDuplicatedItemsById(results);
@@ -73,9 +90,10 @@ router.delete('/:id', helpers.wrap(function *(req, res) {
     res.send({ id : documentResponse.resource.id });                        
 }));
 
-function findGroupByKeywordsAsync(keywords) {
+function findGroupByKeywordsAsync(keywords, fields) {
+    var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
     var querySpec = {
-        query: "SELECT e.id, e._self, e.name, e.keywords FROM e JOIN k IN e.keywords WHERE ARRAY_CONTAINS(@keywords, k) ORDER BY e.name",
+        query: "SELECT e.id" + constraints + " e.keywords FROM e JOIN k IN e.keywords WHERE ARRAY_CONTAINS(@keywords, k)",
         parameters: [
             {
                 name: '@keywords',
@@ -87,17 +105,34 @@ function findGroupByKeywordsAsync(keywords) {
     return dal.getAsync(querySpec);
 }
 
-function findGroupsByGroupIdsAsync(groupId) {
-    var queryString = "SELECT e.id, e._self, e.name FROM root e WHERE ARRAY_CONTAINS(@groupIds, e.groupdId) ORDER BY e.name";        
+function findGroupsByGroupIdsAsync(groupIds, fields) {
+    var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
+    console.log('contraints: ' + contrainsts);
     var parameters = [
         {
             name: "@groupIds",
+            value: groupIds
+        }
+    ];
+
+    var querySpec = {
+        query: "SELECT e.id" + constraints + " FROM root e WHERE ARRAY_CONTAINS(@groupIds, e.groupdId)",
+        parameters: parameters
+    };
+    return dal.getAsync(querySpec);
+}
+
+function findGroupsByGroupIdAsync(groupId, fields) {
+    var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
+    var parameters = [
+        {
+            name: "@groupId",
             value: groupId
         }
     ];
 
     var querySpec = {
-        query: queryString,
+        query: "SELECT e.id" + constraints + " FROM root e WHERE e.id = groupId",
         parameters: parameters
     };
     return dal.getAsync(querySpec);

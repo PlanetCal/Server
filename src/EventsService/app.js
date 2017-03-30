@@ -24,8 +24,7 @@ app.use(function(err, req, res, next) {
 
 // error handling for other routes
 app.use(function(req, res, next) {
-    var err = helpers.createError(404, 'Resource specified by URL cannot be located.');
-    next(err);
+    next(new NotFoundError('Resource specified by URL cannot be located.'));
 });
 
 app.use(function(err, req, res, next) {

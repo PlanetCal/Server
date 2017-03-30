@@ -40,5 +40,13 @@ module.exports = {
         this.name = this.constructor.name;
         this.message = message;
         this.code = 400; // Badrequest
-    }     
+    },
+
+    InternalServerError : function InternalServerError (message){
+        this.constructor.prototype.__proto__ = Error.prototype;
+        Error.captureStackTrace(this, this.constructor);
+        this.name = this.constructor.name;
+        this.message = message;
+        this.code = 500;
+    }
 }

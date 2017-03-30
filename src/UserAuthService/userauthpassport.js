@@ -9,6 +9,7 @@ module.exports = function(passport){
 
     var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
     var TokenGenerator = require('../common/tokengenerator.js').TokenGenerator;
+    var InternalServerError = require('../common/error.js').InternalServerError;
     var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
     var dal = new DataAccessLayer(config.documentdbDatabaseName, config.usersCollectionName);
 
@@ -59,7 +60,7 @@ module.exports = function(passport){
 
 function getUserQuerySpecFromEmail(email){
     if (typeof(email) !== 'string'){
-        throw helpers.createError(500, 'email is not a string.');
+        throw new InternalServerError('email is not a string.');
     }
 
     var queryString = "SELECT e.id, e.email, e.passwordHash FROM root e WHERE e.email = @email";
@@ -79,7 +80,7 @@ function getUserQuerySpecFromEmail(email){
 
 function getUserQuerySpecFromId(id){
     if (typeof(id) !== 'string'){
-        throw helpers.createError(500, 'id is not a string.');
+        throw new InternalServerError('id is not a string.');
     }
 
     var queryString = "SELECT e.id, e._self, e.email, e.passwordHash FROM root e WHERE e.id = @id";

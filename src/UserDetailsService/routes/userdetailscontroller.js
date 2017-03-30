@@ -34,7 +34,7 @@ router.get('/:id/events', helpers.wrap(function *(req, res) {
     res.send(result);
 }));
 
-router.get('/:id', helpers.wrap(function *(req, res) {
+router.get('/:id', helpers.wrap(function *(req, res) {    
     var result = yield *getUserDetailsBasicAsync(req);
     res.status(200);
     res.send(result);

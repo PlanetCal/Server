@@ -6,6 +6,7 @@ var BadRequestError = require('./error.js').BadRequestError;
 var ForbiddenError = require('./error.js').ForbiddenError;
 var NotFoundError = require('./error.js').NotFoundError;
 var UnauthorizedError = require('./error.js').UnauthorizedError;
+var InternalServerError = require('./error.js').InternalServerError;
 
 module.exports = {
     'wrap' : function (genFn) { 
@@ -19,7 +20,8 @@ module.exports = {
             return {
                 method : method,
                 headers: {'content-type' : 'application/json; charset=utf-8',
-                          'auth-identity' : req.headers['auth-identity']},
+                          'auth-identity' : req.headers['auth-identity'],
+                          'version' : req.headers['version']},
                 url: targetEndpoint,
                 body: JSON.stringify(req.body)
             };
@@ -44,18 +46,6 @@ module.exports = {
             return [];
         },
 
-    'createError' : function (code, message){
-            var err = new Error(message);
-            err.code = code;
-            err.message = message;
-            return err;
-        },
-
-    'createErrorJson' : function (err){
-            var body = JSON.parse(err.body);
-            return { code : err.code, name: body.code, message: body.message };
-        },
-
     'handleError' : function(res, err, next){
         if (err instanceof(BadRequestError)) {
             res.status(400);
@@ -73,6 +63,25 @@ module.exports = {
             res.status(401);
             return res.send({message: err.message});
         }
+        if (err instanceof(InternalServerError)){
+            res.status(500);
+            return res.send({message: err.message});
+        }
         next(err);
+    },
+
+    'convertFieldSelectionToConstraints' : function(prefix, fields){
+        if (fields){
+            var arr = [];
+            for(var i in fields){
+                arr.push(prefix + '.' + fields[i]);
+            }
+
+            if (arr.length > 0){
+                return ',' + arr.join(', ');
+            }
+        }
+
+        return '';
     }
 }

@@ -14,7 +14,11 @@ var ForbiddenError = require('../../common/error.js').ForbiddenError;
 var NotFoundError = require('../../common/error.js').NotFoundError;
 
 router.get('/:id', helpers.wrap(function *(req, res) {
-    var documentResponse = yield findEventByEventIdAsync(req.params.id);
+    var fields 
+    if (req.query.fields){
+        fields = req.query.fields.split('|');
+    }
+    var documentResponse = yield findEventByEventIdAsync(req.params.id, fields);
     var results = documentResponse.feed;
 
     if (results.length <= 0){
@@ -35,8 +39,12 @@ router.get('/', helpers.wrap(function *(req, res) {
         throw new BadRequestError('GroupIds not found in query string.');
     }
     else{
+        var fields 
+        if (req.query.fields){
+            fields = req.query.fields.split('|');
+        }
         var groupids = req.query.groupids.split('|');
-        var documentResponse = yield findEventsByGroupsIdsAsync(groupids);
+        var documentResponse = yield findEventsByGroupsIdsAsync(groupids, fields);
         var results = documentResponse.feed;
         var filteredResults = helpers.removeDuplicatedItemsById(results);
 
@@ -90,9 +98,11 @@ router.delete('/:id', helpers.wrap(function *(req, res) {
     res.send({ id : req.params.id });
 }));
 
-function findEventByEventIdAsync(eventId) {
+function findEventByEventIdAsync(eventId, fields) {
+    var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
+    console.log('constraints: ' + constraints);
     var querySpec = {
-        query: "SELECT e.createdById, e.ownedByIds, e.id, e.name, e.eventType FROM e WHERE e.id = @eventId",
+        query: "SELECT e.id" + constraints + " FROM e WHERE e.id = @eventId",
         parameters: [
             {
                 name: '@eventId',
@@ -105,7 +115,7 @@ function findEventByEventIdAsync(eventId) {
 }
 
 function findEventsByGroupsIdsAsync(groupsIds) {
-    var queryString = "SELECT e.owningGroups, e.id, e.name FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g)";        
+    var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
     var parameters = [
         {
             name: "@groupsIds",
@@ -114,7 +124,7 @@ function findEventsByGroupsIdsAsync(groupsIds) {
     ];
 
     var querySpec = {
-        query: queryString,
+        query: "SELECT e.id" + constraints + " FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g)",
         parameters: parameters
     };
     return dal.getAsync(querySpec);
