@@ -245,3 +245,4 @@ ModelManifest.xml
 */node_modules/
 **/typings/
 **/.vscode/
+**/.env
