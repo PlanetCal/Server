@@ -1,7 +1,7 @@
 {
   "name": "apiservice",
   "version": "1.0.0",
-  "description": "FE APIservice",
+  "description": "",
   "main": "app.js",
   "dependencies": {
     "bcrypt-nodejs": "^0.0.3",
@@ -11,9 +11,14 @@
     "express": "^4.14.1",
     "express-session": "^1.15.1",
     "mongoose": "^4.8.5",
+    "node-uuid": "^1.4.8",
+    "passport-http": "^0.3.0",
     "passport": "^0.3.2",
+    "passport-http-bearer": "^1.0.1",
     "passport-local": "^1.0.0",
-    "passport-http": "^0.3.0"
+    "qs": "^6.4.0",
+    "request": "^2.79.0",
+    "request-promise": "^4.2.0"
   },
   "devDependencies": {},
   "scripts": {
