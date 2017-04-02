@@ -1,10 +1,12 @@
 {
-  "name": "deployment",
+  "name": "docdbdeployment",
   "version": "1.0.0",
-  "description": "",
+  "description": "Deployment script for Planetcal DocDb",
   "main": "deploy.js",
   "dependencies": {
-    "documentdb": "^1.11.0"
+    "documentdb": "^1.11.0",
+    "documentdb-q-promises": "^1.6.0",
+    "express": "^4.15.2"
   },
   "devDependencies": {},
   "scripts": {
