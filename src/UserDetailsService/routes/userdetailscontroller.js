@@ -10,43 +10,45 @@ var collectionName = config.userDetailsCollectionName;
 var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName);
 var helpers = require('../../common/helpers.js');
-var BadRequestError = require('../../common/error.js').BadRequestError;
-var ForbiddenError = require('../../common/error.js').ForbiddenError;
-var NotFoundError = require('../../common/error.js').NotFoundError;
+var BadRequestException = require('../../common/error.js').BadRequestException;
+var ForbiddenException = require('../../common/error.js').ForbiddenException;
+var NotFoundException = require('../../common/error.js').NotFoundException;
+var UserDetailsServiceException = require('../../common/error.js').UserDetailsServiceException;
 
 router.get('/:id/events', helpers.wrap(function *(req, res) {
     var result = yield *getUserDetailsBasicAsync(req);
 
+    var events;
     // result must not be undefined
     // we need to retrieve events given userDetails.
-    var groupIds = result.followingGroups.join('|');
-    var options = helpers.getRequestOption(req, config.eventsServiceEndpoint + '/events?groupids=' + groupIds, 'GET');
-    var events = yield request(options);
+    if (result.followingGroups && result.followingGroups.length > 0){
+        var groupIds = result.followingGroups.join('|');
+        var options = helpers.getRequestOption(req, config.eventsServiceEndpoint + '/events?groupids=' + groupIds, 'GET');
+        events = yield request(options);
+    }
 
-    if (events.length > 0){
+    if (events && events.length > 0){
         result.events = JSON.parse(events);
     }
     else{
         result.events = [];
     }
     
-    res.status(200);
-    res.send(result);
+    res.status(200).json(result);
 }));
 
 router.get('/:id', helpers.wrap(function *(req, res) {    
     var result = yield *getUserDetailsBasicAsync(req);
-    res.status(200);
-    res.send(result);
+    res.status(200).json(result);
 }));
 
 router.put('/:id', helpers.wrap(function *(req, res) {
     if (!req.body) {
-        throw new BadRequestError('Empty body.');
+        throw new BadRequestException('Empty body.');
     }
     var userDetails = req.body;
     if (!userDetails) {
-        throw new BadRequestError('UserDetails object is not found in body.');
+        throw new BadRequestException('UserDetails object is not found in body.');
     }
 
     checkCallerPermission(req, req.params.id);
@@ -54,25 +56,23 @@ router.put('/:id', helpers.wrap(function *(req, res) {
 
     var documentResponse = yield dal.updateAsync(req.params.id, userDetails);
 
-    res.status(200);
-    res.json({ id : documentResponse.resource.id });
+    res.status(200).json({ id : documentResponse.resource.id });
 }));
 
 router.post('/', helpers.wrap(function *(req, res) {
     if (!req.body) {
-        throw new BadRequestError('Empty body.');
+        throw new BadRequestException('Empty body.');
     }
     var userDetails = req.body;
     if (!userDetails) {
-        throw new BadRequestError('UserDetails object is not found in body.');
+        throw new BadRequestException('UserDetails object is not found in body.');
     }
 
     checkCallerPermission(req, req.body.id);
 
     var documentResponse = yield dal.insertAsync(userDetails, {});
 
-    res.status(200);
-    res.json({ id : documentResponse.resource.id });
+    res.status(200).json({ id : documentResponse.resource.id });
 }));
 
 router.delete('/:id', helpers.wrap(function *(req, res) {
@@ -80,13 +80,12 @@ router.delete('/:id', helpers.wrap(function *(req, res) {
 
     var documentResponse = yield dal.removeAsync(req.params.id);
 
-    res.status(200);
-    res.json({ id : req.params.id });                    
+    res.status(200).json({ id : req.params.id });
 }));
 
 function checkCallerPermission(req, id){
     if (req.headers['auth-identity'] !== id){
-        throw new ForbiddenError('Forbidden');
+        throw new ForbiddenException('Forbidden');
     } 
 }
 
@@ -110,7 +109,7 @@ function *getUserDetailsBasicAsync(req){
         return results[0];
     }
     else{
-        throw new NotFoundError('UserDetails with id ' + req.params.id + ' not found.');
+        throw new NotFoundException('UserDetails with id ' + req.params.id + ' not found.');
     }    
 }
 module.exports = router;

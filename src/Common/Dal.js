@@ -2,6 +2,7 @@
 
 var DocumentClient = require('documentdb-q-promises').DocumentClientWrapper;
 var config = require('./config.js');
+var DatabaseException = require('./error.js').DatabaseException;
 
 module.exports = {
     DataAccessLayer: function DataAccessLayer(databaseName, collectionName) {
@@ -15,7 +16,9 @@ module.exports = {
             if (typeof(options) === 'undefined'){
             	options = {};
             }
-            return client.createDocumentAsync(collectionLink, obj, options);
+            return client.createDocumentAsync(collectionLink, obj, options).fail(function(err){
+                throw new DatabaseException(err);
+            });
         }
 
         this.getAsync = function getAsync(querySpec, options) {
@@ -23,7 +26,9 @@ module.exports = {
             if (typeof(options) === 'undefined'){
             	options = {};
             }
-            return client.queryDocuments(collectionLink, querySpec, options).toArrayAsync();
+            return client.queryDocuments(collectionLink, querySpec, options).toArrayAsync().fail(function(err){
+                throw new DatabaseException(err);
+            });
         }
 
         this.updateAsync = function updateAsync(id, document, options) {
@@ -33,7 +38,9 @@ module.exports = {
             if (typeof(options) === 'undefined'){
             	options = {};
             }
-            return client.replaceDocumentAsync(documentLink, document);
+            return client.replaceDocumentAsync(documentLink, document).fail(function(err){
+                throw new DatabaseException(err);
+            });
         }
 
         // delete is a reserved keyword
@@ -44,7 +51,9 @@ module.exports = {
             if (typeof(options) === 'undefined'){
             	options = {};
             }
-            return client.deleteDocumentAsync(documentLink, options);
+            return client.deleteDocumentAsync(documentLink, options).fail(function(err){
+                throw new DatabaseException(err);
+            });
         }
 
         this.getClient = function getClient() {

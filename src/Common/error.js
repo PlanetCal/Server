@@ -2,51 +2,136 @@
 
 module.exports = {
 
-    BadRequestError : function BadRequestError (message) {
+    BadRequestException : function BadRequestException (message, innerError) {
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
-        this.name = this.constructor.name;
+        this.name = 'BadRequestException';
         this.message = message;                
         this.code = 400;
+        this.innerException = innerException;
     },
 
-    NotFoundError : function NotFoundError (message) {
+    NotFoundException : function NotFoundException (message, innerError) {
+
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
-        this.name = this.constructor.name;
+        this.name = 'NotFoundException';
         this.message = message;
         this.code = 404;
+        this.innerException = innerException;
     },
 
-    ForbiddenError : function ForbiddenError (message) {
+    ForbiddenException : function ForbiddenException (message, innerError) {
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
-        this.name = this.constructor.name;
+        this.name = 'ForbiddenException';
         this.message = message;
         this.code = 403;
+        this.innerException = innerException;
     },
 
-    UnauthorizedError : function UnauthorizedError (message){
+    UnauthorizedException : function UnauthorizedException (message, innerError){
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
-        this.name = this.constructor.name;
+        this.name = 'UnauthorizedException';
         this.message = message;
         this.code = 401;
+        this.innerException = innerException;
     },
 
-    VersionNotFoundError : function VersionNotFoundError (message){
+    VersionNotFoundException : function VersionNotFoundException (message, innerError){
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
-        this.name = this.constructor.name;
+        this.name = 'VersionNotFoundException';
         this.message = message;
         this.code = 400; // Badrequest
+        this.innerException = innerException;
     },
 
-    InternalServerError : function InternalServerError (message){
+    InternalServerException : function InternalServerException (message, innerError){
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
-        this.name = this.constructor.name;
+        this.name = 'InternalServerException';
         this.message = message;
         this.code = 500;
+        this.innerException = innerException;
+    },
+
+    DatabaseException : function DatabaseException (docdbErr){
+        this.constructor.prototype.__proto__ = Error.prototype;
+        Error.captureStackTrace(this, this.constructor);
+        this.name = 'DatabaseException';
+        this.code = docdbErr.code;
+        this.serviceName = 'Database';
+
+        var parsedBody;
+        try{
+            parsedBody = JSON.parse(docdbErr.body);
+        }
+        catch(e){
+        }
+
+        if (parsedBody){
+            this.message = parsedBody.message;
+        }
+        else{
+            this.message = 'Unknown database error';
+        }
+        // intentionally left innerError undefined.
+    },
+
+    UserAuthServiceException : function UserAuthServiceException (req, message, code, innerException){
+        this.constructor.prototype.__proto__ = Error.prototype;
+        Error.captureStackTrace(this, UserAuthServiceException);
+        this.name = 'UserAuthServiceException';
+        this.code = code || 503;
+        this.serviceName = 'UserAuthService';
+        this.activityId = innerException.activityId || req.headers['activityid'];
+        this.message = message;
+        this.innerException = innerException;
+    },
+
+    UserDetailsServiceException : function UserDetailsServiceException (req, message, code, innerException){
+        this.constructor.prototype.__proto__ = Error.prototype;
+        Error.captureStackTrace(this, UserDetailsServiceException);
+        this.name = 'UserDetailsServiceException';
+        this.code = code || 503;
+        this.serviceName = 'UserDetailsService';
+        this.activityId = innerException.activityId || req.headers['activityid'];
+        this.message = message;
+        this.innerException = innerException;
+    },
+
+    EventsServiceException : function EventsServiceException (req, message, code, innerException){
+        this.constructor.prototype.__proto__ = Error.prototype;
+        Error.captureStackTrace(this, EventsServiceException);
+        this.name = 'EventsServiceException';
+        this.code = code || 503;
+        this.serviceName = 'EventsService';
+        this.activityId = innerException.activityId || req.headers['activityid'];
+        this.message = message;
+        this.innerException = innerException;
+    },
+
+    GroupsServiceException : function GroupsServiceException (req, message, code, innerException){
+        this.constructor.prototype.__proto__ = Error.prototype;
+        Error.captureStackTrace(this, GroupsServiceException);
+        this.name = 'GroupsServiceException';
+        this.code = code || 503;
+        this.serviceName = 'GroupsService';
+        this.activityId = innerException.activityId || req.headers['activityid'];
+        this.message = message;
+        this.innerException = innerException;
+    },
+
+    APIServiceException : function APIServiceException(req, message, code, innerException){
+        this.constructor.prototype.__proto__ = Error.prototype;
+        Error.captureStackTrace(this, APIServiceException);
+        this.name = 'APIServiceException';
+        this.code = code || 503;
+        this.serviceName = 'APIService';
+        this.activityId = innerException.activityId || req.headers['activityid'];
+        this.message = message;
+        this.innerException = innerException;        
     }
 }

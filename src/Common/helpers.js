@@ -2,11 +2,11 @@
 
 var config = require('./config.js');
 var Promise = require('bluebird');
-var BadRequestError = require('./error.js').BadRequestError;
-var ForbiddenError = require('./error.js').ForbiddenError;
-var NotFoundError = require('./error.js').NotFoundError;
-var UnauthorizedError = require('./error.js').UnauthorizedError;
-var InternalServerError = require('./error.js').InternalServerError;
+var BadRequestException = require('./error.js').BadRequestException;
+var ForbiddenException = require('./error.js').ForbiddenException;
+var NotFoundEException = require('./error.js').NotFoundException;
+var UnauthorizedException = require('./error.js').UnauthorizedException;
+var InternalServerException = require('./error.js').InternalServerException;
 
 module.exports = {
     'wrap' : function (genFn) { 
@@ -21,7 +21,8 @@ module.exports = {
                 method : method,
                 headers: {'content-type' : 'application/json; charset=utf-8',
                           'auth-identity' : req.headers['auth-identity'],
-                          'version' : req.headers['version']},
+                          'version' : req.headers['version'],
+                          'activityid' : req.headers['activityid']},
                 url: targetEndpoint,
                 body: JSON.stringify(req.body)
             };
@@ -47,23 +48,23 @@ module.exports = {
         },
 
     'handleError' : function(res, err, next){
-        if (err instanceof(BadRequestError)) {
+        if (err instanceof(BadRequestException)) {
             res.status(400);
             return res.send({message: err.message});
         }
-        if (err instanceof(NotFoundError)){
+        if (err instanceof(NotFoundException)){
             res.status(404);
             return res.send({message: err.message});
         }    
-        if (err instanceof(ForbiddenError)){
+        if (err instanceof(ForbiddenException)){
             res.status(403);
             return res.send({message: err.message});
         }
-        if (err instanceof(UnauthorizedError)){
+        if (err instanceof(UnauthorizedException)){
             res.status(401);
             return res.send({message: err.message});
         }
-        if (err instanceof(InternalServerError)){
+        if (err instanceof(InternalServerException)){
             res.status(500);
             return res.send({message: err.message});
         }
@@ -83,5 +84,25 @@ module.exports = {
         }
 
         return '';
+    },
+
+    'constructResponseJsonFromExceptionRecursive' : function constructResponseJsonFromExceptionRecursive(app, exceptionObject){
+        var returnedJson;
+        if (exceptionObject){
+            returnedJson = 
+                { 
+                    name : exceptionObject.name, 
+                    message : exceptionObject.message,
+                    activityid : exceptionObject.activityId,
+                    innerException : constructResponseJsonFromExceptionRecursive(app, exceptionObject.innerException),
+                    serviceName : exceptionObject.serviceName
+                };
+
+            if (app.get('env') === 'development') {
+                returnedJson.stack = exceptionObject.stack; 
+            }            
+        }
+
+        return returnedJson;
     }
 }

@@ -9,8 +9,8 @@ var collectionName = config.groupsCollectionName;
 var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName);
 var helpers = require('../../common/helpers.js');
-var BadRequestError = require('../../common/error.js').BadRequestError;
-var NotFoundError = require('../../common/error.js').NotFoundError;
+var BadRequestException = require('../../common/error.js').BadRequestException;
+var NotFoundException = require('../../common/error.js').NotFoundException;
 
 router.get('/:id', helpers.wrap(function *(req, res) {
     var fields 
@@ -19,7 +19,7 @@ router.get('/:id', helpers.wrap(function *(req, res) {
     }
     var documentResponse = yield findGroupsByGroupIdsAsync(req.params.id, fields);
     if (results.length <= 0){
-        throw new NotFoundError('Group with id ' + req.params.id + ' not found.');
+        throw new NotFoundException('Group with id ' + req.params.id + ' not found.');
     }
 
     res.status(200);
@@ -29,11 +29,11 @@ router.get('/:id', helpers.wrap(function *(req, res) {
 
 router.get('/', helpers.wrap(function *(req, res) {
     if (!req.query) {
-        throw new BadRequestError('Cannot find email and password in body.');
+        throw new BadRequestException('Cannot find email and password in body.');
     }
     
     if (!req.query.keywords) {
-        throw new BadRequestError('Keywords should be found in query string.');
+        throw new BadRequestException('Keywords should be found in query string.');
     }
 
     var documentResponse;
@@ -54,11 +54,11 @@ router.get('/', helpers.wrap(function *(req, res) {
 
 router.put('/', helpers.wrap(function *(req, res) {
     if (!req.body) {
-        throw new BadRequestError('Empty body.');
+        throw new BadRequestException('Empty body.');
     }
     var group = req.body;
     if (!group) {
-        throw new BadRequestError('Group is not found in body.');        
+        throw new BadRequestException('Group is not found in body.');        
     }
     group['createdById'] = req.headers['auth-identity'];
     group['ownedById'] = req.headers['auth-identity'];
@@ -70,11 +70,11 @@ router.put('/', helpers.wrap(function *(req, res) {
 
 router.post('/', helpers.wrap(function *(req, res) {
     if (!req.body) {
-        throw new BadRequestError('Empty body.');
+        throw new BadRequestException('Empty body.');
     }
     var group = req.body;
     if (!group) {
-        throw new BadRequestError('Group is not found in body.');        
+        throw new BadRequestException('Group is not found in body.');        
     }
     group['createdById'] = req.headers['auth-identity'];
     group['ownedById'] = req.headers['auth-identity'];

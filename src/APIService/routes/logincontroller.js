@@ -14,9 +14,10 @@ module.exports = function(){
 
     router.post('/', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/login', 'POST');
-        var results = yield request(options);
-        res.status(200);
-        res.json(JSON.parse(results));
+        var results = yield request(options).catch(function(err){
+            throw new APIServiceException(req, 'Request to UserAuthServ failed.', 503, JSON.parse(err.error));
+        });
+        res.status(200).json(JSON.parse(results));
     }));
 
     return router;  

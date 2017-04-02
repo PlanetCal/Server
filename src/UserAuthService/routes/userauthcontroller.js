@@ -9,12 +9,12 @@ module.exports = function(passport){
     var config = require('../../common/config.js');
     var dal = new DataAccessLayer(config.documentdbDatabaseName, config.usersCollectionName);
     var helpers = require('../../common/helpers.js');
-    var BadRequestError = require('../../common/error.js').BadRequestError;
-    var ForbiddenError = require('../../common/error.js').ForbiddenError;
+    var BadRequestException = require('../../common/error.js').BadRequestException;
+    var ForbiddenException = require('../../common/error.js').ForbiddenException;
 
     router.post('/', helpers.wrap(function *(req, res){
         if (!req.body || !req.body.email || !req.body.password){
-            throw new BadRequestError('Cannot find email and password in body.');
+            throw new BadRequestException('Cannot find email and password in body.');
         }
         else{
             var passwordCrypto = new PasswordCrypto();
@@ -29,10 +29,10 @@ module.exports = function(passport){
 
     router.put('/:id', helpers.wrap(function *(req, res){
         if (!req.body || !req.body.email || !req.body.password){
-            throw new BadRequestError('Cannot find email and password in body.');
+            throw new BadRequestException('Cannot find email and password in body.');
         }
         else if (!isOperationAuthorized(req)){
-            throw new ForbiddenError('Forbidden.');
+            throw new ForbiddenException('Forbidden.');
         }
         else{
             var passwordCrypto = new PasswordCrypto();
@@ -47,7 +47,7 @@ module.exports = function(passport){
     router.delete('/:id', helpers.wrap(function *(req, res){
         //all small letters even if header name has capitals
         if (!isOperationAuthorized(req)){
-            throw new ForbiddenError('Forbidden.');
+            throw new ForbiddenException('Forbidden.');
         }
         else {
             var documentResponse = yield dal.removeAsync(req.params.id);

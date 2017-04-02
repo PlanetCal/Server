@@ -14,7 +14,8 @@ var UserLogin = require('./routes/logincontroller.js')(passport);
 var UserAuth = require('./routes/userauthcontroller.js')(passport);
 var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
 var helpers = require('../common/helpers.js');
-var NotFoundError = require('../common/error.js').NotFoundError;
+var NotFoundException = require('../common/error.js').NotFoundException;
+var UserAuthServiceException = require('../common/error.js').UserAuthServiceException;
 
 app.set('view engine', 'ejs');
 
@@ -36,37 +37,14 @@ app.use(passport.session());
 app.use('/login', UserLogin);
 app.use('/userauth', UserAuth);
 
-app.use(function(err, req, res, next) {
-    return helpers.handleError(res, err, next);
-});
-
 // error handling for other routes
 app.use(function(req, res, next) {
-    next(new NotFoundError('Resource specified by URL cannot be located.'));
+    next(new NotFoundException('Resource specified by URL cannot be located.'));
 });
 
 app.use(function(err, req, res, next) {
-    res.status(err.code || 500);
-
-    var body;
-    try{
-        body = JSON.parse(err.body);
-    }
-    catch(e){            
-        body = err.body;
-    }
-
-    var message = err.message || 'Unknown error';
-    if (body && body.message){
-        message = body.message;
-    }
-
-    if (app.get('env') === 'development') {
-        res.json({ message : message, stack : err.stack });
-    }
-    else{
-        res.json({ message : message });
-    }
+    var wrappedException = new UserAuthServiceException(req, 'Unable to process request from UserAuthService.', err.code, err);
+    res.status(err.code || 500).json(wrappedException);
 });
 
 var port = process.env.PORT || config.userAuthServicePort;

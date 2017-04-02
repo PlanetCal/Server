@@ -9,38 +9,39 @@ module.exports = function(){
 
     router.get('/:id', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'GET'); 
-        var results = yield request(options);
-        res.status(200);
-        res.json(JSON.parse(results));
+        var results = yield *callUserDetailsService(options);
+        res.status(200).json(JSON.parse(results));
     }));
 
     router.get('/:id/events', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id + '/events', 'GET'); 
-        var results = yield request(options);
-        res.status(200);
-        res.json(JSON.parse(results));
+        var results = yield *callUserDetailsService(options);
+        res.status(200).json(JSON.parse(results));
     }));
 
     router.post('/', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails', 'POST'); 
-        var results = yield request(options);
-        res.status(201);
-        res.json(JSON.parse(results));
+        var results = yield *callUserDetailsService(options);
+        res.status(201).json(JSON.parse(results));
     }));
 
     router.put('/:id', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req,  config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'PUT'); 
-        var results = yield request(options);
-        res.status(200);
-        res.json({id : req.params.id});
+        var results = yield *callUserDetailsService(options);
+        res.status(200).json({id : req.params.id});
     }));
 
     router.delete('/:id', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req,  config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'DELETE'); 
-        var results = yield request(options);
-        res.status(200);
-        res.json({id : req.params.id});
+        var results = yield *callUserDetailsService(options);
+        res.status(200).json({id : req.params.id});
     }));
 
     return router;  
+}
+
+function *callUserDetailsService (options){
+    return yield request(options).catch(function(err){
+        throw new APIServiceException(req, 'Request to UserDetailsService failed.', 503, JSON.parse(err.error));
+    });
 }

@@ -5,13 +5,13 @@ var router = express.Router();
 var config = require('../../common/config.js');
 
 var databaseName = config.documentdbDatabaseName;
-var collectionName = config.eventsCollectionName;
+var collectionName = config.eventsCollectionName + '1';
 var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName);
 var helpers = require('../../common/helpers.js');
-var BadRequestError = require('../../common/error.js').BadRequestError;
-var ForbiddenError = require('../../common/error.js').ForbiddenError;
-var NotFoundError = require('../../common/error.js').NotFoundError;
+var BadRequestException = require('../../common/error.js').BadRequestException;
+var ForbiddenException = require('../../common/error.js').ForbiddenException;
+var NotFoundException = require('../../common/error.js').NotFoundException;
 
 router.get('/:id', helpers.wrap(function *(req, res) {
     var fields 
@@ -22,7 +22,7 @@ router.get('/:id', helpers.wrap(function *(req, res) {
     var results = documentResponse.feed;
 
     if (results.length <= 0){
-        throw new NotFoundError('Event with id ' + req.params.id + ' not found.');
+        throw new NotFoundException('Event with id ' + req.params.id + ' not found.');
     }
 
     res.status(200);
@@ -32,11 +32,11 @@ router.get('/:id', helpers.wrap(function *(req, res) {
 
 router.get('/', helpers.wrap(function *(req, res) {
     if (!req.query) {
-        throw new BadRequestError('Query string is invalid.');
+        throw new BadRequestException('Query string is invalid.');
     }
 
     if (!req.query.groupids) {
-        throw new BadRequestError('GroupIds not found in query string.');
+        throw new BadRequestException('GroupIds not found in query string.');
     }
     else{
         var fields 
@@ -56,16 +56,16 @@ router.get('/', helpers.wrap(function *(req, res) {
 
 router.put('/:id', helpers.wrap(function *(req, res) {
     if (!req.body) {
-        throw new BadRequestError('Empty body.');
+        throw new BadRequestException('Empty body.');
     }
     var event = req.body;
     if (!event) {
-        throw new BadRequestError('Event is not found in body.');
+        throw new BadRequestException('Event is not found in body.');
     }
     
     /*
     if (event['ownedById'] !== req.headers['auth-identity']){
-        throw new ForbiddenError('Forbidden');
+        throw new BadRequestException('Forbidden');
     }
     */
     var documentResponse = yield dal.updateAsync(req.params.id, event);
@@ -75,11 +75,11 @@ router.put('/:id', helpers.wrap(function *(req, res) {
 
 router.post('/', helpers.wrap(function *(req, res) {
     if (!req.body) {
-        throw new BadRequestError('Empty body.');
+        throw new BadRequestException('Empty body.');
     }
     var event = req.body;
     if (!event) {
-        throw new BadRequestError('Event is not found in body.');
+        throw new BadRequestException('Event is not found in body.');
     }
 
     /*

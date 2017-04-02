@@ -6,6 +6,7 @@ var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var passport = require('passport');
 var request = require('request-promise');
+var uuid = require('node-uuid');
 
 var app = express();
 
@@ -18,11 +19,12 @@ var events = require('./routes/eventscontroller.js')();
 var groups = require('./routes/groupscontroller.js')();
 
 var helpers = require('../common/helpers.js');
-var BadRequestError = require('../common/error.js').BadRequestError;
-var NotFoundError = require('../common/error.js').NotFoundError;
-var ForbiddenError = require('../common/error.js').ForbiddenError;
-var UnauthorizedError = require('../common/error.js').UnauthorizedError;
-var VersionNotFoundError = require('../common/error.js').VersionNotFoundError;
+var BadRequestException = require('../common/error.js').BadRequestException;
+var NotFoundException = require('../common/error.js').NotFoundException;
+var ForbiddenException = require('../common/error.js').ForbiddenException;
+var UnauthorizedException = require('../common/error.js').UnauthorizedException;
+var VersionNotFoundException = require('../common/error.js').VersionNotFoundException;
+var APIServiceException = require('../common/error.js').APIServiceException;
 
 app.set('view engine', 'ejs');
 
@@ -43,9 +45,10 @@ app.use(passport.session());
 app.use('/*', function (req, res, next){
     if (!req.headers['version']){
         console.log('version: ' + req.headers.version);
-        throw new VersionNotFoundError('Cannot find version in header.');
+        throw new VersionNotFoundException('Cannot find version in header.');
     }
     else{
+        req.headers['activityid'] = uuid.v4();;
         next();
     }
 });
@@ -63,10 +66,11 @@ app.use('/login', login);
 // kicks in because this is userAuth creation
 app.post('/userauth', helpers.wrap(function *(req, res){
     var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth', 'POST'); 
-    var results = yield request(options);
+    var results = yield request(options).catch(function(err){
+        throw new APIServiceException(req, 'Request to UserAuthService failed.', 503, JSON.parse(err.error));
+    });
 
-    res.status(200);
-    res.send(JSON.parse(results));
+    res.status(200).json(JSON.parse(results));
 }));
 
 // all other urls - all APIs are subject to token authentication
@@ -74,7 +78,7 @@ app.use('/*', passport.authenticate('token-bearer', { session: false }),
     function (req, res, next){
         if (!req || !req.user){
             // token authentication fail.
-            return new UnauthorizedError('Token authentication failed.');
+            return new UnauthorizedException('Token authentication failed.');
         }
         else{
             // set auth-identity header so that internal services
@@ -92,43 +96,14 @@ app.use('/userdetails', userDetails);
 app.use('/events', events);
 app.use('/groups', groups);
 
-app.use(function(err, req, res, next) {
-    return helpers.handleError(res, err, next);
-});
-
 // error handling for other routes
 app.use(function(req, res, next) {
-    next(new NotFoundError('Resource specified by URL cannot be located.'));
+    next(new NotFoundException('Resource specified by URL cannot be located.'));
 });
 
 app.use(function(err, req, res, next) {
-    if (err.error){
-        res.status(err.statusCode || 500);
-        res.send(err.error);
-    }
-    else{
-        res.status(err.code || 500);
-
-        var body;
-        try{
-            body = JSON.parse(err.body);
-        }
-        catch(e){            
-            body = err.body;
-        }
-
-        var message = err.message || 'Unknown error';
-        if (body && body.message){
-            message = body.message;
-        }
-
-        if (app.get('env') === 'development') {
-            res.json({ message : message, stack : err.stack });
-        }
-        else{
-            res.json({ message : message });
-        }        
-    }
+    var wrappedException = new APIServiceException(req, 'Unable to process request from APIService.', err.code, err);
+    res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(app, err));
 });
 
 var port = process.env.PORT || config.apiServicePort;
