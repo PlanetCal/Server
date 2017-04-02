@@ -1,12 +1,17 @@
 {
-  "name": "Common",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Common",
-  "author": {
-    "name": "yhawong"
-  },
+  "name": "common",
+  "version": "1.0.0",
+  "description": "",
+  "main": "Dal.js",
   "dependencies": {
-    "documentdb": "^1.10.2"
-  }
+    "bluebird": "^3.5.0",
+    "jwt-simple": "^0.5.1",
+    "documentdb-q-promises": "^1.6.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
 }
