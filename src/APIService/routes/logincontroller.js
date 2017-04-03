@@ -7,6 +7,7 @@ module.exports = function(){
     var config = require('../../common/config.js');
     var bodyParser = require('body-parser');
     var helpers = require('../../common/helpers.js');
+    var APIServiceException = require('../../common/error.js').APIServiceException;
 
     router.get('/', helpers.wrap(function *(req, res){
         res.render('login');

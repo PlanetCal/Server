@@ -23,7 +23,7 @@ module.exports = function(passport){
 
             var documentResponse = yield dal.insertAsync({ email: req.body.email, passwordHash: passwordHash }, options);
             res.status(201);
-            res.json({ email : documentResponse.resource.email, id : documentResponse.resource.id });                
+            res.json({ email : documentResponse.resource.email, id : documentResponse.resource.id, name : documentReponse.resource.name });                
         }
     }));
 
