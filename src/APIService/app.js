@@ -70,7 +70,7 @@ var corsOptions = {
 // kicks in because this is userAuth creation
 app.post('/userauth', cors(corsOptions), helpers.wrap(function *(req, res){
     var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth', 'POST'); 
-    var results = yield *helpers.forwardHttpRequest(options);
+    var results = yield *helpers.forwardHttpRequest(options, 'UserAuthService');
     res.status(200).json(JSON.parse(results));
 }));
 
@@ -104,7 +104,7 @@ app.use(function(req, res, next) {
 
 app.use(function(err, req, res, next) {
     err.serviceName = 'APIService';
-    err.activityid = req.headers['activityid'];
+    err.activityId = req.headers['activityid'];
     res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(err));
 });
 

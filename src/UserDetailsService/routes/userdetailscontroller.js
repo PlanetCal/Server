@@ -24,7 +24,7 @@ router.get('/:id/events', helpers.wrap(function *(req, res) {
     if (result.followingGroups && result.followingGroups.length > 0){
         var groupIds = result.followingGroups.join('|');
         var options = helpers.getRequestOption(req, config.eventsServiceEndpoint + '/events?groupids=' + groupIds, 'GET');
-        events = yield request(options);
+        events = yield *helpers.forwardHttpRequest(options, 'EventsService');
     }
 
     if (events && events.length > 0){
