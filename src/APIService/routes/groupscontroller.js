@@ -6,8 +6,16 @@ var request = require('request-promise');
 var helpers = require('../../common/helpers.js');
 var qs = require('qs');
 var BadRequestException = require('../../common/error.js').BadRequestException;
+var cors = require('cors');
 
 module.exports = function(){
+
+    var corsOptions = {
+      origin: '*',
+      method: ['GET', 'POST', 'PUT', 'DELETE']
+    };
+
+    router.options('/*', cors(corsOptions));
 
     var controllerName = 'groups';
     var endpoint = config.groupsServiceEndpoint;

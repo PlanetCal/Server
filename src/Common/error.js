@@ -2,17 +2,15 @@
 
 module.exports = {
 
-    BadRequestException : function BadRequestException (message, innerError) {
+    BadRequestException : function BadRequestException (message, innerException) {
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
         this.name = 'BadRequestException';
         this.message = message;                
         this.code = 400;
-        this.innerException = innerException;
     },
 
-    NotFoundException : function NotFoundException (message, innerError) {
-
+    NotFoundException : function NotFoundException (message, innerException) {
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
         this.name = 'NotFoundException';
@@ -21,7 +19,7 @@ module.exports = {
         this.innerException = innerException;
     },
 
-    ForbiddenException : function ForbiddenException (message, innerError) {
+    ForbiddenException : function ForbiddenException (message, innerException) {
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
         this.name = 'ForbiddenException';
@@ -30,7 +28,7 @@ module.exports = {
         this.innerException = innerException;
     },
 
-    UnauthorizedException : function UnauthorizedException (message, innerError){
+    UnauthorizedException : function UnauthorizedException (message, innerException){
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
         this.name = 'UnauthorizedException';
@@ -39,7 +37,7 @@ module.exports = {
         this.innerException = innerException;
     },
 
-    VersionNotFoundException : function VersionNotFoundException (message, innerError){
+    VersionNotFoundException : function VersionNotFoundException (message, innerException){
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
         this.name = 'VersionNotFoundException';
@@ -48,7 +46,7 @@ module.exports = {
         this.innerException = innerException;
     },
 
-    InternalServerException : function InternalServerException (message, innerError){
+    InternalServerException : function InternalServerException (message, innerException){
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
         this.name = 'InternalServerException';

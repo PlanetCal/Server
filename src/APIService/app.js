@@ -7,7 +7,6 @@ var cookieParser = require('cookie-parser');
 var passport = require('passport');
 var request = require('request-promise');
 var uuid = require('node-uuid');
-
 var app = express();
 
 var config = require('../common/config.js');
@@ -25,6 +24,7 @@ var ForbiddenException = require('../common/error.js').ForbiddenException;
 var UnauthorizedException = require('../common/error.js').UnauthorizedException;
 var VersionNotFoundException = require('../common/error.js').VersionNotFoundException;
 var APIServiceException = require('../common/error.js').APIServiceException;
+var cors = require('cors');
 
 app.set('view engine', 'ejs');
 
@@ -62,13 +62,15 @@ app.get('/', function(req, res){
 // login
 app.use('/login', login);
 
+var corsOptions = {
+    origin: '*'
+};
+
 // forward this to userAuth service before token authenication
 // kicks in because this is userAuth creation
-app.post('/userauth', helpers.wrap(function *(req, res){
+app.post('/userauth', cors(corsOptions), helpers.wrap(function *(req, res){
     var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth', 'POST'); 
-    var results = yield request(options).catch(function(err){
-        throw new APIServiceException(req, 'Request to UserAuthService failed.', 503, JSON.parse(err.error));
-    });
+    var results = yield request(options);
 
     res.status(200).json(JSON.parse(results));
 }));

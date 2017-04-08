@@ -1,11 +1,11 @@
 'use strict'
 
-module.exports = function(passport){
+var router = require('express').Router();
+var TokenGenerator = new require('../../common/tokengenerator.js').TokenGenerator;
+var helpers = require('../../common/helpers.js');
+var ForbiddenException = require('../../common/error.js').ForbiddenException;
 
-    var router = require('express').Router();
-    var TokenGenerator = new require('../../common/tokengenerator.js').TokenGenerator;
-    var helpers = require('../../common/helpers.js');
-    var ForbiddenException = require('../../common/error.js').ForbiddenException;
+module.exports = function(passport){
 
     router.post('/', passport.authenticate('local'), helpers.wrap(function *(req, res){
         if (req.user && req.user.email && req.user.id && req.user.name){

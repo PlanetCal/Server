@@ -4,8 +4,16 @@ var config = require('../../common/config.js');
 var router = require('express').Router();
 var request = require('request-promise');
 var helpers = require('../../common/helpers.js');
+var cors = require('cors');
 
 module.exports = function(){
+
+    var corsOptions = {
+      origin: '*',
+      method: ['GET', 'POST', 'PUT', 'DELETE']
+    };
+
+    router.options('/*', cors(corsOptions));
 
     router.get('/:id', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'GET'); 

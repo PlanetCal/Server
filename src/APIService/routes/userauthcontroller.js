@@ -4,8 +4,17 @@ var config = require('../../common/config.js');
 var router = require('express').Router();
 var request = require('request-promise');
 var helpers = require('../../common/helpers.js');
+var cors = require('cors');
 
 module.exports = function(){
+
+    var corsOptions = {
+      origin: '*',
+      method: ['POST', 'PUT', 'DELETE']
+    };
+
+    router.options('*', cors(corsOptions));
+
     router.put('/:id', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth/' + req.params.id, 'PUT'); 
         var results = yield *callUserAuthService(options);

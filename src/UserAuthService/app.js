@@ -43,8 +43,8 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    var wrappedException = new UserAuthServiceException(req, 'Unable to process request from UserAuthService.', err.code, err);
-    res.status(err.code || 500).json(wrappedException);
+	console.log(err.stack);
+    res.status(err.code || 500).send(err.stack);
 });
 
 var port = process.env.PORT || config.userAuthServicePort;

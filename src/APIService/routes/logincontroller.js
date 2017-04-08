@@ -1,13 +1,20 @@
 'use strict'
 
-module.exports = function(){
+var router = require('express').Router();
+var request = require('request-promise');
+var config = require('../../common/config.js');
+var bodyParser = require('body-parser');
+var helpers = require('../../common/helpers.js');
+var APIServiceException = require('../../common/error.js').APIServiceException;
+var cors = require('cors');
 
-    var router = require('express').Router();
-    var request = require('request-promise');
-    var config = require('../../common/config.js');
-    var bodyParser = require('body-parser');
-    var helpers = require('../../common/helpers.js');
-    var APIServiceException = require('../../common/error.js').APIServiceException;
+module.exports = function(){
+    var corsOptions = {
+      origin: '*',
+      method: ['GET', 'POST']
+    };
+
+    router.options('/*', cors(corsOptions));
 
     router.get('/', helpers.wrap(function *(req, res){
         res.render('login');

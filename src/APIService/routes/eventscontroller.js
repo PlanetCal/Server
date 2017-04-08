@@ -5,9 +5,17 @@ var router = require('express').Router();
 var request = require('request-promise');
 var helpers = require('../../common/helpers.js');
 var qs = require('qs');
+var cors = require('cors');
 var BadRequestException = require('../../common/error.js').BadRequestException;
 
 module.exports = function(){
+
+    var corsOptions = {
+      origin: '*',
+      method: ['GET', 'POST', 'PUT', 'DELETE']
+    };
+
+    router.options('/*', cors(corsOptions));
 
     var controllerName = 'events';
     var endpoint = config.eventsServiceEndpoint;

@@ -1,16 +1,16 @@
 'use strict'
 
-module.exports = function(passport){
+var router = require('express').Router();
+var TokenGenerator = new require('../../common/tokengenerator.js').TokenGenerator;
+var PasswordCrypto = require('../passwordcrypto.js').PasswordCrypto;
+var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
+var config = require('../../common/config.js');
+var dal = new DataAccessLayer(config.documentdbDatabaseName, config.usersCollectionName);
+var helpers = require('../../common/helpers.js');
+var BadRequestException = require('../../common/error.js').BadRequestException;
+var ForbiddenException = require('../../common/error.js').ForbiddenException;
 
-    var router = require('express').Router();
-    var TokenGenerator = new require('../../common/tokengenerator.js').TokenGenerator;
-    var PasswordCrypto = require('../passwordcrypto.js').PasswordCrypto;
-    var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
-    var config = require('../../common/config.js');
-    var dal = new DataAccessLayer(config.documentdbDatabaseName, config.usersCollectionName);
-    var helpers = require('../../common/helpers.js');
-    var BadRequestException = require('../../common/error.js').BadRequestException;
-    var ForbiddenException = require('../../common/error.js').ForbiddenException;
+module.exports = function(passport){
 
     router.post('/', helpers.wrap(function *(req, res){
         if (!req.body || !req.body.email || !req.body.password){
@@ -21,9 +21,9 @@ module.exports = function(passport){
             var passwordHash = passwordCrypto.generateHash(req.body.password);
             var options = { preTriggerInclude: config.insertUniqueUserTriggerName };   
 
-            var documentResponse = yield dal.insertAsync({ email: req.body.email, passwordHash: passwordHash }, options);
+            var documentResponse = yield dal.insertAsync({ email: req.body.email, passwordHash: passwordHash, name : req.body.name }, options);
             res.status(201);
-            res.json({ email : documentResponse.resource.email, id : documentResponse.resource.id, name : documentReponse.resource.name });                
+            res.json({ email : documentResponse.resource.email, id : documentResponse.resource.id, name : documentResponse.resource.name });                
         }
     }));
 
