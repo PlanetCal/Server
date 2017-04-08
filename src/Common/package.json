@@ -2,11 +2,13 @@
   "name": "common",
   "version": "1.0.0",
   "description": "",
-  "main": "Dal.js",
+  "main": "config.js",
   "dependencies": {
     "bluebird": "^3.5.0",
+    "documentdb-q-promises": "^1.6.0",
     "jwt-simple": "^0.5.1",
-    "documentdb-q-promises": "^1.6.0"
+    "request-promise": "^4.2.0",
+    "request": "^2.81.0"
   },
   "devDependencies": {},
   "scripts": {

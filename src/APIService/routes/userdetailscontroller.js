@@ -8,6 +8,8 @@ var cors = require('cors');
 
 module.exports = function(){
 
+    var serviceName = 'UserDetailsService';
+    
     var corsOptions = {
       origin: '*',
       method: ['GET', 'POST', 'PUT', 'DELETE']
@@ -17,39 +19,33 @@ module.exports = function(){
 
     router.get('/:id', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'GET'); 
-        var results = yield *callUserDetailsService(options);
+        var results = yield *helpers.forwardHttpRequest(options, serviceName);
         res.status(200).json(JSON.parse(results));
     }));
 
     router.get('/:id/events', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id + '/events', 'GET'); 
-        var results = yield *callUserDetailsService(options);
+        var results = yield *helpers.forwardHttpRequest(options, serviceName);
         res.status(200).json(JSON.parse(results));
     }));
 
     router.post('/', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails', 'POST'); 
-        var results = yield *callUserDetailsService(options);
+        var results = yield *helpers.forwardHttpRequest(options, serviceName);
         res.status(201).json(JSON.parse(results));
     }));
 
     router.put('/:id', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req,  config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'PUT'); 
-        var results = yield *callUserDetailsService(options);
+        var results = yield *helpers.forwardHttpRequest(options, serviceName);
         res.status(200).json({id : req.params.id});
     }));
 
     router.delete('/:id', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req,  config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'DELETE'); 
-        var results = yield *callUserDetailsService(options);
+        var results = yield *helpers.forwardHttpRequest(options, serviceName);
         res.status(200).json({id : req.params.id});
     }));
 
     return router;  
-}
-
-function *callUserDetailsService (options){
-    return yield request(options).catch(function(err){
-        throw new APIServiceException(req, 'Request to UserDetailsService failed.', 503, JSON.parse(err.error));
-    });
 }

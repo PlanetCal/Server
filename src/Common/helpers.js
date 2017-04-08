@@ -2,21 +2,23 @@
 
 var config = require('./config.js');
 var Promise = require('bluebird');
+var request = require('request-promise');
 var BadRequestException = require('./error.js').BadRequestException;
 var ForbiddenException = require('./error.js').ForbiddenException;
 var NotFoundEException = require('./error.js').NotFoundException;
 var UnauthorizedException = require('./error.js').UnauthorizedException;
 var InternalServerException = require('./error.js').InternalServerException;
+var HttpRequestException = require('./error.js').HttpRequestException;
 
 module.exports = {
-    'wrap' : function (genFn) { 
-        var cr = Promise.coroutine(genFn) 
-        return function (req, res, next) {
-            cr(req, res, next).catch(next);
-        }
+    'wrap' : function wrap (genFn) { 
+        var cr = Promise.coroutine(genFn) 
+        return function (req, res, next) {
+            cr(req, res, next).catch(next);
+        }
     },
 
-    'getRequestOption' : function (req, targetEndpoint, method){
+    'getRequestOption' : function getRequestOption(req, targetEndpoint, method){
             return {
                 method : method,
                 headers: {'content-type' : 'application/json; charset=utf-8',
@@ -28,7 +30,7 @@ module.exports = {
             };
         },
 
-    'removeDuplicatedItemsById' : function (results){
+    'removeDuplicatedItemsById' : function removeDuplicatedItemsById(results){
             if (results){
 
                 var filteredResults = {};
@@ -47,31 +49,7 @@ module.exports = {
             return [];
         },
 
-    'handleError' : function(res, err, next){
-        if (err instanceof(BadRequestException)) {
-            res.status(400);
-            return res.send({message: err.message});
-        }
-        if (err instanceof(NotFoundException)){
-            res.status(404);
-            return res.send({message: err.message});
-        }    
-        if (err instanceof(ForbiddenException)){
-            res.status(403);
-            return res.send({message: err.message});
-        }
-        if (err instanceof(UnauthorizedException)){
-            res.status(401);
-            return res.send({message: err.message});
-        }
-        if (err instanceof(InternalServerException)){
-            res.status(500);
-            return res.send({message: err.message});
-        }
-        next(err);
-    },
-
-    'convertFieldSelectionToConstraints' : function(prefix, fields){
+    'convertFieldSelectionToConstraints' : function convertFieldSelectionToConstraints(prefix, fields){
         if (fields){
             var arr = [];
             for(var i in fields){
@@ -86,23 +64,28 @@ module.exports = {
         return '';
     },
 
-    'constructResponseJsonFromExceptionRecursive' : function constructResponseJsonFromExceptionRecursive(app, exceptionObject){
+    'constructResponseJsonFromExceptionRecursive' : function constructResponseJsonFromExceptionRecursive(exceptionObject){
         var returnedJson;
         if (exceptionObject){
             returnedJson = 
                 { 
                     name : exceptionObject.name, 
                     message : exceptionObject.message,
-                    activityid : exceptionObject.activityId,
-                    innerException : constructResponseJsonFromExceptionRecursive(app, exceptionObject.innerException),
-                    serviceName : exceptionObject.serviceName
+                    code : exceptionObject.code,                    
+                    activityId : exceptionObject.activityId,
+                    innerException : constructResponseJsonFromExceptionRecursive(exceptionObject.innerException),
+                    serviceName : exceptionObject.serviceName,
+                    url : exceptionObject.url,
+                    stack : exceptionObject.stack
                 };
-
-            if (app.get('env') === 'development') {
-                returnedJson.stack = exceptionObject.stack; 
-            }            
         }
 
         return returnedJson;
+    },
+
+    'forwardHttpRequest' : function *forwardHttpRequest(options, serviceName){
+        return yield request(options).catch(function(err){
+            throw new HttpRequestException('Request to ' + serviceName + ' failed.', options.url, JSON.parse(err.error));
+        });
     }
 }

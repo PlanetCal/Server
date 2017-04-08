@@ -23,7 +23,7 @@ var NotFoundException = require('../common/error.js').NotFoundException;
 var ForbiddenException = require('../common/error.js').ForbiddenException;
 var UnauthorizedException = require('../common/error.js').UnauthorizedException;
 var VersionNotFoundException = require('../common/error.js').VersionNotFoundException;
-var APIServiceException = require('../common/error.js').APIServiceException;
+var HttpRequestException = require('../common/error.js').HttpRequestException;
 var cors = require('cors');
 
 app.set('view engine', 'ejs');
@@ -70,8 +70,7 @@ var corsOptions = {
 // kicks in because this is userAuth creation
 app.post('/userauth', cors(corsOptions), helpers.wrap(function *(req, res){
     var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth', 'POST'); 
-    var results = yield request(options);
-
+    var results = yield *helpers.forwardHttpRequest(options);
     res.status(200).json(JSON.parse(results));
 }));
 
@@ -104,8 +103,9 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    var wrappedException = new APIServiceException(req, 'Unable to process request from APIService.', err.code, err);
-    res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(app, err));
+    err.serviceName = 'APIService';
+    err.activityid = req.headers['activityid'];
+    res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(err));
 });
 
 var port = process.env.PORT || config.apiServicePort;

@@ -43,8 +43,9 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-	console.log(err.stack);
-    res.status(err.code || 500).send(err.stack);
+    err.serviceName = 'UserAuthService';
+    err.activityId = req.headers['activityid'];
+    res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(err));
 });
 
 var port = process.env.PORT || config.userAuthServicePort;

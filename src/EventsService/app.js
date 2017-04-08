@@ -25,8 +25,9 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    var wrappedException = new EventsServiceException(req, 'Unable to process request from EventsService.', err.code, err);
-    res.status(err.code || 500).json(wrappedException);
+    err.serviceName = 'EventsService';
+    err.activityId = req.headers['activityid'];
+    res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(err));
 });
 
 var port = process.env.PORT || config.eventsServicePort;

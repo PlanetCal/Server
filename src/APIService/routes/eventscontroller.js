@@ -10,6 +10,8 @@ var BadRequestException = require('../../common/error.js').BadRequestException;
 
 module.exports = function(){
 
+    var serviceName = 'EventsService';
+
     var corsOptions = {
       origin: '*',
       method: ['GET', 'POST', 'PUT', 'DELETE']
@@ -26,7 +28,7 @@ module.exports = function(){
             url += '?' + qs.stringify(req.query);
         }
         var options = helpers.getRequestOption(req, url, 'GET'); 
-        var results = yield *callEventsService(options);
+        var results = yield *helpers.forwardHttpRequest(options, serviceName);
         res.status(200).json(JSON.parse(results));
     }));
 
@@ -36,33 +38,27 @@ module.exports = function(){
         }
         var url = endpoint + '/' + controllerName + '?' + qs.stringify(req.query);
         var options = helpers.getRequestOption(req, url, 'GET'); 
-        var results = yield *callEventsService(options);
+        var results = yield *helpers.forwardHttpRequest(options, serviceName);
         res.status(200).json(JSON.parse(results));
     }));
 
     router.post('/', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, endpoint + '/' + controllerName, 'POST'); 
-        var results = yield *callEventsService(options);
+        var results = yield *helpers.forwardHttpRequest(options, serviceName);
         res.status(200).json(JSON.parse(results));
     }));
 
     router.put('/:id', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req,  endpoint + '/' + controllerName + '/' + req.params.id, 'PUT'); 
-        var results = yield *callEventsService(options);
+        var results = yield *helpers.forwardHttpRequest(options, serviceName);
         res.status(200).json({id : req.params.id});
     }));
 
     router.delete('/:id', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req,  endpoint + '/' + controllerName + '/' + req.params.id, 'DELETE'); 
-        var results = yield *callEventsService(options);
+        var results = yield *helpers.forwardHttpRequest(options, serviceName);
         res.status(200).json({id : req.params.id});
     }));
 
     return router;  
-}
-
-function *callEventsService (options){
-    return yield request(options).catch(function(err){
-        throw new APIServiceException(req, 'Request to EventsService failed.', 503, JSON.parse(err.error));
-    });
 }

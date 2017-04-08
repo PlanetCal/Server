@@ -60,7 +60,6 @@ module.exports = {
         Error.captureStackTrace(this, this.constructor);
         this.name = 'DatabaseException';
         this.code = docdbErr.code;
-        this.serviceName = 'Database';
 
         var parsedBody;
         try{
@@ -78,58 +77,13 @@ module.exports = {
         // intentionally left innerError undefined.
     },
 
-    UserAuthServiceException : function UserAuthServiceException (req, message, code, innerException){
+    HttpRequestException : function HttpRequestException(message, url, innerException){
         this.constructor.prototype.__proto__ = Error.prototype;
-        Error.captureStackTrace(this, UserAuthServiceException);
-        this.name = 'UserAuthServiceException';
-        this.code = code || 503;
-        this.serviceName = 'UserAuthService';
-        this.activityId = innerException.activityId || req.headers['activityid'];
+        Error.captureStackTrace(this, this.constructor);
+        this.name = 'HttpRequestException';
         this.message = message;
-        this.innerException = innerException;
-    },
-
-    UserDetailsServiceException : function UserDetailsServiceException (req, message, code, innerException){
-        this.constructor.prototype.__proto__ = Error.prototype;
-        Error.captureStackTrace(this, UserDetailsServiceException);
-        this.name = 'UserDetailsServiceException';
-        this.code = code || 503;
-        this.serviceName = 'UserDetailsService';
-        this.activityId = innerException.activityId || req.headers['activityid'];
-        this.message = message;
-        this.innerException = innerException;
-    },
-
-    EventsServiceException : function EventsServiceException (req, message, code, innerException){
-        this.constructor.prototype.__proto__ = Error.prototype;
-        Error.captureStackTrace(this, EventsServiceException);
-        this.name = 'EventsServiceException';
-        this.code = code || 503;
-        this.serviceName = 'EventsService';
-        this.activityId = innerException.activityId || req.headers['activityid'];
-        this.message = message;
-        this.innerException = innerException;
-    },
-
-    GroupsServiceException : function GroupsServiceException (req, message, code, innerException){
-        this.constructor.prototype.__proto__ = Error.prototype;
-        Error.captureStackTrace(this, GroupsServiceException);
-        this.name = 'GroupsServiceException';
-        this.code = code || 503;
-        this.serviceName = 'GroupsService';
-        this.activityId = innerException.activityId || req.headers['activityid'];
-        this.message = message;
-        this.innerException = innerException;
-    },
-
-    APIServiceException : function APIServiceException(req, message, code, innerException){
-        this.constructor.prototype.__proto__ = Error.prototype;
-        Error.captureStackTrace(this, APIServiceException);
-        this.name = 'APIServiceException';
-        this.code = code || 503;
-        this.serviceName = 'APIService';
-        this.activityId = innerException.activityId || req.headers['activityid'];
-        this.message = message;
-        this.innerException = innerException;        
+        this.code = 503; //TODO: Is this correct?
+        this.innerException = innerException;   
+        this.url = url;     
     }
 }
