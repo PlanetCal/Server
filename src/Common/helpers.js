@@ -12,9 +12,16 @@ var HttpRequestException = require('./error.js').HttpRequestException;
 
 module.exports = {
     'wrap' : function wrap (genFn) { 
-        var cr = Promise.coroutine(genFn) 
+        var cr = Promise.coroutine(genFn);
         return function (req, res, next) {
             cr(req, res, next).catch(next);
+        }
+    },
+
+    'wrapLocalStrategyAuth' : function wrapLocalStrategyAuth(genFunc){
+        var cr = Promise.coroutine(genFunc); 
+        return function (req, email, password, done, next) {
+            cr(req, email, password, done, next).catch(next);
         }
     },
 
@@ -85,6 +92,7 @@ module.exports = {
 
     'forwardHttpRequest' : function *forwardHttpRequest(options, serviceName){
         return yield request(options).catch(function(err){
+            console.log(err);
             throw new HttpRequestException('Request to ' + serviceName + ' failed.', options.url, JSON.parse(err.error));
         });
     }

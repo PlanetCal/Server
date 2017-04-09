@@ -15,7 +15,6 @@ var UserAuth = require('./routes/userauthcontroller.js')(passport);
 var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
 var helpers = require('../common/helpers.js');
 var NotFoundException = require('../common/error.js').NotFoundException;
-var UserAuthServiceException = require('../common/error.js').UserAuthServiceException;
 
 app.set('view engine', 'ejs');
 

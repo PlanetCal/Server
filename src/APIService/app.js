@@ -102,6 +102,7 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
     err.serviceName = 'APIService';
     err.activityId = req.headers['activityid'];
+    console.log(JSON.stringify(err));
     res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(err));
 });
 

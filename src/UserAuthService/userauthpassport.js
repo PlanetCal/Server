@@ -1,46 +1,42 @@
 'use strict'
 
 var helpers = require('../common/helpers.js');
+var config = require('../common/config.js');
+var LocalStrategy = require('passport-local').Strategy;
+
+var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
+var TokenGenerator = require('../common/tokengenerator.js').TokenGenerator;
+var DatabaseException = require('../common/error.js').DatabaseException;
+var UnauthorizedException = require('../common/error.js').UnauthorizedException;
+var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
+var dal = new DataAccessLayer(config.documentdbDatabaseName, config.usersCollectionName);
 
 module.exports = function(passport){
-
-    var config = require('../common/config.js');
-    var LocalStrategy = require('passport-local').Strategy;
-
-    var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
-    var TokenGenerator = require('../common/tokengenerator.js').TokenGenerator;
-    var InternalServerException = require('../common/error.js').InternalServerException;
-    var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
-    var dal = new DataAccessLayer(config.documentdbDatabaseName, config.usersCollectionName);
 
     passport.use('local', new LocalStrategy({
             // by default, local strategy uses username and password, we will override with email
             usernameField: 'email',
             passwordField: 'password',
             passReqToCallback: true
-        },    
-        function(req, email, password, done){
+        },
+        helpers.wrapLocalStrategyAuth(function *(req, email, password, done){
             var querySpec = getUserQuerySpecFromEmail(email);
-            dal.getAsync(querySpec)
-                .then(function(documentResponse){
-                    var results = documentResponse.feed;
-                    var passwordCrypto = new PasswordCrypto();
 
-                    if (results && results.length > 0){
-                        // should yield only one result if found
-                        var user = results[0];
+            var documentResponse = yield dal.getAsync(querySpec);
+            var results = documentResponse.feed;
+            var passwordCrypto = new PasswordCrypto();
 
-                        if (passwordCrypto.compareValues(password, user.passwordHash)){
-                            return done(null, user);
-                        }
-                    }
-                    return done(null, null);                    
-                })
-                .fail(function(err){
-                    return done(err, null);
-                });
-    }));
+            if (results && results.length > 0){
+                // should yield only one result if found
+                var user = results[0];
 
+                if (passwordCrypto.compareValues(password, user.passwordHash)){
+                    return done(null, user);
+                }
+            }
+            return done(new UnauthorizedException('Login failed'), null);
+        })));
+    
     passport.serializeUser(function(user, done) {
         done(null, user.id);
     });
@@ -50,10 +46,10 @@ module.exports = function(passport){
         var querySpec = getUserQuerySpecFromId(id);
         dal.getAsync(querySpec)
             .then(function(documentResponse){
-                done(err, user);
+                done(null, user);
             })
             .fail(function(err){
-                done(err, user);
+                done(err);
             });
     });
 }
