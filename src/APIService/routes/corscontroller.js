@@ -9,12 +9,11 @@ module.exports = function(){
     
     var corsOptions = {
       origin: '*',
-      method : ['POST'],
       allowedHeaders : ['Content-Type', 'Authorization'],
       exposedHeaders : ['Version']
     };
 
-    //corsOptions.method = ['POST'];
+    corsOptions.method = ['POST'];
 
     router.all('/login', cors(corsOptions));
 
