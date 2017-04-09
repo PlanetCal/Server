@@ -7,7 +7,8 @@ module.exports = {
         Error.captureStackTrace(this, this.constructor);
         this.name = 'BadRequestException';
         this.message = message;                
-        this.code = 400;
+        this.code = innerException.code || 400;
+        this.innerException = innerException;
     },
 
     NotFoundException : function NotFoundException (message, innerException) {
@@ -15,7 +16,7 @@ module.exports = {
         Error.captureStackTrace(this, this.constructor);
         this.name = 'NotFoundException';
         this.message = message;
-        this.code = 404;
+        this.code = innerException.code || 404;
         this.innerException = innerException;
     },
 
@@ -24,7 +25,7 @@ module.exports = {
         Error.captureStackTrace(this, this.constructor);
         this.name = 'ForbiddenException';
         this.message = message;
-        this.code = 403;
+        this.code = innerException.code || 403;
         this.innerException = innerException;
     },
 
@@ -33,7 +34,7 @@ module.exports = {
         Error.captureStackTrace(this, this.constructor);
         this.name = 'UnauthorizedException';
         this.message = message;
-        this.code = 401;
+        this.code = innerException.code || 401;
         this.innerException = innerException;
     },
 
@@ -42,7 +43,7 @@ module.exports = {
         Error.captureStackTrace(this, this.constructor);
         this.name = 'VersionNotFoundException';
         this.message = message;
-        this.code = 400; // Badrequest
+        this.code = innerException.code || 400; // Badrequest
         this.innerException = innerException;
     },
 
@@ -51,7 +52,7 @@ module.exports = {
         Error.captureStackTrace(this, this.constructor);
         this.name = 'InternalServerException';
         this.message = message;
-        this.code = 500;
+        this.code = innerException.code || 500;
         this.innerException = innerException;
     },
 
@@ -82,7 +83,7 @@ module.exports = {
         Error.captureStackTrace(this, this.constructor);
         this.name = 'HttpRequestException';
         this.message = message;
-        this.code = 503; //TODO: Is this correct?
+        this.code = innerException.code || 503;
         this.innerException = innerException;   
         this.url = url;     
     }

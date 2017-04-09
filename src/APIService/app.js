@@ -102,7 +102,17 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
     err.serviceName = 'APIService';
     err.activityId = req.headers['activityid'];
-    console.log(JSON.stringify(err));
+    var errorJson = helpers.constructResponseJsonFromExceptionRecursive(err);
+
+    if (app.get('env') !== 'development') {
+        // suppress stack if this is not running on development env
+        var current = err;
+
+        while (current){
+            current.stack = 'hidden';
+            current = current.innerException;
+        }
+    }
     res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(err));
 });
 

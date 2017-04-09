@@ -26,35 +26,33 @@ module.exports = {
     },
 
     'getRequestOption' : function getRequestOption(req, targetEndpoint, method){
-            return {
-                method : method,
-                headers: {'content-type' : 'application/json; charset=utf-8',
-                          'auth-identity' : req.headers['auth-identity'],
-                          'version' : req.headers['version'],
-                          'activityid' : req.headers['activityid']},
-                url: targetEndpoint,
-                body: JSON.stringify(req.body)
-            };
-        },
+        return {
+            method : method,
+            headers: {'content-type' : 'application/json; charset=utf-8',
+                      'auth-identity' : req.headers['auth-identity'],
+                      'version' : req.headers['version'],
+                      'activityid' : req.headers['activityid']},
+            url: targetEndpoint,
+            body: JSON.stringify(req.body)
+        };
+    },
 
     'removeDuplicatedItemsById' : function removeDuplicatedItemsById(results){
-            if (results){
+        if (results){
+            var filteredResults = {};
 
-                var filteredResults = {};
-
-                // de-dupe uisng dictionary
-                for (var i in results){
-                    var obj = results[i];
-                    if (!filteredResults.hasOwnProperty(obj.id)){
-                        filteredResults[obj.id] = obj;
-                    }
+            // de-dupe uisng dictionary
+            for (var i in results){
+                var obj = results[i];
+                if (!filteredResults.hasOwnProperty(obj.id)){
+                    filteredResults[obj.id] = obj;
                 }
-
-                return Object.keys(filteredResults).map(key => filteredResults[key]);
             }
 
-            return [];
-        },
+            return Object.keys(filteredResults).map(key => filteredResults[key]);
+        }
+        return [];
+    },
 
     'convertFieldSelectionToConstraints' : function convertFieldSelectionToConstraints(prefix, fields){
         if (fields){
@@ -67,8 +65,23 @@ module.exports = {
                 return ',' + arr.join(', ');
             }
         }
-
         return '';
+    },
+
+    'getInnerestHttpCodeInExceptionObject' : function getInnerestHttpCodeInExceptionObject(exceptionObject){
+        if (!exceptionObject){            
+            return 500;
+        }
+
+        var current = exceptionObject;
+        var code = exceptionObject.code;
+
+        while(current.innerException){
+            current = current.innerException;
+            code = current.code;
+        }
+
+        return code;
     },
 
     'constructResponseJsonFromExceptionRecursive' : function constructResponseJsonFromExceptionRecursive(exceptionObject){
@@ -78,7 +91,7 @@ module.exports = {
                 { 
                     name : exceptionObject.name, 
                     message : exceptionObject.message,
-                    code : exceptionObject.code,                    
+                    code : exceptionObject.code,
                     activityId : exceptionObject.activityId,
                     innerException : constructResponseJsonFromExceptionRecursive(exceptionObject.innerException),
                     serviceName : exceptionObject.serviceName,
