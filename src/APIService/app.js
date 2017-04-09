@@ -16,7 +16,7 @@ var userAuth = require('./routes/userauthcontroller.js')();
 var userDetails = require('./routes/userdetailscontroller.js')();
 var events = require('./routes/eventscontroller.js')();
 var groups = require('./routes/groupscontroller.js')();
-
+var cors = require('./routes/corscontroller.js')();
 var helpers = require('../common/helpers.js');
 var BadRequestException = require('../common/error.js').BadRequestException;
 var NotFoundException = require('../common/error.js').NotFoundException;
@@ -24,7 +24,6 @@ var ForbiddenException = require('../common/error.js').ForbiddenException;
 var UnauthorizedException = require('../common/error.js').UnauthorizedException;
 var VersionNotFoundException = require('../common/error.js').VersionNotFoundException;
 var HttpRequestException = require('../common/error.js').HttpRequestException;
-var cors = require('cors');
 
 app.set('view engine', 'ejs');
 
@@ -42,9 +41,13 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// enable CORS for all requests first
+app.use('/', cors);
+
+// then, all requests are subject to version header check
 app.use('/*', function (req, res, next){
+    console.log('[APIService]: ');
     if (!req.headers['version']){
-        console.log('version: ' + req.headers.version);
         throw new VersionNotFoundException('Cannot find version in header.');
     }
     else{
@@ -53,8 +56,6 @@ app.use('/*', function (req, res, next){
     }
 });
 
-// router set up
-// root
 app.get('/', function(req, res){
     res.render('index', { isAuthenticated: req.isAuthenticated(), user: req.user });
 });
@@ -62,13 +63,9 @@ app.get('/', function(req, res){
 // login
 app.use('/login', login);
 
-var corsOptions = {
-    origin: '*'
-};
-
 // forward this to userAuth service before token authenication
 // kicks in because this is userAuth creation
-app.post('/userauth', cors(corsOptions), helpers.wrap(function *(req, res){
+app.post('/userauth', helpers.wrap(function *(req, res){
     var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth', 'POST'); 
     var results = yield *helpers.forwardHttpRequest(options, 'UserAuthService');
     res.status(200).json(JSON.parse(results));

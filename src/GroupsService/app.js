@@ -8,7 +8,6 @@ var helpers = require('../common/helpers.js');
 var BadRequestException = require('../common/error.js').BadRequestException;
 var ForbiddenException = require('../common/error.js').ForbiddenException;
 var NotFoundException = require('../common/error.js').NotFoundException;
-var GroupsServiceException = require('../common/error.js').GroupsServiceException;
 var app = express();
 
 app.set('view engine', 'ejs');

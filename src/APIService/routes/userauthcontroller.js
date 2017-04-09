@@ -11,13 +11,6 @@ module.exports = function(){
 
     var serviceName = 'UserAuthService';
     
-    var corsOptions = {
-      origin: '*',
-      method: ['POST', 'PUT', 'DELETE']
-    };
-
-    router.options('*', cors(corsOptions));
-
     router.put('/:id', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth/' + req.params.id, 'PUT'); 
         var results = yield *helpers.forwardHttpRequest(options, serviceName);

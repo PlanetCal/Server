@@ -8,7 +8,6 @@ var helpers = require('../common/helpers.js');
 var BadRequestException = require('../common/error.js').BadRequestException;
 var ForbiddenException = require('../common/error.js').ForbiddenException;
 var NotFoundException = require('../common/error.js').NotFoundException;
-var UserDetailsServiceException = require('../common/error.js').UserDetailsServiceException;
 
 var app = express();
 

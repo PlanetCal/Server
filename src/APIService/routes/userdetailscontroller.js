@@ -10,13 +10,6 @@ module.exports = function(){
 
     var serviceName = 'UserDetailsService';
     
-    var corsOptions = {
-      origin: '*',
-      method: ['GET', 'POST', 'PUT', 'DELETE']
-    };
-
-    router.options('/*', cors(corsOptions));
-
     router.get('/:id', helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'GET'); 
         var results = yield *helpers.forwardHttpRequest(options, serviceName);

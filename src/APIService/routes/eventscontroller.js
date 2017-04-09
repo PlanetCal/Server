@@ -12,13 +12,6 @@ module.exports = function(){
 
     var serviceName = 'EventsService';
 
-    var corsOptions = {
-      origin: '*',
-      method: ['GET', 'POST', 'PUT', 'DELETE']
-    };
-
-    router.options('/*', cors(corsOptions));
-
     var controllerName = 'events';
     var endpoint = config.eventsServiceEndpoint;
 

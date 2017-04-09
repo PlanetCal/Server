@@ -12,13 +12,6 @@ module.exports = function(){
 
     var serviceName = 'GroupsService';
     
-    var corsOptions = {
-      origin: '*',
-      method: ['GET', 'POST', 'PUT', 'DELETE']
-    };
-
-    router.options('/*', cors(corsOptions));
-
     var controllerName = 'groups';
     var endpoint = config.groupsServiceEndpoint;
 
