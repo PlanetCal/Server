@@ -68,22 +68,6 @@ module.exports = {
         return '';
     },
 
-    'getInnerestHttpCodeInExceptionObject' : function getInnerestHttpCodeInExceptionObject(exceptionObject){
-        if (!exceptionObject){            
-            return 500;
-        }
-
-        var current = exceptionObject;
-        var code = exceptionObject.code;
-
-        while(current.innerException){
-            current = current.innerException;
-            code = current.code;
-        }
-
-        return code;
-    },
-
     'constructResponseJsonFromExceptionRecursive' : function constructResponseJsonFromExceptionRecursive(exceptionObject){
         var returnedJson;
         if (exceptionObject){
@@ -105,7 +89,6 @@ module.exports = {
 
     'forwardHttpRequest' : function *forwardHttpRequest(options, serviceName){
         return yield request(options).catch(function(err){
-            console.log(err);
             throw new HttpRequestException('Request to ' + serviceName + ' failed.', options.url, JSON.parse(err.error));
         });
     }
