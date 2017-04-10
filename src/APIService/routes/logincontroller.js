@@ -10,12 +10,22 @@ var cors = require('cors');
 module.exports = function(){
 
     var serviceName = 'UserAuthService';
+
+    var corsOptions = {
+      origin : '*', 
+      methods : ['GET', 'POST'],
+      allowedHeaders : ['Content-Type'],
+      exposedHeaders : ['Version'],
+      optionsSuccessStatus : 200,
+      preflightContinue : true,
+      credentials : true
+    };
     
-    router.get('/', helpers.wrap(function *(req, res){
+    router.get('/', cors(corsOptions), helpers.wrap(function *(req, res){
         res.render('login');
     }));
 
-    router.post('/', helpers.wrap(function *(req, res){
+    router.post('/', cors(corsOptions), helpers.wrap(function *(req, res){
         console.log('[APIService|logincontroller]: ');
         var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/login', 'POST');
         var results = yield *helpers.forwardHttpRequest(options, serviceName);

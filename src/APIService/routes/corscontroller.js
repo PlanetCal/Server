@@ -8,42 +8,34 @@ var cors = require('cors');
 module.exports = function(){
     
     const origin = '*'; //TODO: For now
-    const allowedHeaders = ['Content-Type', 'Authorization'];
-    const exposedHeaders = ['Version'];
 
     var corsOptions = {
-      origin : origin, 
-      methods : ['POST'],
-      allowedHeaders : allowedHeaders,
-      exposedHeaders : exposedHeaders,
+      origin : '*', 
+      methods : ['GET', 'POST'],
       optionsSuccessStatus : 200
     };
 
-    router.all('/login', cors(corsOptions));
+    router.options('/login', cors(corsOptions));
 
     corsOptions = {
-      origin : origin, 
+      origin : '*', 
       methods : ['POST', 'PUT', 'DELETE'],
-      allowedHeaders : allowedHeaders,
-      exposedHeaders : exposedHeaders,
       optionsSuccessStatus : 200
     };
 
-    router.all('/userauth', cors(corsOptions));
+    router.options('/userauth', cors(corsOptions));
 
     corsOptions = {
-      origin : origin, 
+      origin : '*', 
       methods : ['GET', 'POST', 'PUT', 'DELETE'],
-      allowedHeaders : allowedHeaders,
-      exposedHeaders : exposedHeaders,
       optionsSuccessStatus : 200
     };
 
-    router.all('/userdetails', cors(corsOptions));
+    router.options('/userdetails', cors(corsOptions));
 
-    router.all('/groups', cors(corsOptions));
+    router.options('/groups', cors(corsOptions));
 
-    router.all('/events', cors(corsOptions));
+    router.options('/events', cors(corsOptions));
 
     return router;  
 }

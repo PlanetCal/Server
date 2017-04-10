@@ -44,6 +44,7 @@ app.use(passport.session());
 // enable CORS for all requests first
 app.use('/', cors);
 
+
 // then, all requests are subject to version header check
 app.use('/', function (req, res, next){
     console.log('[APIService]: ');
