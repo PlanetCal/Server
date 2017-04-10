@@ -15,7 +15,7 @@ module.exports = function(){
 
     corsOptions.method = ['POST'];
 
-    router.all('/login', cors(corsOptions));
+    router.all('/login/*', cors(corsOptions));
 
     corsOptions.method = ['POST', 'PUT', 'DELETE'];
 

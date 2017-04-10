@@ -3,56 +3,80 @@
 module.exports = {
 
     BadRequestException : function BadRequestException (message, innerException) {
+        const defaultHttpCode = 400;
+        this.code = defaultHttpCode;
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
         this.name = 'BadRequestException';
         this.message = message;                
-        this.code = innerException.code || 400;
+        if (innerException){    
+            this.code = innerException.code || defaultHttpCode;
+        }
         this.innerException = innerException;
     },
 
     NotFoundException : function NotFoundException (message, innerException) {
+        const defaultHttpCode = 404;
+        this.code = defaultHttpCode;
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
         this.name = 'NotFoundException';
         this.message = message;
-        this.code = innerException.code || 404;
+        if (innerException){    
+            this.code = innerException.code || defaultHttpCode;
+        }
         this.innerException = innerException;
     },
 
     ForbiddenException : function ForbiddenException (message, innerException) {
+        const defaultHttpCode = 403;
+        this.code = defaultHttpCode;
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
         this.name = 'ForbiddenException';
         this.message = message;
-        this.code = innerException.code || 403;
+        if (innerException){    
+            this.code = innerException.code || defaultHttpCode;
+        }
         this.innerException = innerException;
     },
 
     UnauthorizedException : function UnauthorizedException (message, innerException){
+        const defaultHttpCode = 401;
+        this.code = defaultHttpCode;
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
         this.name = 'UnauthorizedException';
         this.message = message;
-        this.code = innerException.code || 401;
+        if (innerException){    
+            this.code = innerException.code || defaultHttpCode;
+        }
         this.innerException = innerException;
     },
 
     VersionNotFoundException : function VersionNotFoundException (message, innerException){
+        const defaultHttpCode = 400; // BadRequest
+        this.code = defaultHttpCode;
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
         this.name = 'VersionNotFoundException';
         this.message = message;
-        this.code = innerException.code || 400; // Badrequest
+        if (innerException){    
+            this.code = innerException.code || defaultHttpCode;
+        }
         this.innerException = innerException;
     },
 
     InternalServerException : function InternalServerException (message, innerException){
+        const defaultHttpCode = 500;
+        this.code = defaultHttpCode;
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
         this.name = 'InternalServerException';
         this.message = message;
-        this.code = innerException.code || 500;
+        if (innerException){    
+            this.code = innerException.code || defaultHttpCode;
+        }
         this.innerException = innerException;
     },
 
@@ -79,11 +103,15 @@ module.exports = {
     },
 
     HttpRequestException : function HttpRequestException(message, url, innerException){
+        const defaultHttpCode = 503;
+        this.code = defaultHttpCode;
         this.constructor.prototype.__proto__ = Error.prototype;
         Error.captureStackTrace(this, this.constructor);
         this.name = 'HttpRequestException';
         this.message = message;
-        this.code = innerException.code || 503;
+        if (innerException){    
+            this.code = innerException.code || defaultHttpCode;
+        }
         this.innerException = innerException;   
         this.url = url;     
     }
