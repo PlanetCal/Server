@@ -22,9 +22,8 @@ router.get('/:id', helpers.wrap(function *(req, res) {
         throw new NotFoundException('Group with id ' + req.params.id + ' not found.');
     }
 
-    res.status(200);
     // TODO: assert when results has more than 1 element.
-    res.send(results[0]);
+    res.status(200).json(results[0]);
 }));
 
 router.get('/', helpers.wrap(function *(req, res) {
@@ -48,8 +47,7 @@ router.get('/', helpers.wrap(function *(req, res) {
     }
     var results = documentResponse.feed;
     var filteredResults = helpers.removeDuplicatedItemsById(results);
-    res.status(200);
-    res.json(filteredResults);
+    res.status(200).json(filteredResults);
 }));
 
 router.put('/', helpers.wrap(function *(req, res) {
@@ -64,8 +62,7 @@ router.put('/', helpers.wrap(function *(req, res) {
     group['ownedById'] = req.headers['auth-identity'];
     var documentResponse = yield dal.updateAsync(group, {});
 
-    res.status(201);
-    res.send({ id : documentResponse.resource.id });                        
+    res.status(201).json({ id : documentResponse.resource.id });                        
 }));
 
 router.post('/', helpers.wrap(function *(req, res) {
@@ -80,14 +77,12 @@ router.post('/', helpers.wrap(function *(req, res) {
     group['ownedById'] = req.headers['auth-identity'];
     var documentResponse = yield dal.insertAsync(group, {});
 
-    res.status(201);
-    res.send({ id : documentResponse.resource.id });
+    res.status(201).json({ id : documentResponse.resource.id });
 }));
 
 router.delete('/:id', helpers.wrap(function *(req, res) {
     var documentResponse = yield dal.removeAsync(req.params.id);
-    res.status(200);
-    res.send({ id : documentResponse.resource.id });                        
+    res.status(200).json({ id : documentResponse.resource.id });                        
 }));
 
 function findGroupByKeywordsAsync(keywords, fields) {
