@@ -1,14 +1,13 @@
 'use strict'
 
-var config = require('../../common/config.js');
-var router = require('express').Router();
-var request = require('request-promise');
-var helpers = require('../../common/helpers.js');
-var qs = require('qs');
-var cors = require('cors');
-var BadRequestException = require('../../common/error.js').BadRequestException;
+module.exports = function(config){
+    var router = require('express').Router();
+    var request = require('request-promise');
+    var qs = require('qs');
+    var cors = require('cors');
 
-module.exports = function(){
+    var helpers = require('../../common/helpers.js');
+    var BadRequestException = require('../../common/error.js').BadRequestException;
 
     var serviceName = 'EventsService';
 

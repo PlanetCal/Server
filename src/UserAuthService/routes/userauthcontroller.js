@@ -1,16 +1,20 @@
 'use strict'
 
-var router = require('express').Router();
-var TokenGenerator = new require('../../common/tokengenerator.js').TokenGenerator;
-var PasswordCrypto = require('../passwordcrypto.js').PasswordCrypto;
-var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
-var config = require('../../common/config.js');
-var dal = new DataAccessLayer(config.documentdbDatabaseName, config.usersCollectionName);
-var helpers = require('../../common/helpers.js');
-var BadRequestException = require('../../common/error.js').BadRequestException;
-var ForbiddenException = require('../../common/error.js').ForbiddenException;
+module.exports = function(passport, config){
 
-module.exports = function(passport){
+    var router = require('express').Router();
+    var PasswordCrypto = require('../passwordcrypto.js').PasswordCrypto;
+
+    var databaseName = config.documentdbDatabaseName;
+    var collectionName = config.usersCollectionName;
+    var documentdbEndpoint = config.documentdbEndpoint;
+    var documentdbAuthKey = config.documentdbAuthKey;
+    var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
+    var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
+
+    var helpers = require('../../common/helpers.js');
+    var BadRequestException = require('../../common/error.js').BadRequestException;
+    var ForbiddenException = require('../../common/error.js').ForbiddenException;
 
     router.post('/', helpers.wrap(function *(req, res){
         if (!req.body || !req.body.email || !req.body.password || !req.body.name){

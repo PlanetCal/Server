@@ -1,65 +1,70 @@
 ﻿'use strict'
 
-var express = require('express');
-var router = express.Router();
-var config = require('../../common/config.js');
-var request = require('request-promise');
+module.exports = function(config){
+    var express = require('express');
+    var router = express.Router();
+    var request = require('request-promise');
 
-var databaseName = config.documentdbDatabaseName;
-var collectionName = config.userDetailsCollectionName;
-var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
-var dal = new DataAccessLayer(databaseName, collectionName);
-var helpers = require('../../common/helpers.js');
-var BadRequestException = require('../../common/error.js').BadRequestException;
-var ForbiddenException = require('../../common/error.js').ForbiddenException;
-var NotFoundException = require('../../common/error.js').NotFoundException;
-var UserDetailsServiceException = require('../../common/error.js').UserDetailsServiceException;
+    var databaseName = config.documentdbDatabaseName;
+    var collectionName = config.userDetailsCollectionName;
+    var documentdbEndpoint = config.documentdbEndpoint;
+    var documentdbAuthKey = config.documentdbAuthKey;
+    var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
+    var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
 
-router.get('/:id', helpers.wrap(function *(req, res) {    
-    var result = yield *getUserDetailsBasicAsync(req);
-    res.status(200).json(result);
-}));
+    var helpers = require('../../common/helpers.js');
+    var BadRequestException = require('../../common/error.js').BadRequestException;
+    var ForbiddenException = require('../../common/error.js').ForbiddenException;
+    var NotFoundException = require('../../common/error.js').NotFoundException;
 
-router.put('/:id', helpers.wrap(function *(req, res) {
-    if (!req.body) {
-        throw new BadRequestException('Empty body.');
-    }
-    var userDetails = req.body;
-    if (!userDetails) {
-        throw new BadRequestException('UserDetails object is not found in body.');
-    }
+    router.get('/:id', helpers.wrap(function *(req, res) {    
+        var result = yield *getUserDetailsBasicAsync(req);
+        res.status(200).json(result);
+    }));
 
-    checkCallerPermission(req, req.params.id);
-    checkCallerPermission(req, req.body.id);
+    router.put('/:id', helpers.wrap(function *(req, res) {
+        if (!req.body) {
+            throw new BadRequestException('Empty body.');
+        }
+        var userDetails = req.body;
+        if (!userDetails) {
+            throw new BadRequestException('UserDetails object is not found in body.');
+        }
 
-    var documentResponse = yield dal.updateAsync(req.params.id, userDetails);
+        checkCallerPermission(req, req.params.id);
+        checkCallerPermission(req, req.body.id);
 
-    res.status(200).json({ id : documentResponse.resource.id });
-}));
+        var documentResponse = yield dal.updateAsync(req.params.id, userDetails);
 
-router.post('/', helpers.wrap(function *(req, res) {
-    if (!req.body) {
-        throw new BadRequestException('Empty body.');
-    }
-    var userDetails = req.body;
-    if (!userDetails) {
-        throw new BadRequestException('UserDetails object is not found in body.');
-    }
+        res.status(200).json({ id : documentResponse.resource.id });
+    }));
 
-    checkCallerPermission(req, req.body.id);
+    router.post('/', helpers.wrap(function *(req, res) {
+        if (!req.body) {
+            throw new BadRequestException('Empty body.');
+        }
+        var userDetails = req.body;
+        if (!userDetails) {
+            throw new BadRequestException('UserDetails object is not found in body.');
+        }
 
-    var documentResponse = yield dal.insertAsync(userDetails, {});
+        checkCallerPermission(req, req.body.id);
 
-    res.status(200).json({ id : documentResponse.resource.id });
-}));
+        var documentResponse = yield dal.insertAsync(userDetails, {});
 
-router.delete('/:id', helpers.wrap(function *(req, res) {
-    checkCallerPermission(req, req.params.id);
+        res.status(200).json({ id : documentResponse.resource.id });
+    }));
 
-    var documentResponse = yield dal.removeAsync(req.params.id);
+    router.delete('/:id', helpers.wrap(function *(req, res) {
+        checkCallerPermission(req, req.params.id);
 
-    res.status(200).json({ id : req.params.id });
-}));
+        var documentResponse = yield dal.removeAsync(req.params.id);
+
+        res.status(200).json({ id : req.params.id });
+    }));
+
+    return router;
+}
 
 function checkCallerPermission(req, id){
     if (req.headers['auth-identity'] !== id){
@@ -90,4 +95,3 @@ function *getUserDetailsBasicAsync(req){
         throw new NotFoundException('UserDetails with id ' + req.params.id + ' not found.');
     }    
 }
-module.exports = router;

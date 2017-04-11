@@ -1,12 +1,10 @@
 'use strict'
 
-var router = require('express').Router();
-var config = require('../../common/config.js');
-var helpers = require('../../common/helpers.js');
-var cors = require('cors');
+module.exports = function(config){
+    var router = require('express').Router();
+    var helpers = require('../../common/helpers.js');
+    var cors = require('cors');
 
-module.exports = function(){
-    
     const origin = '*'; //TODO: For now
 
     var corsOptions = {

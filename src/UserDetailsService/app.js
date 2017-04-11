@@ -1,15 +1,15 @@
 'use strict'
 
 var express = require('express');
+var app = express();
 var bodyParser = require('body-parser');
-var config = require('../common/config.js');
-var UserDetails = require('./routes/userdetailscontroller.js');
+
+var config = require('../common/config.json')[app.get('env')];
+var UserDetails = require('./routes/userdetailscontroller.js')(config);
 var helpers = require('../common/helpers.js');
 var BadRequestException = require('../common/error.js').BadRequestException;
 var ForbiddenException = require('../common/error.js').ForbiddenException;
 var NotFoundException = require('../common/error.js').NotFoundException;
-
-var app = express();
 
 app.set('view engine', 'ejs');
 

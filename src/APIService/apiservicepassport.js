@@ -1,16 +1,14 @@
 'use strict'
 
-var config = require('../common/config.js');
-var helpers = require('../common/helpers.js');
-var BearerStrategy = require('passport-http-bearer').Strategy;
-var TokenGenerator = require('../common/tokengenerator.js').TokenGenerator;
-var UnauthorizedException = require('../common/error.js').UnauthorizedException;
-
-module.exports = function(passport){
+module.exports = function(passport, config){
+    var helpers = require('../common/helpers.js');
+    var BearerStrategy = require('passport-http-bearer').Strategy;
+    var TokenGenerator = require('../common/tokengenerator.js').TokenGenerator;
+    var UnauthorizedException = require('../common/error.js').UnauthorizedException;
 
     passport.use('token-bearer', new BearerStrategy(
         function(token, done) {
-            var tokenGenerator = new TokenGenerator();
+            var tokenGenerator = new TokenGenerator(config);
             try{
                 var decodedObject = tokenGenerator.decode(token);
                     

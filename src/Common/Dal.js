@@ -1,13 +1,15 @@
 'use strict'
 
 var DocumentClient = require('documentdb-q-promises').DocumentClientWrapper;
-var config = require('./config.js');
 var DatabaseException = require('./error.js').DatabaseException;
 
 module.exports = {
-    DataAccessLayer: function DataAccessLayer(databaseName, collectionName) {
+
+    DataAccessLayer: function DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey) {
         this.databaseName = databaseName;
         this.collectionName = collectionName;
+        this.documentdbEndpoint = documentdbEndpoint;
+        this.documentdbAuthKey = documentdbAuthKey;
 
         var collectionLink = 'dbs/' + databaseName + '/colls/' + collectionName;
 
@@ -25,6 +27,16 @@ module.exports = {
             var client = this.getClient();
             if (typeof(options) === 'undefined'){
             	options = {};
+            }
+            return client.queryDocuments(collectionLink, querySpec, options).toArrayAsync().fail(function(err){
+                throw new DatabaseException(err);
+            });
+        }
+
+        this.getAsync = function getAsync(querySpec, options) {
+            var client = this.getClient();
+            if (typeof(options) === 'undefined'){
+                options = {};
             }
             return client.queryDocuments(collectionLink, querySpec, options).toArrayAsync().fail(function(err){
                 throw new DatabaseException(err);
@@ -57,7 +69,7 @@ module.exports = {
         }
 
         this.getClient = function getClient() {
-            return new DocumentClient(config.documentdbEndpoint, { "masterKey": config.documentdbAuthKey });
+            return new DocumentClient(this.documentdbEndpoint, { "masterKey": this.documentdbAuthKey });
         }
     }
 }

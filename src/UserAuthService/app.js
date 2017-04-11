@@ -5,13 +5,13 @@ var session = require('express-session');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var passport = require('passport');
-var config = require('../common/config.js');
-
 var app = express();
+var config = require('../common/config.json')[app.get('env')];
 
-require('./userauthpassport.js')(passport);
-var UserLogin = require('./routes/logincontroller.js')(passport);
-var UserAuth = require('./routes/userauthcontroller.js')(passport);
+
+require('./userauthpassport.js')(passport, config);
+var UserLogin = require('./routes/logincontroller.js')(passport, config);
+var UserAuth = require('./routes/userauthcontroller.js')(passport, config);
 var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
 var helpers = require('../common/helpers.js');
 var NotFoundException = require('../common/error.js').NotFoundException;

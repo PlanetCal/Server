@@ -1,6 +1,5 @@
 'use strict'
 
-var config = require('./config.js');
 var Promise = require('bluebird');
 var request = require('request-promise');
 var BadRequestException = require('./error.js').BadRequestException;
@@ -11,6 +10,7 @@ var InternalServerException = require('./error.js').InternalServerException;
 var HttpRequestException = require('./error.js').HttpRequestException;
 
 module.exports = {
+
     'wrap' : function wrap (genFn) { 
         var cr = Promise.coroutine(genFn);
         return function (req, res, next) {
@@ -20,8 +20,11 @@ module.exports = {
 
     'wrapLocalStrategyAuth' : function wrapLocalStrategyAuth(genFunc){
         var cr = Promise.coroutine(genFunc); 
-        return function (req, email, password, done, next) {
-            cr(req, email, password, done, next).catch(next);
+        return function (req, email, password, done) {
+            cr(req, email, password, done).catch(function(err){
+                console.log('erewretreregr');
+                done(err, null);
+            });
         }
     },
 

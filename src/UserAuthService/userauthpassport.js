@@ -1,24 +1,25 @@
 'use strict'
 
-var helpers = require('../common/helpers.js');
-var config = require('../common/config.js');
-var LocalStrategy = require('passport-local').Strategy;
+module.exports = function(passport, config){
+    var helpers = require('../common/helpers.js');
+    var LocalStrategy = require('passport-local').Strategy;
 
-var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
-var TokenGenerator = require('../common/tokengenerator.js').TokenGenerator;
-var DatabaseException = require('../common/error.js').DatabaseException;
-var UnauthorizedException = require('../common/error.js').UnauthorizedException;
-var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
-var dal = new DataAccessLayer(config.documentdbDatabaseName, config.usersCollectionName);
+    var databaseName = config.documentdbDatabaseName;
+    var collectionName = config.usersCollectionName;
+    var documentdbEndpoint = config.documentdbEndpoint;
+    var documentdbAuthKey = config.documentdbAuthKey;
+    var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
+    var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
 
-module.exports = function(passport){
+    var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
+    var UnauthorizedException = require('../common/error.js').UnauthorizedException;
 
     passport.use('local', new LocalStrategy({
             // by default, local strategy uses username and password, we will override with email
             usernameField: 'email',
             passwordField: 'password',
             passReqToCallback: true
-        },
+        }, 
         helpers.wrapLocalStrategyAuth(function *(req, email, password, done){
             var querySpec = getUserQuerySpecFromEmail(email);
 

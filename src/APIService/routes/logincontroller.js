@@ -1,13 +1,11 @@
 'use strict'
 
-var router = require('express').Router();
-var request = require('request-promise');
-var config = require('../../common/config.js');
-var bodyParser = require('body-parser');
-var helpers = require('../../common/helpers.js');
-var cors = require('cors');
+module.exports = function(config){
+    var router = require('express').Router();
+    var request = require('request-promise');
+    var cors = require('cors');
 
-module.exports = function(){
+    var helpers = require('../../common/helpers.js');
 
     var serviceName = 'UserAuthService';
 

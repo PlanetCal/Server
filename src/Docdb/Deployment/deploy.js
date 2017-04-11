@@ -1,7 +1,7 @@
 ﻿'use strict'
 
 var DocumentClient = require('documentdb-q-promises').DocumentClientWrapper;
-var config = require('../../common/config.js');
+var config = require('../../common/config.json')['development']; // TODO: Use express and app
 var triggers = require('../triggers/insertuniqueusertrigger.js');
 
 var client = new DocumentClient(config.documentdbEndpoint, { "masterKey": config.documentdbAuthKey });
