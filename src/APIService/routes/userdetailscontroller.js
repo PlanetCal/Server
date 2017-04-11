@@ -8,7 +8,8 @@ var cors = require('cors');
 
 module.exports = function(){
 
-    var serviceName = 'UserDetailsService';
+    var userDetailsServiceName = 'UserDetailsService';
+    var eventsServiceName = "EventsService";
     
     var corsOptions = {
       origin : '*', 
@@ -22,31 +23,45 @@ module.exports = function(){
 
     router.get('/:id', cors(corsOptions), helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'GET'); 
-        var results = yield *helpers.forwardHttpRequest(options, serviceName);
+        var results = yield *helpers.forwardHttpRequest(options, userDetailsServiceName);
         res.status(200).json(JSON.parse(results));
     }));
 
     router.get('/:id/events', cors(corsOptions),helpers.wrap(function *(req, res){
-        var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id + '/events', 'GET'); 
-        var results = yield *helpers.forwardHttpRequest(options, serviceName);
+        var userDetailsRequestOptions = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'GET'); 
+        var results = yield *helpers.forwardHttpRequest(userDetailsRequestOptions, userDetailsServiceName);
+
+        var events;
+        // userDetailsRequestOptions must not be undefined
+        // we need to retrieve events given userDetails.
+        if (results.followingGroups && results.followingGroups.length > 0){
+            var groupIds = results.followingGroups.join('|');
+            var eventsRquestOptions = helpers.getRequestOption(req, config.eventsServiceEndpoint + '/events?groupids=' + groupIds, 'GET');
+            events = yield *helpers.forwardHttpRequest(eventsRquestOptions, eventsServiceName);
+        }
+
+        if (events && events.length > 0){
+            results.events = JSON.parse(events);
+        }
+
         res.status(200).json(JSON.parse(results));
     }));
 
     router.post('/', cors(corsOptions),helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails', 'POST'); 
-        var results = yield *helpers.forwardHttpRequest(options, serviceName);
+        var results = yield *helpers.forwardHttpRequest(options, userDetailsServiceName);
         res.status(201).json(JSON.parse(results));
     }));
 
     router.put('/:id', cors(corsOptions), helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req,  config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'PUT'); 
-        var results = yield *helpers.forwardHttpRequest(options, serviceName);
+        var results = yield *helpers.forwardHttpRequest(options, userDetailsServiceName);
         res.status(200).json({id : req.params.id});
     }));
 
     router.delete('/:id', cors(corsOptions),helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req,  config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'DELETE'); 
-        var results = yield *helpers.forwardHttpRequest(options, serviceName);
+        var results = yield *helpers.forwardHttpRequest(options, userDetailsServiceName);
         res.status(200).json({id : req.params.id});
     }));
 

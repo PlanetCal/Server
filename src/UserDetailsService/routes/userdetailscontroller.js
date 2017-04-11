@@ -15,28 +15,6 @@ var ForbiddenException = require('../../common/error.js').ForbiddenException;
 var NotFoundException = require('../../common/error.js').NotFoundException;
 var UserDetailsServiceException = require('../../common/error.js').UserDetailsServiceException;
 
-router.get('/:id/events', helpers.wrap(function *(req, res) {
-    var result = yield *getUserDetailsBasicAsync(req);
-
-    var events;
-    // result must not be undefined
-    // we need to retrieve events given userDetails.
-    if (result.followingGroups && result.followingGroups.length > 0){
-        var groupIds = result.followingGroups.join('|');
-        var options = helpers.getRequestOption(req, config.eventsServiceEndpoint + '/events?groupids=' + groupIds, 'GET');
-        events = yield *helpers.forwardHttpRequest(options, 'EventsService');
-    }
-
-    if (events && events.length > 0){
-        result.events = JSON.parse(events);
-    }
-    else{
-        result.events = [];
-    }
-    
-    res.status(200).json(result);
-}));
-
 router.get('/:id', helpers.wrap(function *(req, res) {    
     var result = yield *getUserDetailsBasicAsync(req);
     res.status(200).json(result);
