@@ -1,18 +1,16 @@
 'use strict'
 
+var router = require('express').Router();
+var request = require('request-promise');
+var cors = require('cors');
+var helpers = require('../../common/helpers.js');
+var HttpRequestException = require('../../common/error.js').HttpRequestException;
+const serviceName = 'UserAuthService';
+
 module.exports = function(config){
-    var router = require('express').Router();
-    var request = require('request-promise');
-    var cors = require('cors');
-
-    var helpers = require('../../common/helpers.js');
-    var HttpRequestException = require('../../common/error.js').HttpRequestException;
-
-    var serviceName = 'UserAuthService';
-    
     var corsOptions = {
       origin : '*', 
-      methods : ['PUT', 'DELETE'],
+      methods : ['POST', 'PUT', 'DELETE'],
       allowedHeaders : ['Content-Type', 'Authorization'],
       exposedHeaders : ['Version'],
       optionsSuccessStatus : 200,

@@ -12,11 +12,12 @@ var app = express();
 var config = require('../common/config.json')[app.get('env')];
 require('./apiservicepassport.js')(passport, config);
 var login = require('./routes/logincontroller.js')(config);
-var userAuth = require('./routes/userauthcontroller.js')(config);
-var userDetails = require('./routes/userdetailscontroller.js')(config);
-var events = require('./routes/eventscontroller.js')(config);
-var groups = require('./routes/groupscontroller.js')(config);
-var cors = require('./routes/corscontroller.js')(config);
+var userAuthController = require('./routes/userauthcontroller.js')(config);
+var userDetailsController = require('./routes/userdetailscontroller.js')(config);
+var eventsController = require('./routes/eventscontroller.js')(config);
+var groupsController = require('./routes/groupscontroller.js')(config);
+var corsController = require('./routes/corscontroller.js')(config);
+var cors = require('cors');
 var helpers = require('../common/helpers.js');
 var BadRequestException = require('../common/error.js').BadRequestException;
 var NotFoundException = require('../common/error.js').NotFoundException;
@@ -42,7 +43,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // enable CORS for all requests first
-app.use('/', cors);
+app.use('/', corsController);
 
 
 // then, all requests are subject to version header check
@@ -64,9 +65,19 @@ app.get('/', function(req, res){
 // login
 app.use('/login', login);
 
+var corsOptions = {
+    origin : '*', 
+    methods : ['POST', 'PUT', 'DELETE'],
+    allowedHeaders : ['Content-Type'],
+    exposedHeaders : ['Version'],
+    optionsSuccessStatus : 200,
+    preflightContinue : true,
+    credentials : true
+};
+
 // forward this to userAuth service before token authenication
 // kicks in because this is userAuth creation
-app.post('/userauth', helpers.wrap(function *(req, res){
+app.post('/userauth', cors(corsOptions), helpers.wrap(function *(req, res){
     var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth', 'POST'); 
     var results = yield *helpers.forwardHttpRequest(options, 'UserAuthService');
     res.status(200).json(JSON.parse(results));
@@ -90,10 +101,10 @@ app.use('/*', passport.authenticate('token-bearer', { session: false }),
 );
 
 // other routes
-app.use('/userauth', userAuth);
-app.use('/userdetails', userDetails);
-app.use('/events', events);
-app.use('/groups', groups);
+app.use('/userauth', userAuthController);
+app.use('/userdetails', userDetailsController);
+app.use('/events', eventsController);
+app.use('/groups', groupsController);
 
 // error handling for other routes
 app.use(function(req, res, next) {
