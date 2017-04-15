@@ -1,6 +1,6 @@
 'use strict'
 
-var config = require('../../common/config.js')['development'];
+var config = require('../../common/config.json')['development'];
 
 module.exports = {
     'insertUniqueUserTrigger': {
