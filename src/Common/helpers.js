@@ -22,7 +22,6 @@ module.exports = {
         var cr = Promise.coroutine(genFunc); 
         return function (req, email, password, done) {
             cr(req, email, password, done).catch(function(err){
-                console.log('erewretreregr');
                 done(err, null);
             });
         }
@@ -71,7 +70,7 @@ module.exports = {
         return '';
     },
 
-    'constructResponseJsonFromExceptionRecursive' : function constructResponseJsonFromExceptionRecursive(exceptionObject){
+    'constructResponseJsonFromExceptionRecursive' : function constructResponseJsonFromExceptionRecursive(exceptionObject, includeStack){
         var returnedJson;
         if (exceptionObject){
             returnedJson = 
@@ -82,9 +81,12 @@ module.exports = {
                     activityId : exceptionObject.activityId,
                     innerException : constructResponseJsonFromExceptionRecursive(exceptionObject.innerException),
                     serviceName : exceptionObject.serviceName,
-                    url : exceptionObject.url,
-                    stack : exceptionObject.stack
+                    url : exceptionObject.url                    
                 };
+
+            if (includeStack === true){
+                returnedJson.stack = exceptionObject.stack;
+            }
         }
 
         return returnedJson;

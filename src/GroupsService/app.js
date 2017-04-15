@@ -25,7 +25,7 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
     err.serviceName = 'GroupsService';
     err.activityId = req.headers['activityid'];
-    res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(err));
+    res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(err, true));
 });
 
 var port = process.env.PORT || config.groupsServicePort;

@@ -43,13 +43,13 @@ module.exports = function(config){
             results.events = JSON.parse(events);
         }
 
-        res.status(200).json(JSON.parse(results));
+        res.status(200).json(results);
     }));
 
     router.post('/', cors(corsOptions),helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails', 'POST'); 
         var results = yield *helpers.forwardHttpRequest(options, userDetailsServiceName);
-        res.status(201).json(JSON.parse(results));
+        res.status(201).json(results);
     }));
 
     router.put('/:id', cors(corsOptions), helpers.wrap(function *(req, res){

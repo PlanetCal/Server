@@ -20,17 +20,8 @@ app.set('view engine', 'ejs');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-
-// TODO: do we need session?
-app.use(session({
-    secret : "PlanetCal",
-    saveUninitialized: false,
-    resave: false
-}));
 
 app.use(passport.initialize());
-app.use(passport.session());
 
 // login
 app.use('/login', UserLogin);
@@ -44,7 +35,7 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
     err.serviceName = 'UserAuthService';
     err.activityId = req.headers['activityid'];
-    res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(err));
+    res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(err, true));
 });
 
 var port = process.env.PORT || config.userAuthServicePort;
