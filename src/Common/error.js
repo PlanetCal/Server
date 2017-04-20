@@ -54,19 +54,6 @@ module.exports = {
         this.innerException = innerException;
     },
 
-    VersionNotFoundException : function VersionNotFoundException (message, innerException){
-        const defaultHttpCode = 400; // BadRequest
-        this.code = defaultHttpCode;
-        this.constructor.prototype.__proto__ = Error.prototype;
-        Error.captureStackTrace(this, this.constructor);
-        this.name = 'VersionNotFoundException';
-        this.message = message;
-        if (innerException){    
-            this.code = innerException.code || defaultHttpCode;
-        }
-        this.innerException = innerException;
-    },
-
     InternalServerException : function InternalServerException (message, innerException){
         const defaultHttpCode = 500;
         this.code = defaultHttpCode;

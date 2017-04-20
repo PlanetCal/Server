@@ -1,14 +1,12 @@
 'use strict'
 
-module.exports = function(config){
+module.exports = function(config, logger){
     var router = require('express').Router();
     var request = require('request-promise');
     var cors = require('cors');
 
+    var constants = require('../../common/constants.json')['serviceNames'];
     var helpers = require('../../common/helpers.js');
-
-    var userDetailsServiceName = 'UserDetailsService';
-    var eventsServiceName = "EventsService";
     
     var corsOptions = {
       origin : '*', 
@@ -22,13 +20,13 @@ module.exports = function(config){
 
     router.get('/:id', cors(corsOptions), helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'GET'); 
-        var results = yield *helpers.forwardHttpRequest(options, userDetailsServiceName);
+        var results = yield *helpers.forwardHttpRequest(options, constants.userDetailsServiceName);
         res.status(200).json(JSON.parse(results));
     }));
 
     router.get('/:id/events', cors(corsOptions),helpers.wrap(function *(req, res){
         var userDetailsRequestOptions = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'GET'); 
-        var results = yield *helpers.forwardHttpRequest(userDetailsRequestOptions, userDetailsServiceName);
+        var results = yield *helpers.forwardHttpRequest(userDetailsRequestOptions, constants.userDetailsServiceName);
 
         var events;
         // userDetailsRequestOptions must not be undefined
@@ -36,7 +34,7 @@ module.exports = function(config){
         if (results.followingGroups && results.followingGroups.length > 0){
             var groupIds = results.followingGroups.join('|');
             var eventsRquestOptions = helpers.getRequestOption(req, config.eventsServiceEndpoint + '/events?groupids=' + groupIds, 'GET');
-            events = yield *helpers.forwardHttpRequest(eventsRquestOptions, eventsServiceName);
+            events = yield *helpers.forwardHttpRequest(eventsRquestOptions, constants.eventsServiceName);
         }
 
         if (events && events.length > 0){
@@ -48,19 +46,19 @@ module.exports = function(config){
 
     router.post('/', cors(corsOptions),helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails', 'POST'); 
-        var results = yield *helpers.forwardHttpRequest(options, userDetailsServiceName);
+        var results = yield *helpers.forwardHttpRequest(options, constants.userDetailsServiceName);
         res.status(201).json(results);
     }));
 
     router.put('/:id', cors(corsOptions), helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req,  config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'PUT'); 
-        var results = yield *helpers.forwardHttpRequest(options, userDetailsServiceName);
+        var results = yield *helpers.forwardHttpRequest(options, constants.userDetailsServiceName);
         res.status(200).json({id : req.params.id});
     }));
 
     router.delete('/:id', cors(corsOptions),helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req,  config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'DELETE'); 
-        var results = yield *helpers.forwardHttpRequest(options, userDetailsServiceName);
+        var results = yield *helpers.forwardHttpRequest(options, constants.userDetailsServiceName);
         res.status(200).json({id : req.params.id});
     }));
 

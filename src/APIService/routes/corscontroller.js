@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = function(config){
+module.exports = function(config, logger){
     var router = require('express').Router();
     var helpers = require('../../common/helpers.js');
     var cors = require('cors');

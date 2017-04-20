@@ -1,0 +1,9 @@
+{
+    "serviceNames":{
+        "apiServiceName" : "APIService",
+        "userAuthServiceName" : "UserAuthService",
+        "userDetailsServiceName" : "UserDetailsService",
+        "groupsServiceName" : "GroupsService",
+        "eventsServiceName" : "EventsService"
+    }
+}

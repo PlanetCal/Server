@@ -7,24 +7,31 @@ var cookieParser = require('cookie-parser');
 var passport = require('passport');
 var request = require('request-promise');
 var uuid = require('node-uuid');
+var path = require('path');
+
 var app = express();
 
+var constants = require('../common/constants.json')['serviceNames'];
+var Logger = require('../common/logger.js').Logger;
+var logger = new Logger(constants.apiServiceName, null, app.get('env') === 'development');
+
 var config = require('../common/config.json')[app.get('env')];
-require('./apiservicepassport.js')(passport, config);
-var login = require('./routes/logincontroller.js')(config);
-var userAuthController = require('./routes/userauthcontroller.js')(config);
-var userDetailsController = require('./routes/userdetailscontroller.js')(config);
-var eventsController = require('./routes/eventscontroller.js')(config);
-var groupsController = require('./routes/groupscontroller.js')(config);
-var corsController = require('./routes/corscontroller.js')(config);
+require('./apiservicepassport.js')(passport, config, logger);
+var loginController = require('./routes/logincontroller.js')(config, logger);
+var userAuthController = require('./routes/userauthcontroller.js')(config, logger);
+var userDetailsController = require('./routes/userdetailscontroller.js')(config, logger);
+var eventsController = require('./routes/eventscontroller.js')(config, logger);
+var groupsController = require('./routes/groupscontroller.js')(config, logger);
+var corsController = require('./routes/corscontroller.js')(config, logger);
 var cors = require('cors');
 var helpers = require('../common/helpers.js');
 var BadRequestException = require('../common/error.js').BadRequestException;
 var NotFoundException = require('../common/error.js').NotFoundException;
 var ForbiddenException = require('../common/error.js').ForbiddenException;
 var UnauthorizedException = require('../common/error.js').UnauthorizedException;
-var VersionNotFoundException = require('../common/error.js').VersionNotFoundException;
 var HttpRequestException = require('../common/error.js').HttpRequestException;
+
+logger.get().debug('Starting %s.....', constants.apiServiceName);
 
 app.set('view engine', 'ejs');
 
@@ -32,40 +39,32 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-// Do we actually need session?
-app.use(session({
-    secret : "PlanetCal",
-    saveUninitialized: false,
-    resave: false
-}));
-
 app.use(passport.initialize());
-app.use(passport.session());
+
+app.use('/',  function(req, res, next){
+    logger.get().debug({req : req}); 
+    next();  
+});
 
 // enable CORS for all requests first
 app.use('/', corsController);
 
-
 // then, all requests are subject to version header check
 app.use('/', function (req, res, next){
-    console.log('[APIService]: ');
     if (!req.headers['version']){
-        throw new VersionNotFoundException('Cannot find version in header.');
+        throw new BadRequestException('Cannot find version in header.');
     }
     else{
-        req.headers['activityid'] = uuid.v4();;
+        var activityid = uuid.v4();
+        req.headers['activityid'] = activityid;
+        logger.get().debug({req : req}, 'Attaching ActivityId %s to request.', activityid);
         next();
     }
 });
 
-app.get('/', function(req, res){
-    res.render('index', { isAuthenticated: req.isAuthenticated(), user: req.user });
-});
+app.use('/login', loginController);
 
-// login
-app.use('/login', login);
-
-var corsOptions = {
+var userAuthCorsOptions = {
     origin : '*', 
     methods : ['POST', 'PUT', 'DELETE'],
     allowedHeaders : ['Content-Type'],
@@ -77,9 +76,9 @@ var corsOptions = {
 
 // forward this to userAuth service before token authenication
 // kicks in because this is userAuth creation
-app.post('/userauth', cors(corsOptions), helpers.wrap(function *(req, res){
+app.post('/userauth', cors(userAuthCorsOptions), helpers.wrap(function *(req, res){
     var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth', 'POST'); 
-    var results = yield *helpers.forwardHttpRequest(options, 'UserAuthService');
+    var results = yield *helpers.forwardHttpRequest(options, constants.userAuthServiceName);
     res.status(200).json(JSON.parse(results));
 }));
 
@@ -94,6 +93,7 @@ app.use('/*', passport.authenticate('token-bearer', { session: false }),
             // set auth-identity header so that internal services
             // know the caller's identity
             req.headers['auth-identity'] = req.user;
+            logger.get().debug({req : req}, 'Attach auth-identity %s to request header.', req.user);
             // continue calling middleware in line
             next();
         }
@@ -112,16 +112,17 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    err.serviceName = 'APIService';
+    err.serviceName = constants.apiServiceName;
     err.activityId = req.headers['activityid'];
+
+    logger.get().error({exception: err});
 
     res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(
         err, 
-        //app.get('env' === 'development')));
-        true));
+        app.get('env') === 'development'));
 });
 
 var port = process.env.PORT || config.apiServicePort;
 var server = app.listen(port, function(){
-    console.log('http://localhost:' + server.address().port + '/');
+    logger.get().debug('%s started at http://localhost:%d/', constants.apiServiceName, server.address().port);
 });

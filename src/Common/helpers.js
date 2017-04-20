@@ -94,7 +94,16 @@ module.exports = {
 
     'forwardHttpRequest' : function *forwardHttpRequest(options, serviceName){
         return yield request(options).catch(function(err){
-            throw new HttpRequestException('Request to ' + serviceName + ' failed.', options.url, JSON.parse(err.error));
+            try{
+                var extractedException = JSON.parse(err.error);
+            }
+            catch(e){
+            }
+
+            if (!extractedException){
+                extractedException = err;
+            }
+            throw new HttpRequestException('Request to ' + serviceName + ' failed.', options.url, extractedException);
         });
     }
 }

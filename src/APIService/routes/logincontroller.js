@@ -1,17 +1,16 @@
 'use strict'
 
-module.exports = function(config){
+module.exports = function(config, logger){
     var router = require('express').Router();
     var request = require('request-promise');
     var cors = require('cors');
 
+    var constants = require('../../common/constants.json')['serviceNames'];
     var helpers = require('../../common/helpers.js');
-
-    var serviceName = 'UserAuthService';
 
     var corsOptions = {
       origin : '*', 
-      methods : ['GET', 'POST'],
+      methods : ['POST'],
       allowedHeaders : ['Content-Type'],
       exposedHeaders : ['Version'],
       optionsSuccessStatus : 200,
@@ -19,14 +18,9 @@ module.exports = function(config){
       credentials : true
     };
     
-    router.get('/', cors(corsOptions), helpers.wrap(function *(req, res){
-        res.render('login');
-    }));
-
     router.post('/', cors(corsOptions), helpers.wrap(function *(req, res){
-        console.log('[APIService|logincontroller]: ');
         var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/login', 'POST');
-        var results = yield *helpers.forwardHttpRequest(options, serviceName);
+        var results = yield *helpers.forwardHttpRequest(options, constants.userAuthServiceName);
         res.status(200).json(JSON.parse(results));
     }));
 
