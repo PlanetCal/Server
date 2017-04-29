@@ -2,13 +2,15 @@
   "name": "common",
   "version": "1.0.0",
   "description": "",
-  "main": "config.js",
+  "main": "Dal.js",
   "dependencies": {
     "bluebird": "^3.5.0",
+    "bunyan": "^1.8.10",
     "documentdb-q-promises": "^1.6.0",
     "jwt-simple": "^0.5.1",
-    "request-promise": "^4.2.0",
-    "request": "^2.81.0"
+    "morgan": "^1.8.1",
+    "request": "^2.81.0",
+    "request-promise": "^4.2.0"
   },
   "devDependencies": {},
   "scripts": {
