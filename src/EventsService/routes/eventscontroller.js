@@ -1,5 +1,8 @@
 'use strict'
 
+var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
+var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
+
 module.exports = function(config, logger){
     var express = require('express');
     var router = express.Router();
@@ -8,8 +11,6 @@ module.exports = function(config, logger){
     var collectionName = config.eventsCollectionName;
     var documentdbEndpoint = config.documentdbEndpoint;
     var documentdbAuthKey = config.documentdbAuthKey;
-    var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
-    var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
 
     var helpers = require('../../common/helpers.js');
     
@@ -43,8 +44,8 @@ module.exports = function(config, logger){
         if (!req.query.groupids) {
             throw new BadRequestException('GroupIds not found in query string.');
         }
+        else{
         */
-        //else{
             
             var fields;
             if (req.query.fields){
