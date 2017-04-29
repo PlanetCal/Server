@@ -52,8 +52,9 @@ module.exports = {
             return {
                 method: req.method,
                 url: req.url,
-                headers: headers
-            };
+                headers: headers,
+                query: req.query
+            };
         }
 
         function exceptionSerializer(exception) {
