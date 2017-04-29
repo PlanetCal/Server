@@ -1,19 +1,18 @@
 'use strict'
 
 
-var databaseName = config.documentdbDatabaseName;
-var collectionName = config.eventsCollectionName;
-var documentdbEndpoint = config.documentdbEndpoint;
-var documentdbAuthKey = config.documentdbAuthKey;
-
-var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
-var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
-
 module.exports = function(config, logger){
     var express = require('express');
     var router = express.Router();
 
     var helpers = require('../../common/helpers.js');
+    var databaseName = config.documentdbDatabaseName;
+    var collectionName = config.eventsCollectionName;
+    var documentdbEndpoint = config.documentdbEndpoint;
+    var documentdbAuthKey = config.documentdbAuthKey;
+
+    var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
+    var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
     
     var BadRequestException = require('../../common/error.js').BadRequestException;
     var ForbiddenException = require('../../common/error.js').ForbiddenException;
@@ -25,7 +24,7 @@ module.exports = function(config, logger){
             fields = req.query.fields.split('|');
         }
         logger.get().debug({req : req}, 'Retriving event object...');
-        var documentResponse = yield findEventByEventIdAsync(req.params.id, fields);
+        var documentResponse = yield findEventByEventIdAsync(dal, req.params.id, fields);
         var results = documentResponse.feed;
 
         if (results.length <= 0){
@@ -60,10 +59,10 @@ module.exports = function(config, logger){
 
             var documentResponse; 
             if (!groupids && !fields){
-                documentResponse = yield findAllEvents(groupids, fields);
+                documentResponse = yield findAllEvents(dal, groupids, fields);
             }
             else{
-                documentResponse = yield findEventsByGroupsIdsAsync(groupids, fields);
+                documentResponse = yield findEventsByGroupsIdsAsync(dal, groupids, fields);
             }
 
             var results = documentResponse.feed;
@@ -116,7 +115,7 @@ module.exports = function(config, logger){
     return router;
 }
 
-function findEventByEventIdAsync(eventId, fields) {
+function findEventByEventIdAsync(dal, eventId, fields) {
     var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
     console.log('constraints: ' + constraints);
     var querySpec = {
@@ -132,7 +131,7 @@ function findEventByEventIdAsync(eventId, fields) {
     return dal.getAsync(querySpec);
 }
 
-function findEventsByGroupsIdsAsync(groupsIds) {
+function findEventsByGroupsIdsAsync(dal, groupsIds) {
     var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
     var parameters = [
         {
@@ -148,7 +147,7 @@ function findEventsByGroupsIdsAsync(groupsIds) {
     return dal.getAsync(querySpec);
 }
 
-function findAllEvents() {
+function findAllEvents(dal) {
     var querySpec = {
         query: "SELECT * FROM root e"
     };
