@@ -1,16 +1,17 @@
 'use strict'
 
+
+var databaseName = config.documentdbDatabaseName;
+var collectionName = config.eventsCollectionName;
+var documentdbEndpoint = config.documentdbEndpoint;
+var documentdbAuthKey = config.documentdbAuthKey;
+
 var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
 var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
 
 module.exports = function(config, logger){
     var express = require('express');
     var router = express.Router();
-
-    var databaseName = config.documentdbDatabaseName;
-    var collectionName = config.eventsCollectionName;
-    var documentdbEndpoint = config.documentdbEndpoint;
-    var documentdbAuthKey = config.documentdbAuthKey;
 
     var helpers = require('../../common/helpers.js');
     
