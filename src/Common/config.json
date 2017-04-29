@@ -1,8 +1,8 @@
 { 
   "development": {
     "jwtSecret" : "395b2bdd68bf70b057d49ac75982dda0fdb70cf46b54b9e3476e05e81feceb6f",
-    "documentdbEndpoint" : "https://planetcal.documents.azure.com:443/",
-    "documentdbAuthKey" : "RRsSQnklO1uoXVB1CHaqH0O5sfQ5R0vD7CZPlSG4VJZrIzjAefZqnvAYdqJuAQBIFxZac9DBlJIWSIEubtqaBA==",    
+    "documentdbEndpoint" : "https://sachin-planetcal.documents.azure.com:443/",
+    "documentdbAuthKey" : "ZDfDIORqQQS0M6AcUhslchXiGSx94XCttAHHO1JymaV14ucR8KurXAJJ29uAMKO1ZHGWjmAhjHJHnJd9VVYlJw==",
     "insertUniqueUserTriggerName" : "insertUniqueUser",
     "documentdbDatabaseName" : "planetcaldatabase",
     "usersCollectionName" : "usersCollection",
