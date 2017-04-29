@@ -35,6 +35,7 @@ module.exports = function(config, logger){
     }));
 
     router.get('/', helpers.wrap(function *(req, res) {
+        /*
         if (!req.query) {
             throw new BadRequestException('Query string is invalid.');
         }
@@ -42,7 +43,8 @@ module.exports = function(config, logger){
         if (!req.query.groupids) {
             throw new BadRequestException('GroupIds not found in query string.');
         }
-        else{
+        */
+        //else{
             
             var fields;
             if (req.query.fields){
@@ -66,7 +68,7 @@ module.exports = function(config, logger){
             var filteredResults = helpers.removeDuplicatedItemsById(results);
 
             res.status(200).json(filteredResults);
-        }
+        //}
     }));
 
     router.put('/:id', helpers.wrap(function *(req, res) {
