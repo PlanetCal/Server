@@ -22,7 +22,7 @@ module.exports = function(config, logger){
             fields = req.query.fields.split('|');
         }
 
-        logger.get().debug({req : req}, 'Retriving group object...',);
+        logger.get().debug({req : req}, 'Retriving group object...');
         var documentResponse = yield findGroupsByGroupIdsAsync(req.params.id, fields);
         if (results.length <= 0){
             throw new NotFoundException('Group with id ' + req.params.id + ' not found.');
