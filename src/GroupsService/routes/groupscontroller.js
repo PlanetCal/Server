@@ -1,16 +1,15 @@
 'use strict'
 
-var databaseName = config.documentdbDatabaseName;
-var collectionName = config.groupsCollectionName;
-var documentdbEndpoint = config.documentdbEndpoint;
-var documentdbAuthKey = config.documentdbAuthKey;
-var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
-var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
-
 module.exports = function(config, logger){
 
     var express = require('express');
     var router = express.Router();
+    var databaseName = config.documentdbDatabaseName;
+    var collectionName = config.groupsCollectionName;
+    var documentdbEndpoint = config.documentdbEndpoint;
+    var documentdbAuthKey = config.documentdbAuthKey;
+    var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
+    var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
 
     var helpers = require('../../common/helpers.js');
     var BadRequestException = require('../../common/error.js').BadRequestException;
@@ -23,7 +22,7 @@ module.exports = function(config, logger){
         }
 
         logger.get().debug({req : req}, 'Retriving group object...');
-        var documentResponse = yield findGroupsByGroupIdsAsync(req.params.id, fields);
+        var documentResponse = yield findGroupsByGroupIdsAsync(dal, req.params.id, fields);
         if (results.length <= 0){
             throw new NotFoundException('Group with id ' + req.params.id + ' not found.');
         }
@@ -51,7 +50,7 @@ module.exports = function(config, logger){
                 fields = req.query.fields.split('|');
             }
 
-            documentResponse = yield findGroupByKeywordsAsync(keywords, fields);
+            documentResponse = yield findGroupByKeywordsAsync(dal, keywords, fields);
         }
         var results = documentResponse.feed;
         var filteredResults = helpers.removeDuplicatedItemsById(results);
@@ -137,7 +136,7 @@ function findGroupsByGroupIdsAsync(groupIds, fields) {
     return dal.getAsync(querySpec);
 }
 
-function findGroupsByGroupIdAsync(groupId, fields) {
+function findGroupsByGroupIdAsync(dal, groupId, fields) {
     var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
     var parameters = [
         {
