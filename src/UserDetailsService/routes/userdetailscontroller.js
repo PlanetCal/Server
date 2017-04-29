@@ -1,6 +1,6 @@
 ﻿'use strict'
 
-module.exports = function(config){
+module.exports = function(config, logger){
     var express = require('express');
     var router = express.Router();
     var request = require('request-promise');
@@ -18,7 +18,9 @@ module.exports = function(config){
     var NotFoundException = require('../../common/error.js').NotFoundException;
 
     router.get('/:id', helpers.wrap(function *(req, res) {    
+        logger.get().debug({req : req}, 'Retriving userDetails object.');
         var result = yield *getUserDetailsBasicAsync(req);
+        logger.get().debug({req : req, userDetails : result}, 'userDetails object retrived successfully.');
         res.status(200).json(result);
     }));
 
@@ -34,7 +36,9 @@ module.exports = function(config){
         checkCallerPermission(req, req.params.id);
         checkCallerPermission(req, req.body.id);
 
+        logger.get().debug({req : req}, 'Updating userDetails object.');
         var documentResponse = yield dal.updateAsync(req.params.id, userDetails);
+        logger.get().debug({req : req, userDetails : documentResponse.resource}, 'userDetails object updated successfully.');
 
         res.status(200).json({ id : documentResponse.resource.id });
     }));
@@ -50,7 +54,9 @@ module.exports = function(config){
 
         checkCallerPermission(req, req.body.id);
 
+        logger.get().debug({req : req}, 'Creating userDetails object.');
         var documentResponse = yield dal.insertAsync(userDetails, {});
+        logger.get().debug({req : req, userDetails : documentResponse.resource}, 'userDetails object created successfully.');
 
         res.status(200).json({ id : documentResponse.resource.id });
     }));
@@ -58,7 +64,9 @@ module.exports = function(config){
     router.delete('/:id', helpers.wrap(function *(req, res) {
         checkCallerPermission(req, req.params.id);
 
+        logger.get().debug({req : req}, 'Deleting userDetails object...');
         var documentResponse = yield dal.removeAsync(req.params.id);
+        logger.get().debug({req : req}, 'userDetails object deleted successfully.', documentResponse.resource.id);
 
         res.status(200).json({ id : req.params.id });
     }));
@@ -67,6 +75,7 @@ module.exports = function(config){
 }
 
 function checkCallerPermission(req, id){
+    logger.get().debug({req : req}, 'Checking user permission. header.auth-identity %s, id: %s...', req.headers['auth-identity'], req.params.id);
     if (req.headers['auth-identity'] !== id){
         throw new ForbiddenException('Forbidden');
     } 
@@ -85,9 +94,11 @@ function *getUserDetailsBasicAsync(req){
 
     checkCallerPermission(req, req.params.id);
 
-    var documentResponse = yield dal.getAsync(querySpec);
+    logger.get().debug({req : req, querySpec : querySpec}, 'Retrieving from db...');
+    var documentResponse = yield dal.getAsync(querySpec); 
 
     var results = documentResponse.feed;
+    logger.get().debug({req : req, querySpec : querySpec}, 'Db retrivial completed successfully. # of records: %d', results.length);
     if (results.length > 0){
         return results[0];
     }

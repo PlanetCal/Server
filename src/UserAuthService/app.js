@@ -6,14 +6,23 @@ var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var passport = require('passport');
 var app = express();
+
+var constants = require('../common/constants.json')['serviceNames'];
+var Logger = require('../common/logger.js').Logger;
+var logger = new Logger(constants.userAuthServiceName, null, app.get('env') === 'development');
+var accesslogger = require('../common/accesslogger.js');
+
+logger.get().debug('Starting %s.....', constants.userAuthServiceName);
+
+app.use(accesslogger.getAccessLogger(logger));
+
 var config = require('../common/config.json')[app.get('env')];
 
-
-require('./userauthpassport.js')(passport, config);
-var UserLogin = require('./routes/logincontroller.js')(passport, config);
-var UserAuth = require('./routes/userauthcontroller.js')(passport, config);
-var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
+require('./userauthpassport.js')(passport, config, logger);
+var userLoginController = require('./routes/logincontroller.js')(passport, config, logger);
+var userAuthController = require('./routes/userauthcontroller.js')(passport, config, logger);
 var helpers = require('../common/helpers.js');
+
 var NotFoundException = require('../common/error.js').NotFoundException;
 
 app.set('view engine', 'ejs');
@@ -24,8 +33,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 
 // login
-app.use('/login', UserLogin);
-app.use('/userauth', UserAuth);
+app.use('/login', userLoginController);
+app.use('/userauth', userAuthController);
 
 // error handling for other routes
 app.use(function(req, res, next) {
@@ -33,8 +42,16 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    err.serviceName = 'UserAuthService';
+    err.serviceName = constants.userAuthServiceName;
     err.activityId = req.headers['activityid'];
+
+    if (err && err.code < 500){
+        logger.get().info({exception : err});
+    }
+    else{        
+        logger.get().error({exception : err});
+    }
+
     res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(err, true));
 });
 

@@ -25,7 +25,8 @@ module.exports = {
 
         this.internalLogger.addSerializers({req : reqSerializer});
         this.internalLogger.addSerializers({exception : exceptionSerializer});
-        this.internalLogger.addSerializers({activityId : activityIdSerializer});
+        this.internalLogger.addSerializers({accessLog : accessLogSerializer});        
+        this.internalLogger.addSerializers({userAuth : userAuthSerializer});
 
         if (isDebug) {
             this.internalLogger.addStream({stream : process.stdout, level : 'debug'});
@@ -69,6 +70,32 @@ module.exports = {
             return exception;
         }
 
+        function accessLogSerializer(accessLog){
+            if (!accessLog){
+                return accessLog;
+            }
+            return {
+                method : accessLog.method,
+                url : accessLog.url,
+                status : accessLog.status,
+                activityid : accessLog.activityid,
+                authidentity : accessLog.authidentity,
+                responsetime : accessLog.responsetime
+            };
+        }
+
+        function userAuthSerializer(userAuth){
+            if (!userAuth){
+                return userAuth;
+            }
+
+            return {
+                id : userAuth.id,
+                email : userAuth.email,
+                name : userAuth.name
+            };
+        }
+
         function constructLoggedExceptionObject(exception, isFatalError){
             if (exception){
                 if (isFatalError){
@@ -78,7 +105,7 @@ module.exports = {
                         message : exception.message,
                         errorCode : exception.errorCode,
                         activityId : exception.activityId,
-                        servieName : exception.serviceName,
+                        serviceName : exception.serviceName,
                         innerException : constructLoggedExceptionObject(exception.innerException, isFatalError),
                         stack : exception.stack
                     };
@@ -90,17 +117,11 @@ module.exports = {
                         message : exception.message,
                         errorCode : exception.errorCode,
                         activityId : exception.activityId,
-                        servieName : exception.serviceName,
+                        serviceName : exception.serviceName,
                         innerException : constructLoggedExceptionObject(exception.innerException, isFatalError)
                     };
                 }
             }
-        }
-
-        function activityIdSerializer(req){
-            return {
-                activityId : req.activityId
-            };
         }
     }
 }

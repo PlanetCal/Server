@@ -14,6 +14,9 @@ var app = express();
 var constants = require('../common/constants.json')['serviceNames'];
 var Logger = require('../common/logger.js').Logger;
 var logger = new Logger(constants.apiServiceName, null, app.get('env') === 'development');
+var accesslogger = require('../common/accesslogger.js');
+
+app.use(accesslogger.getAccessLogger(logger));
 
 var config = require('../common/config.json')[app.get('env')];
 require('./apiservicepassport.js')(passport, config, logger);
@@ -41,10 +44,12 @@ app.use(cookieParser());
 
 app.use(passport.initialize());
 
+/*
 app.use('/',  function(req, res, next){
     logger.get().debug({req : req}); 
     next();  
 });
+*/
 
 // enable CORS for all requests first
 app.use('/', corsController);
@@ -57,7 +62,7 @@ app.use('/', function (req, res, next){
     else{
         var activityid = uuid.v4();
         req.headers['activityid'] = activityid;
-        logger.get().debug({req : req}, 'Attaching ActivityId %s to request.', activityid);
+        logger.get().debug({req : req}, 'Attach ActivityId %s to request.', activityid);
         next();
     }
 });
@@ -115,7 +120,12 @@ app.use(function(err, req, res, next) {
     err.serviceName = constants.apiServiceName;
     err.activityId = req.headers['activityid'];
 
-    logger.get().error({exception: err});
+    if (err && err.code < 500){
+        logger.get().info({exception : err});
+    }
+    else{        
+        logger.get().error({exception : err});
+    }
 
     res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(
         err, 

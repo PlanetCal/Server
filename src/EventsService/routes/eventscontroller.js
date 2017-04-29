@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = function(config){
+module.exports = function(config, logger){
     var express = require('express');
     var router = express.Router();
 

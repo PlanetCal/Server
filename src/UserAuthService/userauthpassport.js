@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = function(passport, config){
+module.exports = function(passport, config, logger){
     var helpers = require('../common/helpers.js');
     var LocalStrategy = require('passport-local').Strategy;
 

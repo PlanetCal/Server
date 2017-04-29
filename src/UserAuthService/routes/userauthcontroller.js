@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = function(passport, config){
+module.exports = function(passport, config, logger){
 
     var router = require('express').Router();
     var PasswordCrypto = require('../passwordcrypto.js').PasswordCrypto;
@@ -21,11 +21,16 @@ module.exports = function(passport, config){
             throw new BadRequestException('Cannot find email, password or name in body.');
         }
         else{
+            logger.get().debug({req : req}, 'Creating userAuth object...');
+
             var passwordCrypto = new PasswordCrypto();
             var passwordHash = passwordCrypto.generateHash(req.body.password);
             var options = { preTriggerInclude: config.insertUniqueUserTriggerName };   
 
             var documentResponse = yield dal.insertAsync({ email: req.body.email, passwordHash: passwordHash, name : req.body.name }, options);
+
+            logger.get().debug({req : req, userAuth : documentResponse.resource }, 'userAuth object created successfully.');
+
             res.status(201).json({ email : documentResponse.resource.email, id : documentResponse.resource.id, name : documentResponse.resource.name });                
         }
     }));
@@ -38,10 +43,14 @@ module.exports = function(passport, config){
             throw new ForbiddenException('Forbidden.');
         }
         else{
+            logger.get().debug({req : req}, 'Updating userAuth object...');
             var passwordCrypto = new PasswordCrypto();
             var passwordHash = passwordCrypto.generateHash(req.body.password);
 
             var documentResponse = yield dal.updateAsync(req.params.id, { email: req.body.email, passwordHash: passwordHash, id: req.params.id, name : req.body.name });
+
+            logger.get().debug({req : req, userAuth: documentResponse.resource}, 'userAuth object updated successfully.');
+
             res.status(200).json({ id : documentResponse.resource.id });
         }
     }));
@@ -52,7 +61,9 @@ module.exports = function(passport, config){
             throw new ForbiddenException('Forbidden.');
         }
         else {
+            logger.get().debug({req : req}, 'Deleting userAuth object...');
             var documentResponse = yield dal.removeAsync(req.params.id);
+            logger.get().debug({req : req}, 'userAuth object deleted successfully.');
             res.status(200).json({ id : req.params.id });
         }
     }));
