@@ -22,6 +22,7 @@ module.exports = function(config, logger){
         if (req.query.fields){
             fields = req.query.fields.split('|');
         }
+        logger.get().debug({req : req}, 'Retriving event object...');
         var documentResponse = yield findEventByEventIdAsync(req.params.id, fields);
         var results = documentResponse.feed;
 
