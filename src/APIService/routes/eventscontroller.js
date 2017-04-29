@@ -34,10 +34,20 @@ module.exports = function(config, logger){
     }));
 
     router.get('/', cors(corsOptions), helpers.wrap(function *(req, res){
+        /*
         if (!req.query){
             throw new BadRequestException('Query string must be provided.');
         }
-        var url = endpoint + '/' + controllerName + '?' + qs.stringify(req.query);
+        */
+        var url;
+
+        if (!req.query){
+            url = endpoint + '/' + controllerName; 
+        }
+        else{
+            url = endpoint + '/' + controllerName + '?' + qs.stringify(req.query);             
+        }
+
         var options = helpers.getRequestOption(req, url, 'GET'); 
         var results = yield *helpers.forwardHttpRequest(options, constants.eventsServiceName);
         res.status(200).json(JSON.parse(results));

@@ -42,12 +42,25 @@ module.exports = function(config, logger){
             throw new BadRequestException('GroupIds not found in query string.');
         }
         else{
-            var fields 
+            
+            var fields;
             if (req.query.fields){
                 fields = req.query.fields.split('|');
             }
-            var groupids = req.query.groupids.split('|');
-            var documentResponse = yield findEventsByGroupsIdsAsync(groupids, fields);
+
+            var groupids;
+            if (req.query.groupids){
+                groupids = req.query.groupids.split('|');
+            }
+
+            var documentResponse; 
+            if (!groupids && !fields){
+                documentResponse = yield findAllEvents(groupids, fields);
+            }
+            else{
+                documentResponse = yield findEventsByGroupsIdsAsync(groupids, fields);
+            }
+
             var results = documentResponse.feed;
             var filteredResults = helpers.removeDuplicatedItemsById(results);
 
@@ -126,6 +139,13 @@ function findEventsByGroupsIdsAsync(groupsIds) {
     var querySpec = {
         query: "SELECT e.id" + constraints + " FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g)",
         parameters: parameters
+    };
+    return dal.getAsync(querySpec);
+}
+
+function findAllEvents() {
+    var querySpec = {
+        query: "SELECT * FROM root e"
     };
     return dal.getAsync(querySpec);
 }
