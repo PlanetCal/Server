@@ -18,7 +18,7 @@ module.exports = {
         {
             'stream': {
                 write: function(accessLog) {
-                    logger.get().debug({accessLog : JSON.parse(accessLog)});
+                    logger.get().info({accessLog : JSON.parse(accessLog)});
                 }
             }
         });
