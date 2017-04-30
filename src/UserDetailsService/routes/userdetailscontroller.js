@@ -68,7 +68,7 @@ module.exports = function(config, logger){
         var documentResponse = yield dal.removeAsync(req.params.id);
         logger.get().debug({req : req}, 'userDetails object deleted successfully.', documentResponse.resource.id);
 
-        res.status(200).json({ id : req.params.id });
+        res.status(200).json({ id : documentResponse.resource.id });
     }));
 
     return router;

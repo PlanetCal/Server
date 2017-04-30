@@ -52,8 +52,7 @@ module.exports = {
             return {
                 method: req.method,
                 url: req.url,
-                headers: headers,
-                query: req.query
+                headers: headers
             };
         }
 

@@ -23,7 +23,7 @@ require('./apiservicepassport.js')(passport, config, logger);
 var loginController = require('./routes/logincontroller.js')(config, logger);
 var userAuthController = require('./routes/userauthcontroller.js')(config, logger);
 var userDetailsController = require('./routes/userdetailscontroller.js')(config, logger);
-var eventsController = require('./routes/eventscontroller.js')(config, logger);
+var eventsController = require('./routes/eventscontroller.js')(config, logger, app);
 var groupsController = require('./routes/groupscontroller.js')(config, logger);
 var corsController = require('./routes/corscontroller.js')(config, logger);
 var cors = require('cors');
@@ -54,8 +54,18 @@ app.use('/',  function(req, res, next){
 // enable CORS for all requests first
 app.use('/', corsController);
 
+var defaultCorsOptions = {
+    origin : '*', 
+    methods : ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders : ['Content-Type'],
+    exposedHeaders : ['Version'],
+    optionsSuccessStatus : 200,
+    preflightContinue : true,
+    credentials : true
+};
+
 // then, all requests are subject to version header check
-app.use('/', function (req, res, next){
+app.use('/', cors(defaultCorsOptions), function (req, res, next){
     if (!req.headers['version']){
         throw new BadRequestException('Cannot find version in header.');
     }
@@ -88,7 +98,7 @@ app.post('/userauth', cors(userAuthCorsOptions), helpers.wrap(function *(req, re
 }));
 
 // all other urls - all APIs are subject to token authentication
-app.use('/*', passport.authenticate('token-bearer', { session: false }),
+app.use('/*', cors(defaultCorsOptions), passport.authenticate('token-bearer', { session: false }),
     function (req, res, next){
         if (!req || !req.user){
             // token authentication fail.
@@ -117,19 +127,7 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    err.serviceName = constants.apiServiceName;
-    err.activityId = req.headers['activityid'];
-
-    if (err && err.code < 500){
-        logger.get().info({exception : err});
-    }
-    else{        
-        logger.get().error({exception : err});
-    }
-
-    res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(
-        err, 
-        app.get('env') === 'development'));
+    helpers.handleServiceException(err, req, constants.apiServiceName, logger, app.get('env') === 'development');
 });
 
 var port = process.env.PORT || config.apiServicePort;

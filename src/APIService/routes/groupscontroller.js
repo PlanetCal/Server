@@ -5,6 +5,7 @@ module.exports = function(config, logger){
     var request = require('request-promise');
     var qs = require('qs');
     var cors = require('cors');
+    var etag = require('etag');
 
     var constants = require('../../common/constants.json')['serviceNames'];
     var helpers = require('../../common/helpers.js');
@@ -30,6 +31,7 @@ module.exports = function(config, logger){
         }
         var options = helpers.getRequestOption(req, url, 'GET'); 
         var results = yield *helpers.forwardHttpRequest(options, constants.groupsServiceName);
+        res.setHeader('Etag', etag(results));
         res.status(200).json(JSON.parse(results));
     }));
 
@@ -40,6 +42,7 @@ module.exports = function(config, logger){
         var url = endpoint + '/' + controllerName + '?' + qs.stringify(req.query);
         var options = helpers.getRequestOption(req, url, 'GET'); 
         var results = yield *helpers.forwardHttpRequest(options, constants.groupsServiceName);
+        res.setHeader('Etag', etag(results));
         res.status(200).json(JSON.parse(results));
     }));
 

@@ -31,45 +31,37 @@ module.exports = function(config, logger){
             throw new NotFoundException('Event with id ' + req.params.id + ' not found.');
         }
 
+        logger.get().debug({req : req, event : results[0]}, 'Event object successfully retrieved.');
         // TODO: assert when results has more than 1 element.
         res.status(200).json(results[0]);
     }));
 
-    router.get('/', helpers.wrap(function *(req, res) {
-        /*
-        if (!req.query) {
-            throw new BadRequestException('Query string is invalid.');
+    router.get('/', helpers.wrap(function *(req, res) {            
+        var fields;
+        if (req.query.fields){
+            fields = req.query.fields.split('|');
         }
 
-        if (!req.query.groupids) {
-            throw new BadRequestException('GroupIds not found in query string.');
+        var groupids;
+        if (req.query.groupids){
+            groupids = req.query.groupids.split('|');
+        }
+
+        var documentResponse; 
+        if (!groupids && !fields){
+            logger.get().debug({req : req}, 'Retrieving all event objects...');
+            documentResponse = yield findAllEvents(dal, groupids, fields);
         }
         else{
-        */
-            
-            var fields;
-            if (req.query.fields){
-                fields = req.query.fields.split('|');
-            }
+            logger.get().debug({req : req}, 'Retrieving event objects by ids...');
+            documentResponse = yield findEventsByGroupsIdsAsync(dal, groupids, fields);
+        }
 
-            var groupids;
-            if (req.query.groupids){
-                groupids = req.query.groupids.split('|');
-            }
+        var results = documentResponse.feed;
+        var filteredResults = helpers.removeDuplicatedItemsById(results);
 
-            var documentResponse; 
-            if (!groupids && !fields){
-                documentResponse = yield findAllEvents(dal, groupids, fields);
-            }
-            else{
-                documentResponse = yield findEventsByGroupsIdsAsync(dal, groupids, fields);
-            }
-
-            var results = documentResponse.feed;
-            var filteredResults = helpers.removeDuplicatedItemsById(results);
-
-            res.status(200).json(filteredResults);
-        //}
+        logger.get().debug({req : req, events : filteredResults}, 'Event objects retrieved successfully.');
+        res.status(200).json(filteredResults);
     }));
 
     router.put('/:id', helpers.wrap(function *(req, res) {
@@ -86,7 +78,9 @@ module.exports = function(config, logger){
             throw new BadRequestException('Forbidden');
         }
         */
+        logger.get().debug({req : req}, 'Updating event...');
         var documentResponse = yield dal.updateAsync(req.params.id, event);
+        logger.get().debug({req : req, event : documentResponse.resource}, 'Event updated successfully.');
         res.status(200).json({ id : documentResponse.resource.id });
     }));
 
@@ -104,13 +98,17 @@ module.exports = function(config, logger){
         event['ownedById'] = req.headers['auth-identity'];
         */
 
+        logger.get().debug({req : req}, 'Creating event object...');
         var documentResponse = yield dal.insertAsync(event, {});
+        logger.get().debug({req : req, event : documentResponse.resource}, 'Event object created successfully.');
         res.status(200).json({ id : documentResponse.resource.id });
     }));
 
     router.delete('/:id', helpers.wrap(function *(req, res) {
+        logger.get().debug({req : req}, 'Deleting event object...');
         var documentResponse = yield dal.removeAsync(req.params.id);
-        res.status(200).json({ id : req.params.id });
+        logger.get().debug({req : req}, 'Event object deleted successfully. id: %s', documentResponse.resource.id);
+        res.status(200).json({ id : documentResponse.resource.id });
     }));
     return router;
 }

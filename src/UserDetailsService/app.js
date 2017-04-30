@@ -41,20 +41,10 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    err.serviceName = constants.userDetailsServiceName;
-    err.activityId = req.headers['activityid'];
-
-    if (err && err.code < 500){
-        logger.get().info({exception : err});
-    }
-    else{        
-        logger.get().error({exception : err});
-    }
-
-    res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(err, true));
+    helpers.handleServiceException(err, req, constants.userDetailsServiceName, logger, true);
 });
 
 var port = process.env.PORT || config.userDetailsServicePort;
 var server = app.listen(port, function(){
-    console.log('http://localhost:' + server.address().port + '/');
+    logger.get().debug('%s started at http://localhost:%d/', constants.userDetailsServiceName, server.address().port);
 });

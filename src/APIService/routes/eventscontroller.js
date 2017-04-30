@@ -1,10 +1,11 @@
 'use strict'
 
-module.exports = function(config, logger){
+module.exports = function(config, logger, app){
     var router = require('express').Router();
     var request = require('request-promise');
     var qs = require('qs');
     var cors = require('cors');
+    var etag = require('etag');
     var constants = require('../../common/constants.json')['serviceNames'];
 
     var helpers = require('../../common/helpers.js');
@@ -30,26 +31,35 @@ module.exports = function(config, logger){
         }
         var options = helpers.getRequestOption(req, url, 'GET'); 
         var results = yield *helpers.forwardHttpRequest(options, constants.eventsServiceName);
+        res.setHeader('Etag', etag(results));
         res.status(200).json(JSON.parse(results));
     }));
 
     router.get('/', cors(corsOptions), helpers.wrap(function *(req, res){
-        /*
-        if (!req.query){
-            throw new BadRequestException('Query string must be provided.');
-        }
-        */
-        var url;
 
-        if (!req.query){
+        if (!app || app.get('env') !== 'development'){
+            if (!req.query) {
+                throw new BadRequestException('Query string is invalid.');
+            }
+
+            if (!req.query.groupids) {
+                throw new BadRequestException('GroupIds not found in query string.');
+            }
+        }
+
+        var url;
+        var queryString = qs.stringify(req.query);
+
+        if (!queryString || queryString === ''){
             url = endpoint + '/' + controllerName; 
         }
         else{
-            url = endpoint + '/' + controllerName + '?' + qs.stringify(req.query);             
+            url = endpoint + '/' + controllerName + '?' + queryString;             
         }
 
         var options = helpers.getRequestOption(req, url, 'GET'); 
         var results = yield *helpers.forwardHttpRequest(options, constants.eventsServiceName);
+        res.setHeader('Etag', etag(results));
         res.status(200).json(JSON.parse(results));
     }));
 

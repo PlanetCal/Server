@@ -97,7 +97,7 @@ module.exports = function(config, logger){
     router.delete('/:id', helpers.wrap(function *(req, res) {
         logger.get().debug({req : req}, 'Deleting group object...');
         var documentResponse = yield dal.removeAsync(req.params.id);
-        logger.get().debug({req : req}, 'group object deleted successfully.');
+        logger.get().debug({req : req}, 'group object deleted successfully. id: %s', documentResponse.resource.id);
         res.status(200).json({ id : documentResponse.resource.id });                        
     }));
 

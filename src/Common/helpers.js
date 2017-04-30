@@ -105,5 +105,21 @@ module.exports = {
             }
             throw new HttpRequestException('Request to ' + serviceName + ' failed.', options.url, extractedException);
         });
+    },
+
+    'handleServiceException' : function handleServiceException(err, req, serviceName, logger, logStack){
+        err.serviceName = serviceName;
+        err.activityId = req.headers['activityid'];
+
+        var exception = this.constructResponseJsonFromExceptionRecursive(err, logStack);
+        
+        if (err && err.code < 500){
+            logger.get().info({exception : exception});
+        }
+        else{        
+            logger.get().error({exception : exception});
+        }
+
+        res.status(err.code || 500).json(exception);
     }
 }
