@@ -127,7 +127,7 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    helpers.handleServiceException(err, req, constants.apiServiceName, logger, app.get('env') === 'development');
+    helpers.handleServiceException(err, req, res, constants.apiServiceName, logger, app.get('env') === 'development');
 });
 
 var port = process.env.PORT || config.apiServicePort;

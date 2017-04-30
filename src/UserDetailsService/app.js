@@ -41,7 +41,7 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    helpers.handleServiceException(err, req, constants.userDetailsServiceName, logger, true);
+    helpers.handleServiceException(err, req, res, constants.userDetailsServiceName, logger, true);
 });
 
 var port = process.env.PORT || config.userDetailsServicePort;
