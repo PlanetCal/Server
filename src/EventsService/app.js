@@ -48,5 +48,5 @@ app.use(function(err, req, res, next) {
 
 var port = process.env.PORT || config.eventsServicePort;
 var server = app.listen(port, function(){
-    console.log('http://localhost:' + server.address().port + '/');
+    logger.get().debug('%s started at http://localhost:%d/', constants.eventsServiceName, server.address().port);
 });

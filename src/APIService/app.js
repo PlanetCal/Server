@@ -54,8 +54,18 @@ app.use('/',  function(req, res, next){
 // enable CORS for all requests first
 app.use('/', corsController);
 
+var defaultCorsOptions = {
+    origin : '*', 
+    methods : ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders : ['Content-Type'],
+    exposedHeaders : ['Version'],
+    optionsSuccessStatus : 200,
+    preflightContinue : true,
+    credentials : true
+};
+
 // then, all requests are subject to version header check
-app.use('/', function (req, res, next){
+app.use('/', cors(defaultCorsOptions), function (req, res, next){
     if (!req.headers['version']){
         throw new BadRequestException('Cannot find version in header.');
     }
@@ -88,7 +98,7 @@ app.post('/userauth', cors(userAuthCorsOptions), helpers.wrap(function *(req, re
 }));
 
 // all other urls - all APIs are subject to token authentication
-app.use('/*', passport.authenticate('token-bearer', { session: false }),
+app.use('/*', cors(defaultCorsOptions), passport.authenticate('token-bearer', { session: false }),
     function (req, res, next){
         if (!req || !req.user){
             // token authentication fail.
