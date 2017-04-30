@@ -24,7 +24,7 @@ module.exports = function(config, logger){
         res.status(200).json(JSON.parse(results));
     }));
 
-    router.get('/:id/events', cors(corsOptions),helpers.wrap(function *(req, res){
+    router.get('/:id/events', cors(corsOptions), helpers.wrap(function *(req, res){
         var userDetailsRequestOptions = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'GET'); 
         var results = yield *helpers.forwardHttpRequest(userDetailsRequestOptions, constants.userDetailsServiceName);
 
@@ -44,7 +44,7 @@ module.exports = function(config, logger){
         res.status(200).json(results);
     }));
 
-    router.post('/', cors(corsOptions),helpers.wrap(function *(req, res){
+    router.post('/', cors(corsOptions), helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/userdetails', 'POST'); 
         var results = yield *helpers.forwardHttpRequest(options, constants.userDetailsServiceName);
         res.status(201).json(results);
@@ -56,7 +56,7 @@ module.exports = function(config, logger){
         res.status(200).json({id : req.params.id});
     }));
 
-    router.delete('/:id', cors(corsOptions),helpers.wrap(function *(req, res){
+    router.delete('/:id', cors(corsOptions), helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req,  config.userDetailsServiceEndpoint + '/userdetails/' + req.params.id, 'DELETE'); 
         var results = yield *helpers.forwardHttpRequest(options, constants.userDetailsServiceName);
         res.status(200).json({id : req.params.id});
