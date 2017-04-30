@@ -107,7 +107,7 @@ module.exports = {
         });
     },
 
-    'handleServiceException' : function handleServiceException(err, req, serviceName, logger, logStack){
+    'handleServiceException' : function handleServiceException(err, req, res, serviceName, logger, logStack){
         err.serviceName = serviceName;
         err.activityId = req.headers['activityid'];
 

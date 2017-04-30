@@ -42,7 +42,7 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    helpers.handleServiceException(err, req, constants.userAuthServiceName, logger, true);
+    helpers.handleServiceException(err, req, res, constants.userAuthServiceName, logger, true);
 });
 
 var port = process.env.PORT || config.userAuthServicePort;

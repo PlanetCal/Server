@@ -33,7 +33,7 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    helpers.handleServiceException(err, req, constants.groupsServiceName, logger, true);
+    helpers.handleServiceException(err, req, res, constants.groupsServiceName, logger, true);
 });
 
 var port = process.env.PORT || config.groupsServicePort;
