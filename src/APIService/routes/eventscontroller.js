@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = function(config, logger){
+module.exports = function(config, logger, app){
     var router = require('express').Router();
     var request = require('request-promise');
     var qs = require('qs');
@@ -34,18 +34,25 @@ module.exports = function(config, logger){
     }));
 
     router.get('/', cors(corsOptions), helpers.wrap(function *(req, res){
-        /*
-        if (!req.query){
-            throw new BadRequestException('Query string must be provided.');
-        }
-        */
-        var url;
 
-        if (!req.query){
+        if (!app || app.get('env') !== 'development'){
+            if (!req.query) {
+                throw new BadRequestException('Query string is invalid.');
+            }
+
+            if (!req.query.groupids) {
+                throw new BadRequestException('GroupIds not found in query string.');
+            }
+        }
+
+        var url;
+        var queryString = qs.stringify(req.query);
+
+        if (!queryString || queryString === ''){
             url = endpoint + '/' + controllerName; 
         }
         else{
-            url = endpoint + '/' + controllerName + '?' + qs.stringify(req.query);             
+            url = endpoint + '/' + controllerName + '?' + queryString;             
         }
 
         var options = helpers.getRequestOption(req, url, 'GET'); 

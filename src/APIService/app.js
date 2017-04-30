@@ -23,7 +23,7 @@ require('./apiservicepassport.js')(passport, config, logger);
 var loginController = require('./routes/logincontroller.js')(config, logger);
 var userAuthController = require('./routes/userauthcontroller.js')(config, logger);
 var userDetailsController = require('./routes/userdetailscontroller.js')(config, logger);
-var eventsController = require('./routes/eventscontroller.js')(config, logger);
+var eventsController = require('./routes/eventscontroller.js')(config, logger, app);
 var groupsController = require('./routes/groupscontroller.js')(config, logger);
 var corsController = require('./routes/corscontroller.js')(config, logger);
 var cors = require('cors');
@@ -127,19 +127,7 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    err.serviceName = constants.apiServiceName;
-    err.activityId = req.headers['activityid'];
-
-    if (err && err.code < 500){
-        logger.get().info({exception : err});
-    }
-    else{        
-        logger.get().error({exception : err});
-    }
-
-    res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(
-        err, 
-        app.get('env') === 'development'));
+    helpers.handleServiceException(err, req, constants.apiServiceName, logger, app.get('env') === 'development');
 });
 
 var port = process.env.PORT || config.apiServicePort;
