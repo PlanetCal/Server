@@ -147,7 +147,7 @@ function findEventsByGroupsIdsAsync(dal, groupsIds) {
 
 function findAllEvents(dal) {
     var querySpec = {
-        query: "SELECT * FROM root e"
+        query: "SELECT * FROM root"
     };
     return dal.getAsync(querySpec);
 }
