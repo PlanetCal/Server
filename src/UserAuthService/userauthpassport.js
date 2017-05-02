@@ -25,11 +25,19 @@ module.exports = function(passport, config, logger){
 
             var documentResponse = yield dal.getAsync(querySpec);
             var results = documentResponse.feed;
+
             var passwordCrypto = new PasswordCrypto();
 
             if (results && results.length > 0){
                 // should yield only one result if found
                 var user = results[0];
+
+                if (!user.hasEverLoggedIn || user.hasEverLoggedIn === false){
+                    logger.get().debug({req : req}, 'hasEverLoggedIn flag is either not found or false. Updating flag to true...');
+                    user.hasEverLoggedIn = true;
+                    yield dal.updateAsync(user.id, user);
+                    logger.get().debug({req : req}, 'hasEverLoggedIn flag is updated successfully.');
+                }
 
                 if (passwordCrypto.compareValues(password, user.passwordHash)){
                     return done(null, user);
@@ -60,7 +68,7 @@ function getUserQuerySpecFromEmail(email){
         throw new InternalServerException('email is not a string.');
     }
 
-    var queryString = "SELECT e.id, e.email, e.name, e.passwordHash FROM root e WHERE e.email = @email";
+    var queryString = "SELECT e.id, e.email, e.name, e.passwordHash, e.hasEverLoggedIn FROM root e WHERE e.email = @email";
                     
     var parameters = [
         {

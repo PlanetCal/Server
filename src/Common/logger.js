@@ -17,6 +17,7 @@ module.exports = {
         if (!isDebug){
             isDebug = false;
         }
+        
         this.internalLogger = bunyan.createLogger(
         {
             name : loggerName,
@@ -92,7 +93,8 @@ module.exports = {
             return {
                 id : userAuth.id,
                 email : userAuth.email,
-                name : userAuth.name
+                name : userAuth.name,
+                hasEverLoggedIn : userAuth.hasEverLoggedIn
             };
         }
 
