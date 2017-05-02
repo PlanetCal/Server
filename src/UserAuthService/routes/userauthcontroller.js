@@ -27,7 +27,7 @@ module.exports = function(passport, config, logger){
             var passwordHash = passwordCrypto.generateHash(req.body.password);
             var options = { preTriggerInclude: config.insertUniqueUserTriggerName };   
 
-            var documentResponse = yield dal.insertAsync({ email: req.body.email, passwordHash: passwordHash, name : req.body.name }, options);
+            var documentResponse = yield dal.insertAsync({ email: req.body.email, passwordHash: passwordHash, name : req.body.name, hasEverLoggedIn : false }, options);
 
             logger.get().debug({req : req, userAuth : documentResponse.resource }, 'userAuth object created successfully.');
 

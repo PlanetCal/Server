@@ -31,15 +31,15 @@ module.exports = function(passport, config, logger){
             if (results && results.length > 0){
                 // should yield only one result if found
                 var user = results[0];
-
-                if (!user.hasEverLoggedIn || user.hasEverLoggedIn === false){
-                    logger.get().debug({req : req}, 'hasEverLoggedIn flag is either not found or false. Updating flag to true...');
-                    user.hasEverLoggedIn = true;
-                    yield dal.updateAsync(user.id, user);
-                    logger.get().debug({req : req}, 'hasEverLoggedIn flag is updated successfully.');
-                }
-
                 if (passwordCrypto.compareValues(password, user.passwordHash)){
+                    
+                    if (!user.hasEverLoggedIn || user.hasEverLoggedIn === false){
+                        logger.get().debug({req : req}, 'hasEverLoggedIn flag is either not found or false. Updating flag to true...');
+                        user.hasEverLoggedIn = true;
+                        yield dal.updateAsync(user.id, user);
+                        logger.get().debug({req : req}, 'hasEverLoggedIn flag is updated successfully.');
+                    }
+
                     return done(null, user);
                 }
             }
