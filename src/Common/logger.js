@@ -94,7 +94,7 @@ module.exports = {
                 id : userAuth.id,
                 email : userAuth.email,
                 name : userAuth.name,
-                hasEverLoggedIn : userAuth.hasEverLoggedIn
+                firstTimeLogon : userAuth.firstTimeLogon
             };
         }
 
