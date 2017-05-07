@@ -5,6 +5,7 @@ module.exports = function(passport, config, logger){
     var BearerStrategy = require('passport-http-bearer').Strategy;
     var TokenGenerator = require('../common/tokengenerator.js').TokenGenerator;
     var UnauthorizedException = require('../common/error.js').UnauthorizedException;
+    var errorcode = require('../common/errorcode.json')['errorcode'];
 
     passport.use('token-bearer', new BearerStrategy(
         function(token, done) {
@@ -14,11 +15,11 @@ module.exports = function(passport, config, logger){
                 var decodedObject = tokenGenerator.decode(token);
                     
                 if (!decodedObject || !decodedObject.id){
-                    return done(new UnauthorizedException('Invalid token'), false);
+                    return done(new UnauthorizedException('Invalid token', errorcode.InvalidToken), false);
                 }
             }
             catch(err){
-                return done(new UnauthorizedException('Invalid token'), false);                
+                return done(new UnauthorizedException('Invalid token', errorcode.InvalidToken), false);                
             }
 
             logger.get().debug('Successfully decode token %s to user id %s.', token, decodedObject.id);

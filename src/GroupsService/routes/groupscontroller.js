@@ -13,7 +13,7 @@ module.exports = function(config, logger){
 
     var helpers = require('../../common/helpers.js');
     var BadRequestException = require('../../common/error.js').BadRequestException;
-    var NotFoundException = require('../../common/error.js').NotFoundException;
+    var errorcode = require('../../common/errorcode.json');
 
     router.get('/:id', helpers.wrap(function *(req, res) {
         var fields 
@@ -23,22 +23,20 @@ module.exports = function(config, logger){
 
         logger.get().debug({req : req}, 'Retriving group object...');
         var documentResponse = yield findGroupsByGroupIdsAsync(dal, req.params.id, fields);
-        if (results.length <= 0){
-            throw new NotFoundException('Group with id ' + req.params.id + ' not found.');
-        }
-        logger.get().debug({req : req, group: results[0]}, 'group object with fields retrieved successfully.');
+        var result = documentResponse.feed.length <= 0 ? {} : documentResponse.feed[0];
+        logger.get().debug({req : req, group: result}, 'group object with fields retrieved successfully.');
 
         // TODO: assert when results has more than 1 element.
-        res.status(200).json(results[0]);
+        res.status(200).json(result);
     }));
 
     router.get('/', helpers.wrap(function *(req, res) {
         if (!req.query) {
-            throw new BadRequestException('Cannot find email and password in body.');
+            throw new BadRequestException('Query string is expected.', errorcode.NoQueryString);
         }
         
         if (!req.query.keywords) {
-            throw new BadRequestException('Keywords should be found in query string.');
+            throw new BadRequestException('Keywords should be found in query string.', errorcode.KeywordsNotFoundInQueryString);
         }
 
         var documentResponse;
@@ -60,11 +58,11 @@ module.exports = function(config, logger){
 
     router.put('/', helpers.wrap(function *(req, res) {
         if (!req.body) {
-            throw new BadRequestException('Empty body.');
+            throw new BadRequestException('Empty body.', errorcode.EmptyBody);
         }
         var group = req.body;
         if (!group) {
-            throw new BadRequestException('Group is not found in body.');        
+            throw new BadRequestException('Group is not found in body.', errorcode.GroupsNotFoundInBody);        
         }
         group['createdById'] = req.headers['auth-identity'];
         group['ownedById'] = req.headers['auth-identity'];
@@ -78,11 +76,11 @@ module.exports = function(config, logger){
 
     router.post('/', helpers.wrap(function *(req, res) {
         if (!req.body) {
-            throw new BadRequestException('Empty body.');
+            throw new BadRequestException('Empty body.', errorcode.EmptyBody);
         }
         var group = req.body;
         if (!group) {
-            throw new BadRequestException('Group is not found in body.');        
+            throw new BadRequestException('Group is not found in body.', errorcode.GroupsNotFoundInBody);        
         }
         group['createdById'] = req.headers['auth-identity'];
         group['ownedById'] = req.headers['auth-identity'];

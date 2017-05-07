@@ -120,6 +120,7 @@ module.exports = {
                         errorCode : exception.errorCode,
                         activityId : exception.activityId,
                         serviceName : exception.serviceName,
+                        errorcode : exception.errorcode,
                         innerException : constructLoggedExceptionObject(exception.innerException, isFatalError)
                     };
                 }

@@ -1,0 +1,25 @@
+{	
+	"GenericUnauthorizedException" : "GenericUnauthorizedException",
+	"LoginFailed" : "LoginFailed",
+	"InvalidToken" : "InvalidToken",
+
+	"GenericBadRequestException" : "GenericBadRequestException",
+	"VersionNotFoundInHeader" : "VersionNotFoundInHeader",
+	"EventNotFoundInBody" : "EventNotFoundInBody",
+	"EmptyBody" : "EmptyBody",
+	"NoQueryString" : "NoQueryString",
+	"KeywordsNotFoundInQueryString" : "KeywordsNotFoundInQueryString",
+	"GroupsNotFoundInBody" : "GroupsNotFoundiInBody",
+	"EmailOrPasswordNotFoundInBody" : "EmailOrPasswordNotFoundInBody",
+	"UserDetailsNotFoundInBody" : "UserDetailsNotFoundInBody",
+	"InvalidQueryString" : "InvalidQueryString",
+	"GroupdIdsNotFoundInQueryString" : "GroupdIdsNotFoundInQueryString",
+
+
+	"GenericNotFoundException" : "GenericNotFoundException",
+
+	"GenericHttpRequestException" : "GenericHttpRequestException",
+	"GenericInternalServerException" : "GenericInternalServerException" ,
+	"GenericDatabaseException" : "GenericDatabaseException",
+	"GenericForbiddenException" : "GenericForbiddenException"
+}

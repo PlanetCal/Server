@@ -24,6 +24,7 @@ var userAuthController = require('./routes/userauthcontroller.js')(passport, con
 var helpers = require('../common/helpers.js');
 
 var NotFoundException = require('../common/error.js').NotFoundException;
+var errorcode = require('../common/errorcode.json');
 
 app.set('view engine', 'ejs');
 
@@ -38,7 +39,7 @@ app.use('/userauth', userAuthController);
 
 // error handling for other routes
 app.use(function(req, res, next) {
-    next(new NotFoundException('Resource specified by URL cannot be located.'));
+    next(new NotFoundException('Resource specified by URL cannot be located.', errorcode.GenericNotFoundException));
 });
 
 app.use(function(err, req, res, next) {

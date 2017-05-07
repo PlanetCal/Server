@@ -15,7 +15,7 @@ module.exports = function(config, logger){
     var helpers = require('../../common/helpers.js');
     var BadRequestException = require('../../common/error.js').BadRequestException;
     var ForbiddenException = require('../../common/error.js').ForbiddenException;
-    var NotFoundException = require('../../common/error.js').NotFoundException;
+    var errorcode = require('../../common/errorcode.json');
 
     router.get('/:id', helpers.wrap(function *(req, res) {    
         logger.get().debug({req : req}, 'Retriving userDetails object.');
@@ -26,11 +26,11 @@ module.exports = function(config, logger){
 
     router.put('/:id', helpers.wrap(function *(req, res) {
         if (!req.body) {
-            throw new BadRequestException('Empty body.');
+            throw new BadRequestException('Empty body.', errorcode.EmptyBody);
         }
         var userDetails = req.body;
         if (!userDetails) {
-            throw new BadRequestException('UserDetails object is not found in body.');
+            throw new BadRequestException('UserDetails object is not found in body.', errorcode.UserDetailsNotFoundInBody);
         }
 
         checkCallerPermission(req, req.params.id);
@@ -45,11 +45,11 @@ module.exports = function(config, logger){
 
     router.post('/', helpers.wrap(function *(req, res) {
         if (!req.body) {
-            throw new BadRequestException('Empty body.');
+            throw new BadRequestException('Empty body.', errorcode.EmptyBody);
         }
         var userDetails = req.body;
         if (!userDetails) {
-            throw new BadRequestException('UserDetails object is not found in body.');
+            throw new BadRequestException('UserDetails object is not found in body.', errorcode.UserDetailsNotFoundInBody);
         }
 
         checkCallerPermission(req, req.body.id);
@@ -103,6 +103,6 @@ function *getUserDetailsBasicAsync(req){
         return results[0];
     }
     else{
-        throw new NotFoundException('UserDetails with id ' + req.params.id + ' not found.');
+        return {};
     }    
 }

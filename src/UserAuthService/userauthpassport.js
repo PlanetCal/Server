@@ -10,6 +10,7 @@ module.exports = function(passport, config, logger){
     var documentdbAuthKey = config.documentdbAuthKey;
     var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
     var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
+    var errorcode = require('../common/errorcode.json');
 
     var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
     var UnauthorizedException = require('../common/error.js').UnauthorizedException;
@@ -35,7 +36,7 @@ module.exports = function(passport, config, logger){
                     return done(null, user);
                 }
             }
-            return done(new UnauthorizedException('Login failed'), null);
+            return done(new UnauthorizedException('Login failed', errorcode.LoginFailed), null);
         })));
     
     passport.serializeUser(function(user, done) {

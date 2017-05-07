@@ -33,6 +33,7 @@ var NotFoundException = require('../common/error.js').NotFoundException;
 var ForbiddenException = require('../common/error.js').ForbiddenException;
 var UnauthorizedException = require('../common/error.js').UnauthorizedException;
 var HttpRequestException = require('../common/error.js').HttpRequestException;
+var errorcode = require('../common/errorcode.json');
 
 logger.get().debug('Starting %s.....', constants.apiServiceName);
 
@@ -43,13 +44,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use(passport.initialize());
-
-/*
-app.use('/',  function(req, res, next){
-    logger.get().debug({req : req}); 
-    next();  
-});
-*/
 
 // enable CORS for all requests first
 app.use('/', corsController);
@@ -67,7 +61,7 @@ var defaultCorsOptions = {
 // then, all requests are subject to version header check
 app.use('/', cors(defaultCorsOptions), function (req, res, next){
     if (!req.headers['version']){
-        throw new BadRequestException('Cannot find version in header.');
+        throw new BadRequestException('Cannot find version in header.', errorcode.VersionNotFoundInHeader);
     }
     else{
         var activityid = uuid.v4();
@@ -102,7 +96,7 @@ app.use('/*', cors(defaultCorsOptions), passport.authenticate('token-bearer', { 
     function (req, res, next){
         if (!req || !req.user){
             // token authentication fail.
-            return new UnauthorizedException('Token authentication failed.');
+            return new UnauthorizedException('Token authentication failed.', errorcode.LoginFailed);
         }
         else{
             // set auth-identity header so that internal services
@@ -123,7 +117,7 @@ app.use('/groups', groupsController);
 
 // error handling for other routes
 app.use(function(req, res, next) {
-    next(new NotFoundException('Resource specified by URL cannot be located.'));
+    next(new NotFoundException('Resource specified by URL cannot be located.', errorcode.GenericNotFoundException));
 });
 
 app.use(function(err, req, res, next) {

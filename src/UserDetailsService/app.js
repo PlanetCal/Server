@@ -20,10 +20,11 @@ var helpers = require('../common/helpers.js');
 var BadRequestException = require('../common/error.js').BadRequestException;
 var ForbiddenException = require('../common/error.js').ForbiddenException;
 var NotFoundException = require('../common/error.js').NotFoundException;
+var errorcode = require('../common/errorcode.json');
 
 var constants = require('../common/constants.json')['serviceNames'];
 var Logger = require('../common/logger.js').Logger;
-var logger = new Logger(constants.apiServiceName, null, app.get('env') === 'development');
+var logger = new Logger(constants.userDetailsServiceName, null, app.get('env') === 'development');
 var accesslogger = require('../common/accesslogger.js');
 
 app.use(accesslogger.getAccessLogger(logger));
@@ -37,7 +38,7 @@ app.use('/userdetails', userDetailsController);
 
 // error handling for other routes
 app.use(function(req, res, next) {
-    next(new NotFoundException('Resource specified by URL cannot be located.'));
+    next(new NotFoundException('Resource specified by URL cannot be located.', errorcode.GenericNotFoundException));
 });
 
 app.use(function(err, req, res, next) {

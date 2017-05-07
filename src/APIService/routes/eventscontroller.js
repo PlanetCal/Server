@@ -10,6 +10,7 @@ module.exports = function(config, logger, app){
 
     var helpers = require('../../common/helpers.js');
     var BadRequestException = require('../../common/error.js').BadRequestException;
+    var errorcode = require('../../common/errorcode.json');
 
     var corsOptions = {
       origin : '*', 
@@ -39,11 +40,11 @@ module.exports = function(config, logger, app){
 
         if (!app || app.get('env') !== 'development'){
             if (!req.query) {
-                throw new BadRequestException('Query string is invalid.');
+                throw new BadRequestException('Query string is invalid.', errorcode.InvalidQueryString);
             }
 
             if (!req.query.groupids) {
-                throw new BadRequestException('GroupIds not found in query string.');
+                throw new BadRequestException('GroupIds not found in query string.', errorcode.GroupdIdsNotFoundInQueryString);
             }
         }
 

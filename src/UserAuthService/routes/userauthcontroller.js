@@ -15,10 +15,11 @@ module.exports = function(passport, config, logger){
     var helpers = require('../../common/helpers.js');
     var BadRequestException = require('../../common/error.js').BadRequestException;
     var ForbiddenException = require('../../common/error.js').ForbiddenException;
+    var errorcode = require('../../common/errorcode.json');
 
     router.post('/', helpers.wrap(function *(req, res){
         if (!req.body || !req.body.email || !req.body.password || !req.body.name){
-            throw new BadRequestException('Cannot find email, password or name in body.');
+            throw new BadRequestException('Cannot find email, password or name in body.', errorcode.EmailOrPasswordNotFoundInBody);
         }
         else{
             logger.get().debug({req : req}, 'Creating userAuth object...');
@@ -37,7 +38,7 @@ module.exports = function(passport, config, logger){
 
     router.put('/:id', helpers.wrap(function *(req, res){
         if (!req.body || !req.body.email || !req.body.password || !req.body.name){
-            throw new BadRequestException('Cannot find email, password or name in body.');
+            throw new BadRequestException('Cannot find email, password or name in body.', errorcode.EmailOrPasswordNotFoundInBody);
         }
         else if (!isOperationAuthorized(req)){
             throw new ForbiddenException('Forbidden.');

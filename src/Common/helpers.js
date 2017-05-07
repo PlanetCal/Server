@@ -2,9 +2,7 @@
 
 var Promise = require('bluebird');
 var request = require('request-promise');
-var BadRequestException = require('./error.js').BadRequestException;
 var ForbiddenException = require('./error.js').ForbiddenException;
-var NotFoundEException = require('./error.js').NotFoundException;
 var UnauthorizedException = require('./error.js').UnauthorizedException;
 var InternalServerException = require('./error.js').InternalServerException;
 var HttpRequestException = require('./error.js').HttpRequestException;
@@ -70,7 +68,7 @@ module.exports = {
         return '';
     },
 
-    'constructResponseJsonFromExceptionRecursive' : function constructResponseJsonFromExceptionRecursive(exceptionObject, includeStack){
+    'constructResponseJsonFromExceptionRecursive' : function constructResponseJsonFromExceptionRecursive(exceptionObject, logStack){
         var returnedJson;
         if (exceptionObject){
             returnedJson = 
@@ -81,10 +79,11 @@ module.exports = {
                     activityId : exceptionObject.activityId,
                     innerException : constructResponseJsonFromExceptionRecursive(exceptionObject.innerException),
                     serviceName : exceptionObject.serviceName,
+                    errorcode : exceptionObject.errorcode,
                     url : exceptionObject.url                    
                 };
 
-            if (includeStack === true){
+            if (logStack === true){
                 returnedJson.stack = exceptionObject.stack;
             }
         }

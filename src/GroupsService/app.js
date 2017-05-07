@@ -19,6 +19,7 @@ var groupsController = require('./routes/groupscontroller.js')(config, logger);
 var BadRequestException = require('../common/error.js').BadRequestException;
 var ForbiddenException = require('../common/error.js').ForbiddenException;
 var NotFoundException = require('../common/error.js').NotFoundException;
+var errorcode = require('../common/errorcode.json');
 
 app.set('view engine', 'ejs');
 
@@ -29,7 +30,7 @@ app.use('/groups', groupsController);
 
 // error handling for other routes
 app.use(function(req, res, next) {
-    next(new NotFoundException('Resource specified by URL cannot be located.'));
+    next(new NotFoundException('Resource specified by URL cannot be located.', errorcode.GenericNotFoundException));
 });
 
 app.use(function(err, req, res, next) {
