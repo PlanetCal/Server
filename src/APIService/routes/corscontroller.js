@@ -35,5 +35,13 @@ module.exports = function(config, logger){
 
     router.options('/events', cors(corsOptions));
 
+    corsOptions = {
+      origin : '*', 
+      methods : ['GET', 'PUT'],
+      optionsSuccessStatus : 200
+    };
+
+    router.options('/grouplinks', cors(corsOptions));
+
     return router;  
 }

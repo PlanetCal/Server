@@ -68,6 +68,18 @@ module.exports = {
             });
         }
 
+        this.executeStoredProcedureAsync = function executeStoredProcedureAsync(storedProcedureName, params, options){
+            var client = this.getClient();
+
+            var storedProcedureLink = collectionLink + '/sprocs/' + storedProcedureName;
+            if (typeof(options) === 'undefined'){
+                options = {};
+            }
+            return client.executeStoredProcedureAsync(link, params, options).fail(function(err){
+                throw new DatabaseException(err);
+            });
+        }
+
         this.getClient = function getClient() {
             return new DocumentClient(this.documentdbEndpoint, { "masterKey": this.documentdbAuthKey });
         }

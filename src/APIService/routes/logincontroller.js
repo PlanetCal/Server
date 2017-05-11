@@ -19,7 +19,7 @@ module.exports = function(config, logger){
     };
     
     router.post('/', cors(corsOptions), helpers.wrap(function *(req, res){
-        var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/login', 'POST');
+        var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + constants.loginServiceUrlRoot, 'POST');
         var results = yield *helpers.forwardHttpRequest(options, constants.userAuthServiceName);
         res.status(200).json(JSON.parse(results));
     }));

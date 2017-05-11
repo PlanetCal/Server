@@ -32,7 +32,7 @@ module.exports = function(config, logger){
 
     router.get('/', helpers.wrap(function *(req, res) {
         if (!req.query) {
-            throw new BadRequestException('Query string is expected.', errorcode.NoQueryString);
+            throw new BadRequestException('Query string must be provided.', errorcode.NoQueryString);
         }
         
         if (!req.query.keywords) {

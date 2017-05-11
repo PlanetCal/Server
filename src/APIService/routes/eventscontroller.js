@@ -22,11 +22,10 @@ module.exports = function(config, logger, app){
       credentials : true
     };
 
-    var controllerName = 'events';
     var endpoint = config.eventsServiceEndpoint;
 
     router.get('/:id', cors(corsOptions), helpers.wrap(function *(req, res){
-        var url = endpoint + '/' + controllerName + '/' + req.params.id;
+        var url = endpoint + '/' + constants.eventsServiceUrlRoot + '/' + req.params.id;
         if (req.query){
             url += '?' + qs.stringify(req.query);
         }
@@ -52,10 +51,10 @@ module.exports = function(config, logger, app){
         var queryString = qs.stringify(req.query);
 
         if (!queryString || queryString === ''){
-            url = endpoint + '/' + controllerName; 
+            url = endpoint + '/' + constants.eventsServiceUrlRoot; 
         }
         else{
-            url = endpoint + '/' + controllerName + '?' + queryString;             
+            url = endpoint + '/' + constants.eventsServiceUrlRoot + '?' + queryString;             
         }
 
         var options = helpers.getRequestOption(req, url, 'GET'); 
@@ -65,19 +64,19 @@ module.exports = function(config, logger, app){
     }));
 
     router.post('/', cors(corsOptions), helpers.wrap(function *(req, res){
-        var options = helpers.getRequestOption(req, endpoint + '/' + controllerName, 'POST'); 
+        var options = helpers.getRequestOption(req, endpoint + '/' + constants.eventsServiceUrlRoot, 'POST'); 
         var results = yield *helpers.forwardHttpRequest(options, constants.eventsServiceName);
         res.status(200).json(JSON.parse(results));
     }));
 
     router.put('/:id', cors(corsOptions), helpers.wrap(function *(req, res){
-        var options = helpers.getRequestOption(req,  endpoint + '/' + controllerName + '/' + req.params.id, 'PUT'); 
+        var options = helpers.getRequestOption(req,  endpoint + '/' + constants.eventsServiceUrlRoot + '/' + req.params.id, 'PUT'); 
         var results = yield *helpers.forwardHttpRequest(options, constants.eventsServiceName);
         res.status(200).json({id : req.params.id});
     }));
 
     router.delete('/:id', cors(corsOptions), helpers.wrap(function *(req, res){
-        var options = helpers.getRequestOption(req,  endpoint + '/' + controllerName + '/' + req.params.id, 'DELETE'); 
+        var options = helpers.getRequestOption(req,  endpoint + '/' + constants.eventsServiceUrlRoot + '/' + req.params.id, 'DELETE'); 
         var results = yield *helpers.forwardHttpRequest(options, constants.eventsServiceName);
         res.status(200).json({id : req.params.id});
     }));
