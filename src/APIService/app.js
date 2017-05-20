@@ -15,7 +15,7 @@ var constants = require('../common/constants.json')['serviceNames'];
 var Logger = require('../common/logger.js').Logger;
 var logger = new Logger(constants.apiServiceName, null, app.get('env') === 'development');
 var accesslogger = require('../common/accesslogger.js');
-
+var etag = require('etag');
 app.use(accesslogger.getAccessLogger(logger));
 
 var config = require('../common/config.json')[app.get('env')];
@@ -70,6 +70,29 @@ app.use('/', cors(defaultCorsOptions), function (req, res, next){
         next();
     }
 });
+
+var getEventsCorsOptions = {
+    origin : '*', 
+    methods : ['GET'],
+    allowedHeaders : ['Content-Type'],
+    exposedHeaders : ['Version'],
+    optionsSuccessStatus : 200,
+    preflightContinue : true,
+    credentials : true
+};
+
+app.get('/events', cors(getEventsCorsOptions), helpers.wrap(function *(req, res, next){
+    if (Object.keys(req.query).length === 0){
+        var url = config.eventsServiceEndpoint + '/' + 'events';
+        var options = helpers.getRequestOption(req, url, 'GET'); 
+        var results = yield *helpers.forwardHttpRequest(options, constants.eventsServiceName);
+        res.setHeader('Etag', etag(results));
+        res.status(200).json(JSON.parse(results));
+    }
+    else{
+        next();
+    }
+}));
 
 app.use('/login', loginController);
 
