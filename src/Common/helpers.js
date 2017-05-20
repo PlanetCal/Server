@@ -11,8 +11,8 @@ module.exports = {
 
     'wrap' : function wrap (genFn) { 
         var cr = Promise.coroutine(genFn);
-        return function (req, res, next) {
-            cr(req, res, next).catch(next);
+        return function (req, res, errorHandler) {
+            cr(req, res, errorHandler).catch(errorHandler);
         }
     },
 
