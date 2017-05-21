@@ -5,5 +5,14 @@
         "userDetailsServiceName" : "UserDetailsService",
         "groupsServiceName" : "GroupsService",
         "eventsServiceName" : "EventsService"
+    },
+
+    "urlNames": {
+    	"login" : "login",
+    	"userauth": "userauth",
+    	"userdetails" : "userdetails",
+    	"groups":"groups",
+    	"grouplinks":"grouplinks",
+    	"events":"events"
     }
 }

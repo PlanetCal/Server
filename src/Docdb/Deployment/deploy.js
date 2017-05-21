@@ -2,7 +2,7 @@
 
 var argv = require('minimist')(process.argv.slice(2));
 var DocumentClient = require('documentdb-q-promises').DocumentClientWrapper;
-var config = require('../../common/config.json')[arv['env'] || 'development']; // TODO: Use express and app
+var config = require('../../common/config.json')[argv['env'] || 'development']; // TODO: Use express and app
 var triggers = require('../triggers/insertuniqueusertrigger.js');
 
 var client = new DocumentClient(config.documentdbEndpoint, { "masterKey": config.documentdbAuthKey });

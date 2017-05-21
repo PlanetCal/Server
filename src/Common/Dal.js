@@ -13,13 +13,24 @@ module.exports = {
 
         var collectionLink = 'dbs/' + databaseName + '/colls/' + collectionName;
 
-        this.insertAsync = function insertAsync(obj, options) {
+        this.insertAsync = function insertAsync(obj, options, errorHandler) {
             var client = this.getClient();
-            if (typeof(options) === 'undefined'){
+
+            if (typeof(options) === 'function' && typeof(errorHandler) === 'undefined'){
+                errorHandler = options;
+                options = {};
+            }
+            else if (typeof(options) === 'undefined'){
             	options = {};
             }
+
             return client.createDocumentAsync(collectionLink, obj, options).fail(function(err){
-                throw new DatabaseException(err);
+                if (typeof(errorHandler) === 'function'){
+                    errorHandler(err);
+                }
+                else{
+                    throw new DatabaseException(err);
+                }
             });
         }
 
