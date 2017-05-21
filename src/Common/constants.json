@@ -4,15 +4,16 @@
         "userAuthServiceName" : "UserAuthService",
         "userDetailsServiceName" : "UserDetailsService",
         "groupsServiceName" : "GroupsService",
-        "eventsServiceName" : "EventsService",
-        "groupLinksServiceName" : "GroupLinksService",
+        "eventsServiceName" : "EventsService"
+    },
 
-        "userAuthServiceUrlRoot" : "userauth",
-        "loginServiceUrlRoot" : "login",
-        "userDetailsServiceUrlRoot" : "userdetails",
-        "eventsServiceUrlRoot" : "events",
-        "groupsServiceUrlRoot" : "groups",
-        "groupLinksServiceUrlRoot" : "grouplinks"
+    "urlNames": {
+    	"login" : "login",
+    	"userauth": "userauth",
+    	"userdetails" : "userdetails",
+    	"groups":"groups",
+    	"grouplinks":"grouplinks",
+    	"events":"events"
     },
 
     "groupLinksUpdateStoredProcName" : "groupLinksUpdateStoredProc"

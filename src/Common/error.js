@@ -107,6 +107,9 @@ module.exports = {
 
         if (parsedBody){
             this.message = parsedBody.message;
+            if (parsedBody.errorcode){
+                this.errorcode = parsedBody.errorcode;
+            }
         }
         else{
             this.message = 'Unknown database error';

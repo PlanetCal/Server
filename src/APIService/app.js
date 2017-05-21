@@ -11,11 +11,12 @@ var path = require('path');
 
 var app = express();
 
-var constants = require('../common/constants.json')['serviceNames'];
+var serviceNames = require('../common/constants.json')['serviceNames'];
+var urlNames = require('../common/constants.json')['urlNames'];
 var Logger = require('../common/logger.js').Logger;
-var logger = new Logger(constants.apiServiceName, null, app.get('env') === 'development');
+var logger = new Logger(serviceNames.apiServiceName, null, app.get('env') === 'development');
 var accesslogger = require('../common/accesslogger.js');
-
+var etag = require('etag');
 app.use(accesslogger.getAccessLogger(logger));
 
 var config = require('../common/config.json')[app.get('env')];
@@ -35,7 +36,7 @@ var UnauthorizedException = require('../common/error.js').UnauthorizedException;
 var HttpRequestException = require('../common/error.js').HttpRequestException;
 var errorcode = require('../common/errorcode.json');
 
-logger.get().debug('Starting %s.....', constants.apiServiceName);
+logger.get().debug('Starting %s.....', serviceNames.apiServiceName);
 
 app.set('view engine', 'ejs');
 
@@ -71,6 +72,29 @@ app.use('/', cors(defaultCorsOptions), function (req, res, next){
     }
 });
 
+var getEventsCorsOptions = {
+    origin : '*', 
+    methods : ['GET'],
+    allowedHeaders : ['Content-Type'],
+    exposedHeaders : ['Version'],
+    optionsSuccessStatus : 200,
+    preflightContinue : true,
+    credentials : true
+};
+
+app.get('/events', cors(getEventsCorsOptions), helpers.wrap(function *(req, res, next){
+    if (Object.keys(req.query).length === 0){
+        var url = config.eventsServiceEndpoint + '/' + urlNames.events;
+        var options = helpers.getRequestOption(req, url, 'GET'); 
+        var results = yield *helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
+        res.setHeader('Etag', etag(results));
+        res.status(200).json(JSON.parse(results));
+    }
+    else{
+        next();
+    }
+}));
+
 app.use('/login', loginController);
 
 var userAuthCorsOptions = {
@@ -87,7 +111,7 @@ var userAuthCorsOptions = {
 // kicks in because this is userAuth creation
 app.post('/userauth', cors(userAuthCorsOptions), helpers.wrap(function *(req, res){
     var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth', 'POST'); 
-    var results = yield *helpers.forwardHttpRequest(options, constants.userAuthServiceName);
+    var results = yield *helpers.forwardHttpRequest(options, serviceNames.userAuthServiceName);
     res.status(200).json(JSON.parse(results));
 }));
 
@@ -121,10 +145,10 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    helpers.handleServiceException(err, req, res, constants.apiServiceName, logger, app.get('env') === 'development');
+    helpers.handleServiceException(err, req, res, serviceNames.apiServiceName, logger, app.get('env') === 'development');
 });
 
 var port = process.env.PORT || config.apiServicePort;
 var server = app.listen(port, function(){
-    logger.get().debug('%s started at http://localhost:%d/', constants.apiServiceName, server.address().port);
+    logger.get().debug('%s started at http://localhost:%d/', serviceNames.apiServiceName, server.address().port);
 });

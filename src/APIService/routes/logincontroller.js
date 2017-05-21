@@ -5,7 +5,8 @@ module.exports = function(config, logger){
     var request = require('request-promise');
     var cors = require('cors');
 
-    var constants = require('../../common/constants.json')['serviceNames'];
+    var serviceNames = require('../../common/constants.json')['serviceNames'];
+    var urlNames = require('../../common/constants.json')['urlNames'];
     var helpers = require('../../common/helpers.js');
 
     var corsOptions = {
@@ -19,8 +20,8 @@ module.exports = function(config, logger){
     };
     
     router.post('/', cors(corsOptions), helpers.wrap(function *(req, res){
-        var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + constants.loginServiceUrlRoot, 'POST');
-        var results = yield *helpers.forwardHttpRequest(options, constants.userAuthServiceName);
+        var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/' + urlNames.login, 'POST');
+        var results = yield *helpers.forwardHttpRequest(options, serviceNames.userAuthServiceName);
         res.status(200).json(JSON.parse(results));
     }));
 
