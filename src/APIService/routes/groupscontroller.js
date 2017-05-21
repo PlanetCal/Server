@@ -37,8 +37,10 @@ module.exports = function(config, logger){
     }));
 
     router.get('/', cors(corsOptions), helpers.wrap(function *(req, res){
-        if (!req.query){
-            throw new BadRequestException('Query string must be provided.', errorcode.InvalidQueryString);
+        var queryString = qs.stringify(req.query);
+
+        if (!queryString || queryString.length <= 0){
+            throw new BadRequestException('Query string is invalid.', errorcode.InvalidQueryString);
         }
         var url = endpoint + '/' + urlNames.groups + '?' + qs.stringify(req.query);
         var options = helpers.getRequestOption(req, url, 'GET'); 

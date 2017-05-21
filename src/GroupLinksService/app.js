@@ -13,7 +13,7 @@ logger.get().debug('Starting %s.....', constants.groupLinksServiceName);
 app.use(accesslogger.getAccessLogger(logger));
 
 var bodyParser = require('body-parser');
-var config = require('../common/config.json')[app.get('env')];
+var config = require('../common/config.json')[app.get('env') || 'production'];
 var helpers = require('../common/helpers.js');
 var groupLinksController = require('./routes/groupLinkscontroller.js')(config, logger);
 var BadRequestException = require('../common/error.js').BadRequestException;

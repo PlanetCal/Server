@@ -52,7 +52,7 @@ module.exports = function(config, logger){
     router.post('/', cors(corsOptions), helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/', 'POST'); 
         var results = yield *helpers.forwardHttpRequest(options, serviceNames.userDetailsServiceName);
-        res.status(201).json(results);
+        res.status(201).json(JSON.parse(results));
     }));
 
     router.put('/:id', cors(corsOptions), helpers.wrap(function *(req, res){

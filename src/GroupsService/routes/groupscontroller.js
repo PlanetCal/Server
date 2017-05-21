@@ -10,7 +10,7 @@ module.exports = function(config, logger){
     var documentdbAuthKey = config.documentdbAuthKey;
     var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
     var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
-
+    var util = require('util');
     var helpers = require('../../common/helpers.js');
     var BadRequestException = require('../../common/error.js').BadRequestException;
     var errorcode = require('../../common/errorcode.json');
@@ -30,11 +30,7 @@ module.exports = function(config, logger){
         res.status(200).json(result);
     }));
 
-    router.get('/', helpers.wrap(function *(req, res) {
-        if (!req.query) {
-            throw new BadRequestException('Query string must be provided.', errorcode.NoQueryString);
-        }
-        
+    router.get('/', helpers.wrap(function *(req, res) {        
         if (!req.query.keywords) {
             throw new BadRequestException('Keywords should be found in query string.', errorcode.KeywordsNotFoundInQueryString);
         }
@@ -56,47 +52,49 @@ module.exports = function(config, logger){
         res.status(200).json(filteredResults);
     }));
 
-    router.put('/', helpers.wrap(function *(req, res) {
-        if (!req.body) {
-            throw new BadRequestException('Empty body.', errorcode.EmptyBody);
-        }
-        var group = req.body;
-        if (!group) {
-            throw new BadRequestException('Group is not found in body.', errorcode.GroupsNotFoundInBody);        
-        }
-        group['createdById'] = req.headers['auth-identity'];
-        group['ownedById'] = req.headers['auth-identity'];
-
-        logger.get().debug({req : req, group: group}, 'Updating group object...');
-        var documentResponse = yield dal.updateAsync(group, {});
-        logger.get().debug({req : req, group: group}, 'group object updated successfully.');
-
-        res.status(201).json({ id : documentResponse.resource.id });                        
-    }));
-
     router.post('/', helpers.wrap(function *(req, res) {
         if (!req.body) {
             throw new BadRequestException('Empty body.', errorcode.EmptyBody);
         }
         var group = req.body;
         if (!group) {
-            throw new BadRequestException('Group is not found in body.', errorcode.GroupsNotFoundInBody);        
+            throw new BadRequestException('Group is not found in body.', errorcode.GroupNotFoundInBody);        
         }
-        group['createdById'] = req.headers['auth-identity'];
-        group['ownedById'] = req.headers['auth-identity'];
+        //group['createdById'] = req.headers['auth-identity'];
+        //group['ownedById'] = req.headers['auth-identity'];
 
         logger.get().debug({req : req, group: group}, 'Creating group object...');
         var documentResponse = yield dal.insertAsync(group, {});
-        logger.get().debug({req : req, group: group}, 'group object created successfully.');
+        logger.get().debug({req : req, group: documentResponse.resource}, 'group object created successfully.');
 
         res.status(201).json({ id : documentResponse.resource.id });
+    }));
+
+    router.put('/:id', helpers.wrap(function *(req, res) {
+        if (!req.body) {
+            throw new BadRequestException('Empty body.', errorcode.EmptyBody);
+        }
+        var group = req.body;
+        if (!group) {
+            throw new BadRequestException('Group is not found in body.', errorcode.GroupNotFoundInBody);        
+        }
+        //group['createdById'] = req.headers['auth-identity'];
+        //group['ownedById'] = req.headers['auth-identity'];
+
+        logger.get().debug({req : req, group: group}, 'Updating group object...');
+        var documentResponse = yield dal.updateAsync(req.params.id, group);
+        logger.get().debug({req : req, group: documentResponse.resource}, 'group object updated successfully.');
+
+        res.status(200).json({ id : documentResponse.resource.id });                        
     }));
 
     router.delete('/:id', helpers.wrap(function *(req, res) {
         logger.get().debug({req : req}, 'Deleting group object...');
         var documentResponse = yield dal.removeAsync(req.params.id);
-        logger.get().debug({req : req}, 'group object deleted successfully. id: %s', documentResponse.resource.id);
-        res.status(200).json({ id : documentResponse.resource.id });                        
+
+        console.log(util.inspect(documentResponse));
+        logger.get().debug({req : req}, 'group object deleted successfully. id: %s', req.params.id);
+        res.status(200).json({ id : req.params.id });                        
     }));
 
     return router;

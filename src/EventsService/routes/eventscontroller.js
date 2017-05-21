@@ -19,7 +19,7 @@ module.exports = function(config, logger){
     var errorcode = require('../../common/errorcode.json');
 
     router.get('/:id', helpers.wrap(function *(req, res) {
-        var fields 
+        var fields;
         if (req.query.fields){
             fields = req.query.fields.split('|');
         }
@@ -103,8 +103,8 @@ module.exports = function(config, logger){
     router.delete('/:id', helpers.wrap(function *(req, res) {
         logger.get().debug({req : req}, 'Deleting event object...');
         var documentResponse = yield dal.removeAsync(req.params.id);
-        logger.get().debug({req : req}, 'Event object deleted successfully. id: %s', documentResponse.resource.id);
-        res.status(200).json({ id : documentResponse.resource.id });
+        logger.get().debug({req : req}, 'Event object deleted successfully. id: %s', req.params.id);
+        res.status(200).json({ id : req.params.id });
     }));
     return router;
 }

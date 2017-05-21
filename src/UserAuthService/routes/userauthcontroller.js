@@ -18,7 +18,7 @@ module.exports = function(passport, config, logger){
     var errorcode = require('../../common/errorcode.json');
 
     router.post('/', helpers.wrap(function *(req, res){
-        if (!req.body || !req.body.email || !req.body.password || !req.body.name){
+        if (!req.body.email || !req.body.password || !req.body.name){
             throw new BadRequestException('Cannot find email, password or name in body.', errorcode.EmailOrPasswordNotFoundInBody);
         }
         else{
@@ -37,7 +37,7 @@ module.exports = function(passport, config, logger){
     }));
 
     router.put('/:id', helpers.wrap(function *(req, res){
-        if (!req.body || !req.body.email || !req.body.password || !req.body.name){
+        if (!req.body.email || !req.body.password || !req.body.name){
             throw new BadRequestException('Cannot find email, password or name in body.', errorcode.EmailOrPasswordNotFoundInBody);
         }
         else if (!isOperationAuthorized(req)){

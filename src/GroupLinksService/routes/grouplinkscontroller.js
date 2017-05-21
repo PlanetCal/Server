@@ -14,12 +14,10 @@ module.exports = function(config, logger){
     var helpers = require('../../common/helpers.js');
     var BadRequestException = require('../../common/error.js').BadRequestException;
     var errorcode = require('../../common/errorcode.json');
+    var constants = require('../../common/constants.json');
+    var util = require('util');
 
-    router.get('/', helpers.wrap(function *(req, res) {
-        if (!req.query) {
-            throw new BadRequestException('Query string must be provided.', errorcode.NoQueryString);
-        }
-        
+    router.get('/', helpers.wrap(function *(req, res) {        
         if (!req.query.groupid) {
             throw new BadRequestException('Groupid should be found in query string.', errorcode.GroupdIdsNotFoundInQueryString);
         }
@@ -28,47 +26,48 @@ module.exports = function(config, logger){
             throw new BadRequestException('Distance should be found in query string.', errorcode.DistanceNotFoundInQueryString);
         }
 
-        var documentResponse;
         logger.get().debug({req : req}, 'Retriving all grouplinks for groupid %s, distance %d...', req.query.groupid, req.query.distance);
-            documentResponse = yield findGroupLinksByGroupIdAndDistance(dal, keywords, fields);
-        }
+
+        var documentResponse = yield findGroupLinksByGroupIdAndDistance(req.query.groupid, req.query.distance);
+        
         var results = documentResponse.feed;
-        var filteredResults = helpers.removeDuplicatedItemsById(results);
-        logger.get().debug({req : req, groups : filteredResults}, 'group objects retrieved successfully. unfiltered count: %d. filtered count: %d.', results.length, filteredResults.length);
-        res.status(200).json(filteredResults);
+        logger.get().debug({req : req, groups : results}, 'Grouplink objects retrieved successfully. Count: %d', results.length);
+        res.status(200).json(results);
     }));
 
-    router.put('/', helpers.wrap(function *(req, res) {
+    router.post('/', helpers.wrap(function *(req, res) {
         if (!req.body) {
             throw new BadRequestException('Empty body.', errorcode.EmptyBody);
         }
-        var group = req.body;
-        if (!group) {
-            throw new BadRequestException('Group is not found in body.', errorcode.GroupsNotFoundInBody);        
+        var groupLinkDescriptor = req.body;
+        if (!groupLinkDescriptor) {
+            throw new BadRequestException('GroupLinkDescriptor is not found in body.', errorcode.GroupLinkDescriptorNotFoundInBody);        
         }
-        group['createdById'] = req.headers['auth-identity'];
-        group['ownedById'] = req.headers['auth-identity'];
 
-        logger.get().debug({req : req, group: group}, 'Updating group object...');
-        var documentResponse = yield dal.updateAsync(group, {});
-        logger.get().debug({req : req, group: group}, 'group object updated successfully.');
+        logger.get().debug({req : req, groupLinkDescriptor : groupLinkDescriptor}, 'Updating groupLink object...');
+        var documentResponse = yield dal.executeStoredProcedureAsync(constants.groupLinksUpdateStoredProcName, groupLinkDescriptor);
+        logger.get().debug({req : req, groupLinkDescriptor : groupLinkDescriptor}, 'groupLink object updated successfully.');
 
-        res.status(201).json({ id : documentResponse.resource.id });                        
+        // all inserted links are returned
+        res.status(201).json(documentResponse.result);                        
     }));
 
+    function findGroupLinksByGroupIdAndDistance(groupid, distance) {
+        var querySpec = {
+            query: "SELECT e.ancestor, e.descendant, e.distance FROM e WHERE e.ancestor = @groupid and e.distance = @distance",
+            parameters: [
+                {
+                    name: '@groupid',
+                    value: groupid
+                },
+                {
+                    name: '@distance',
+                    value: distance
+                }
+            ]
+        };
+        return dal.getAsync(querySpec);
+    }
     return router;
 }
 
-function findGroupLinksByGroupIdAndDistance(groupid, distance) {
-    var querySpec = {
-        query: "SELECT e.ancestor, e.descendant, e.distance FROM e WHERE e.ancestor = @groupid",
-        parameters: [
-            {
-                name: '@groupid',
-                value: groupid
-            }
-        ]
-    };
-
-    return dal.getAsync(querySpec);
-}

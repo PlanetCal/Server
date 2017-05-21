@@ -22,7 +22,7 @@ module.exports = function(config, loggger){
     router.put('/:id', cors(corsOptions), helpers.wrap(function *(req, res){
         var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/' + urlNames.userauth + '/' + req.params.id, 'PUT'); 
         var results = yield *helpers.forwardHttpRequest(options, serviceNames.userAuthServiceName);
-        res.status(200).json(JSON.parse(results));
+        res.status(200).json({id : req.params.id});
     }));
 
     router.delete('/:id', cors(corsOptions), helpers.wrap(function *(req, res){

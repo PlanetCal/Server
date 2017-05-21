@@ -8,6 +8,7 @@ var passport = require('passport');
 var request = require('request-promise');
 var uuid = require('node-uuid');
 var path = require('path');
+var qs = require('qs');
 
 var app = express();
 
@@ -19,12 +20,12 @@ var accesslogger = require('../common/accesslogger.js');
 var etag = require('etag');
 app.use(accesslogger.getAccessLogger(logger));
 
-var config = require('../common/config.json')[app.get('env')];
+var config = require('../common/config.json')[app.get('env') || 'production'];
 require('./apiservicepassport.js')(passport, config, logger);
 var loginController = require('./routes/logincontroller.js')(config, logger);
 var userAuthController = require('./routes/userauthcontroller.js')(config, logger);
 var userDetailsController = require('./routes/userdetailscontroller.js')(config, logger);
-var eventsController = require('./routes/eventscontroller.js')(config, logger, app);
+var eventsController = require('./routes/eventscontroller.js')(config, logger);
 var groupsController = require('./routes/groupscontroller.js')(config, logger);
 var corsController = require('./routes/corscontroller.js')(config, logger);
 var cors = require('cors');
@@ -59,17 +60,24 @@ var defaultCorsOptions = {
     credentials : true
 };
 
-// then, all requests are subject to version header check
+// all requests are subject to version header check
+/*
 app.use('/', cors(defaultCorsOptions), function (req, res, next){
     if (!req.headers['version']){
         throw new BadRequestException('Cannot find version in header.', errorcode.VersionNotFoundInHeader);
     }
     else{
-        var activityid = uuid.v4();
-        req.headers['activityid'] = activityid;
-        logger.get().debug({req : req}, 'Attach ActivityId %s to request.', activityid);
         next();
     }
+});
+*/
+
+// attach activity id to all requests
+app.use('/', cors(defaultCorsOptions), function (req, res, next){
+    var activityid = uuid.v4();
+    req.headers['activityid'] = activityid;
+    logger.get().debug({req : req}, 'Attach ActivityId %s to request.', activityid);
+    next();
 });
 
 var getEventsCorsOptions = {
@@ -82,8 +90,11 @@ var getEventsCorsOptions = {
     credentials : true
 };
 
+// anonymous events retrieval
 app.get('/events', cors(getEventsCorsOptions), helpers.wrap(function *(req, res, next){
-    if (Object.keys(req.query).length === 0){
+    var queryString = qs.stringify(req.query);
+
+    if (!queryString || queryString.length <= 0){
         var url = config.eventsServiceEndpoint + '/' + urlNames.events;
         var options = helpers.getRequestOption(req, url, 'GET'); 
         var results = yield *helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
@@ -116,6 +127,7 @@ app.post('/userauth', cors(userAuthCorsOptions), helpers.wrap(function *(req, re
 }));
 
 // all other urls - all APIs are subject to token authentication
+/*
 app.use('/*', cors(defaultCorsOptions), passport.authenticate('token-bearer', { session: false }),
     function (req, res, next){
         if (!req || !req.user){
@@ -132,6 +144,7 @@ app.use('/*', cors(defaultCorsOptions), passport.authenticate('token-bearer', { 
         }
     }
 );
+*/
 
 // other routes
 app.use('/userauth', userAuthController);
