@@ -17,19 +17,36 @@ module.exports = {
                 throw new Error('groupId not found.');
             }
 
+            var groupId = groupLinkDescriptor.groupId;
+
             var newParentGroupId = groupLinkDescriptor.parentGroupId;
             if (!newParentGroupId){
                 newParentGroupId = emptyGuid;
             }
 
-            ensureSelf(groupLinkDescriptor.groupId);
-            /*
+            var context = getContext();
+            var response = context.getResponse();
+            var collection = context.getCollection();
+
             var linkType = {
                 "ancestor" : "ancestor",
                 "descendant" : "descendant"
-            };
+            }
 
-            var context = getContext();
+            // step 1: check if newParentGroupId exists in tree
+            //checkNodeExistence(newParentGroupId, function(){
+                
+                // step 2: make sure that group's self-link (ancestor = groupid, descendant = groupId, distance = 0)
+                // exists
+                //ensureSelf(groupLinkDescriptor.groupId, function(){
+                    var allDescendantDescriptors = getGroupLinks(groupId, linkType.descendant, true, function(allDescendants){
+                        response.setBody(allDescendants);
+                    });
+                //});
+            //});
+
+
+            /*
             var response = context.getResponse();
             var collection = context.getCollection();
 
@@ -54,48 +71,134 @@ module.exports = {
 
             // Step 6: For each of new ancestors, add a link for each of nodes in groupId subtree 
             */
-            function getGroupLinks(groupId, groupLinkType, includeSelf){
-                var query;
+            function getGroupLinks(groupId, groupLinkType, includeSelf, onComplete){
 
-                if (groupLinkType === linkType.ancestor){
-                    query = 'SELECT g.descendant, g.distance FROM root g WHERE g.ancestor = "' + groupId + '"';
-                    if (includeSelf !== true){
-                        query += " AND g.descendant != '" + groupId + "'";
-                    }
-                }
-                else{
-                    query = 'SELECT g.ancestor, g.distance FROM root g WHERE g.descendant = "' + groupId + '"';
-                    if (includeSelf !== true){
-                        query += " AND g.ancestor != '" + groupId + "'";
-                    }                
+                if (typeof(groupId) !== 'string'){
+                    throw new Error('groupId is not a string.');
                 }
 
-                var accept = collection.queryDocuments(collection.getSelfLink(), query, {},
-                    function (err, documents, responseOptions) {
+                if (typeof(groupLinkType) !== 'string'){
+                    throw new Error('groupLinkType is not a string.');
+                }
+
+                if (typeof(onComplete) !== 'function'){
+                    throw new Error('onComplete is not a function.');
+                }
+                var accList = [];
+
+                getGroupLinksRecursive(groupId, groupLinkType, includeSelf, accList, onComplete, undefined);
+            }
+
+            function getGroupLinksRecursive(groupId, groupLinkType, includeSelf, accList, onComplete, continuation){
+                if (typeof(groupId) !== 'string'){
+                    throw new Error('groupId is not a string.');
+                }
+
+                if (typeof(groupLinkType) !== 'string'){
+                    throw new Error('groupLinkType is not a string.');
+                }
+
+                if (typeof(onComplete) !== 'function'){
+                    throw new Error('onComplete is not a function.');
+                }
+
+                if (!Array.isArray(accList)){
+                    throw new Error('accList is not an array.');
+                }
+
+                var result = __.filter(
+                    function(doc){
+                        switch(groupLinkType){
+                            case linkType.ancestor:
+                                return includeSelf 
+                                    ? doc.descendant === groupId
+                                    : doc.descendant === groupId && doc.ancestor !== groupId;
+                            default:
+                                return includeSelf 
+                                    ? doc.ancestor === groupId
+                                    : doc.ancestor === groupId && doc.descendant !== groupId;
+                        }
+                    },
+                    {continuation : continuation},
+                    function(err, feed, options){
                         if (err){
-                            throw err;  
+                            throw err;
                         }
 
-                        return documents;
+                        if (feed && feed.length > 0){
+                            for(var i in feed){
+                                accList.push(feed[i]);
+                            }
+                        }
+
+                        if (options.continuation){
+                            getGroupLinksRecursive(groupId, groupLinkType, includeSelf, accList, onComplete, options.continuation);
+                        }
+                        else{
+                            onComplete(accList);
+                        }
                     });
 
-                if (!accept){
-                    throw new Error("Query '" + query + "'' not accepted.");
+                if (!result.isAccepted){
+                    throw new Error('filter call in getGroupLinksRecursive is not accepted. groupId: ' + groupId + 
+                        'groupLinkType: ' + groupLinkType);
                 }
             }
 
-            function ensureSelf(groupId){
-                var results = __.filter(function(doc) {
-                    return doc.ancestor === groupId && doc.descendant == groupId;
-                });
-
-                if (result.length > 0){
-                    var response = context.getresponse();
-
-                    response.setBody(results);
+            function ensureSelf(groupId, done, continuation){
+                if (typeof(groupId) !== 'string'){
+                    throw new Error('groupId is not a string.');
                 }
-                else{
-                    response.setBody([]);
+
+                if (typeof(done) !== 'function'){
+                    throw new Error('done is not a function.');
+                }
+
+                var filterResult = __.filter(
+                    function(doc) {
+                        return doc.ancestor === groupId && doc.descendant === groupId;
+                    },
+                    {continuation: continuation}, 
+                    function(err, feed, options) {
+                        if(err) {
+                            throw err;
+                        }
+
+                        if (!feed || !feed.length) {
+                            if (options.continuation){
+                                // if the record doesn't exist
+                                // but continuationToken is not null
+                                // recursively searching for record
+                                ensureSelf(groupId, options.continuation);
+                            }
+                            else{
+                                // otherwise, we are done searching
+                                // create if the record is not found.
+                                var isAccepted = __.createDocument(__.getSelfLink(),
+                                {
+                                    "ancestor" : groupId,
+                                    "descendant" : groupId,
+                                    "distance" : "0"
+                                },
+                                function(err){
+                                    if (err){
+                                        throw err;
+                                    }
+                                    done();
+                                });
+
+                                if (!isAccepted){                                        
+                                    throw new Error("createDocument call in ensureSelf is not accepted.");
+                                }    
+                            }                                
+                        }
+                        else{
+                            done();
+                        }
+                    })
+
+                if (!filterResult.isAccepted){
+                    throw new Error('filter call in ensureSelf is not accepted.');
                 }
             }
 
@@ -186,11 +289,52 @@ module.exports = {
 
             }
 
-            function checkCircularDependencies(newParentGroupId, descendantDescriptors){
+            function checkCircularDependencies(newParentGroupId, groupId, continutation){
+                var result = __.filter(
+                    function(doc){
+                        return doc.ancestor === groupId; // include groupId self-link (i.e. ancestor = descendant = groupId, distance = 0) 
+                    },
+                    {continuation : continuation},
+                    function(err, feed, options){
+                        if (err){
+                            throw err;
+                        }
+
+                        if (options.continuation){
+                            if (feed && feed.length > 0){
+
+                            }
+                        }
+                    });
+
                 for (var i in descendantDescriptors){
                     if (descendantDescriptors[i].descendant === newParentGroupId){
                         throw "Circular dependency detected.";
                     }
+                }
+            }
+
+            function checkNodeExistence(groupId, done, continuation){
+                var result = __.filter(
+                    function(doc){
+                        return doc.ancestor === groupId && doc.descendant === groupId;
+                    },
+                    {continuation : continuation},
+                    function(err, feed, options){
+                        if (!feed || !feed.length){
+                            if (options.continuation){
+                                checkNodeExistence(groupId, done, options.continuation);
+                            }
+
+                            throw new Error('groupId ' + groupId + ' does not exist in db.');
+                        }
+                        else{
+                            done();
+                        }
+                    });
+
+                if (!result.isAccepted){
+                    throw new Error('filter call is not accepted in checkNodExistence');
                 }
             }
         }

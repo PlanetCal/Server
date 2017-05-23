@@ -12,6 +12,7 @@ var Q = require('q');
 var client = new DocumentClient(config.documentdbEndpoint, { "masterKey": config.documentdbAuthKey });
 var helpers = require('../../common/helpers.js');
 var databaseId = config.documentdbDatabaseName;
+var emptyGuid = "00000000-0000-0000-0000-000000000000";
 
 var querySpec = {
     query: 'SELECT * FROM root r WHERE r.id= @id',
@@ -22,12 +23,12 @@ var querySpec = {
 };
 
 var database;
+var collection;
 
 client.queryDatabases(querySpec).toArrayAsync()
     .then(function(databasesFeed){
         var databases = databasesFeed.feed;
         database = databases[0];
-        console.log(util.inspect(database));
 
         var groupLinksQuerySpec = {
             query: 'SELECT * FROM root r WHERE r.id= @id',
@@ -40,25 +41,35 @@ client.queryDatabases(querySpec).toArrayAsync()
         return client.queryCollections(database._self, groupLinksQuerySpec).toArrayAsync();
     })
     .then(function(collectionResponse){
-        console.log(util.inspect(collectionResponse));
-        var collection = collectionResponse.feed[0];
+        collection = collectionResponse.feed[0];
 
         if (collection){        
+            console.log('About to delete ' + collection.id + '...');
             return client.deleteCollectionAsync(collection._self);
         }
+        
+        console.log('grouplinksCollection not found.');
         return Q();
     })
     .then(function(deleteCollectionResponse){
-        if (deleteCollectionResponse){
-            console.log(util.inspect(deleteCollectionResponse));
-        }
+        console.log('grouplinksCollection deleted.');
+        console.log('About to create grouplinksCollection...');
         return client.createCollectionAsync(database._self, {id : config.groupLinksCollectionName});
     })
     .then(function(collectionResponse){
-        var collection = collectionResponse.resource;
+        collection = collectionResponse.resource;
         console.log(collection.id + ' created successfully.');
         console.log('Creating stored procedure' + constants.groupLinksUpdateStoredProcName + ' on collection ' + config.groupLinksCollectionName + '....');
         return client.createStoredProcedureAsync(collection._self, storedProcedures.groupLinksUpdateStoredProc, {});
+    })
+    .then(function(storedProcedureResponse){
+        console.log(storedProcedureResponse.resource.id + ' created successfully.');
+        return client.createDocumentAsync(collection._self, 
+            {
+                ancestor : emptyGuid,
+                descendant : emptyGuid, 
+                distance : 0
+            });
     })
     .fail(function(err){ 
         console.log(err);

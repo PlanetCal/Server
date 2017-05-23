@@ -25,13 +25,8 @@ module.exports = function(config, logger){
     }));
 
     router.post('/', helpers.wrap(function *(req, res) {
-        if (!req.body) {
-            throw new BadRequestException('Empty body.', errorcode.EmptyBody);
-        }
+        // TODO: Validate userdetails objects in body
         var userDetails = req.body;
-        if (!userDetails) {
-            throw new BadRequestException('UserDetails object is not found in body.', errorcode.UserDetailsNotFoundInBody);
-        }
 
         checkCallerPermission(req, req.body.id);
 
@@ -43,13 +38,8 @@ module.exports = function(config, logger){
     }));
 
     router.put('/:id', helpers.wrap(function *(req, res) {
-        if (!req.body) {
-            throw new BadRequestException('Empty body.', errorcode.EmptyBody);
-        }
+        // TODO: Validate userdetails objects in body
         var userDetails = req.body;
-        if (!userDetails) {
-            throw new BadRequestException('UserDetails object is not found in body.', errorcode.UserDetailsNotFoundInBody);
-        }
 
         checkCallerPermission(req, req.params.id);
         checkCallerPermission(req, req.body.id);

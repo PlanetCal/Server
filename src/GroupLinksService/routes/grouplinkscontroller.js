@@ -31,23 +31,21 @@ module.exports = function(config, logger){
         var documentResponse = yield findGroupLinksByGroupIdAndDistance(req.query.groupid, req.query.distance);
         
         var results = documentResponse.feed;
-        logger.get().debug({req : req, groups : results}, 'Grouplink objects retrieved successfully. Count: %d', results.length);
+        logger.get().debug({req : req, grouplinks : results}, 'Grouplink objects retrieved successfully. Count: %d', results.length);
         res.status(200).json(results);
     }));
 
     router.post('/', helpers.wrap(function *(req, res) {
-        if (!req.body) {
-            throw new BadRequestException('Empty body.', errorcode.EmptyBody);
-        }
+        // TODO: Validate groupLinkDescriptor object in body
         var groupLinkDescriptor = req.body;
-        if (!groupLinkDescriptor) {
-            throw new BadRequestException('GroupLinkDescriptor is not found in body.', errorcode.GroupLinkDescriptorNotFoundInBody);        
-        }
 
         logger.get().debug({req : req, groupLinkDescriptor : groupLinkDescriptor}, 'Updating groupLink object...');
-        var documentResponse = yield dal.executeStoredProcedureAsync(constants.groupLinksUpdateStoredProcName, groupLinkDescriptor);
-        logger.get().debug({req : req, groupLinkDescriptor : groupLinkDescriptor}, 'groupLink object updated successfully.');
+        var documentResponse = yield dal.executeStoredProcedureAsync(constants.groupLinksUpdateStoredProcName, [ groupLinkDescriptor ]);
 
+        var results = documentResponse.result;
+        logger.get().debug({req : req, groupLinkDescriptor : results}, 'groupLink object updated successfully.');
+
+        console.log(util.inspect(documentResponse));
         // all inserted links are returned
         res.status(201).json(documentResponse.result);                        
     }));

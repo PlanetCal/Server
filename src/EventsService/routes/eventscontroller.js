@@ -61,14 +61,8 @@ module.exports = function(config, logger){
     }));
 
     router.put('/:id', helpers.wrap(function *(req, res) {
-        if (!req.body) {
-            throw new BadRequestException('Empty body.', errorcode.EmptyBody);
-        }
+        // TODO: Validate event object in body         
         var event = req.body;
-        if (!event) {
-            throw new BadRequestException('Event is not found in body.', errorcode.EventNotFoundInBody);
-        }
-        
         /*
         if (event['ownedById'] !== req.headers['auth-identity']){
             throw new ForbiddenException('Forbidden');
@@ -81,13 +75,8 @@ module.exports = function(config, logger){
     }));
 
     router.post('/', helpers.wrap(function *(req, res) {
-        if (!req.body) {
-            throw new BadRequestException('Empty body.', errorcode.EmptyBody);
-        }
+        // TODO: Validate event object in body         
         var event = req.body;
-        if (!event) {
-            throw new BadRequestException('Event is not found in body.', errorcode.EventNotFoundInBody);
-        }
 
         /*
         event['createdById'] = req.headers['auth-identity'];
@@ -106,44 +95,46 @@ module.exports = function(config, logger){
         logger.get().debug({req : req}, 'Event object deleted successfully. id: %s', req.params.id);
         res.status(200).json({ id : req.params.id });
     }));
+
+    function findEventByEventIdAsync(eventId, fields) {
+        var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
+        console.log('constraints: ' + constraints);
+        var querySpec = {
+            query: "SELECT e.id" + constraints + " FROM e WHERE e.id = @eventId",
+            parameters: [
+                {
+                    name: '@eventId',
+                    value: eventId
+                }
+            ]
+        };
+
+        return dal.getAsync(querySpec);
+    }
+
+    function findEventsByGroupsIdsAsync(groupsIds) {
+        var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
+        var parameters = [
+            {
+                name: "@groupsIds",
+                value: groupsIds
+            }
+        ];
+
+        var querySpec = {
+            query: "SELECT e.id" + constraints + " FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g)",
+            parameters: parameters
+        };
+        return dal.getAsync(querySpec);
+    }
+
+    function findAllEvents() {
+        var querySpec = {
+            query: "SELECT * FROM root"
+        };
+        return dal.getAsync(querySpec);
+    }
+
     return router;
 }
 
-function findEventByEventIdAsync(dal, eventId, fields) {
-    var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
-    console.log('constraints: ' + constraints);
-    var querySpec = {
-        query: "SELECT e.id" + constraints + " FROM e WHERE e.id = @eventId",
-        parameters: [
-            {
-                name: '@eventId',
-                value: eventId
-            }
-        ]
-    };
-
-    return dal.getAsync(querySpec);
-}
-
-function findEventsByGroupsIdsAsync(dal, groupsIds) {
-    var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
-    var parameters = [
-        {
-            name: "@groupsIds",
-            value: groupsIds
-        }
-    ];
-
-    var querySpec = {
-        query: "SELECT e.id" + constraints + " FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g)",
-        parameters: parameters
-    };
-    return dal.getAsync(querySpec);
-}
-
-function findAllEvents(dal) {
-    var querySpec = {
-        query: "SELECT * FROM root"
-    };
-    return dal.getAsync(querySpec);
-}

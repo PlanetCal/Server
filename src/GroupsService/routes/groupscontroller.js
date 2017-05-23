@@ -53,13 +53,9 @@ module.exports = function(config, logger){
     }));
 
     router.post('/', helpers.wrap(function *(req, res) {
-        if (!req.body) {
-            throw new BadRequestException('Empty body.', errorcode.EmptyBody);
-        }
+        // TODO: Validate group objects in body
         var group = req.body;
-        if (!group) {
-            throw new BadRequestException('Group is not found in body.', errorcode.GroupNotFoundInBody);        
-        }
+
         //group['createdById'] = req.headers['auth-identity'];
         //group['ownedById'] = req.headers['auth-identity'];
 
@@ -71,13 +67,9 @@ module.exports = function(config, logger){
     }));
 
     router.put('/:id', helpers.wrap(function *(req, res) {
-        if (!req.body) {
-            throw new BadRequestException('Empty body.', errorcode.EmptyBody);
-        }
+        // TODO: Validate group objects in body
         var group = req.body;
-        if (!group) {
-            throw new BadRequestException('Group is not found in body.', errorcode.GroupNotFoundInBody);        
-        }
+
         //group['createdById'] = req.headers['auth-identity'];
         //group['ownedById'] = req.headers['auth-identity'];
 

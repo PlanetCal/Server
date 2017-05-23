@@ -4,6 +4,7 @@
         "userAuthServiceName" : "UserAuthService",
         "userDetailsServiceName" : "UserDetailsService",
         "groupsServiceName" : "GroupsService",
+        "groupLinksServiceName" : "GroupLinksService",
         "eventsServiceName" : "EventsService"
     },
 
