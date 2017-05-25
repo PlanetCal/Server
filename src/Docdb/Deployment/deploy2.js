@@ -74,4 +74,3 @@ client.queryDatabases(querySpec).toArrayAsync()
     .fail(function(err){ 
         console.log(err);
     });
-
