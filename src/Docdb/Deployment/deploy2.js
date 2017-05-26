@@ -59,8 +59,8 @@ client.queryDatabases(querySpec).toArrayAsync()
     .then(function(collectionResponse){
         collection = collectionResponse.resource;
         console.log(collection.id + ' created successfully.');
-        console.log('Creating stored procedure' + constants.groupLinksUpdateStoredProcName + ' on collection ' + config.groupLinksCollectionName + '....');
-        return client.createStoredProcedureAsync(collection._self, storedProcedures.groupLinksUpdateStoredProc, {});
+        console.log('Creating stored procedure' + constants.nodeLinksUpdateStoredProcName + ' on collection ' + config.groupLinksCollectionName + '....');
+        return client.createStoredProcedureAsync(collection._self, storedProcedures.nodeLinksUpdateStoredProc, {});
     })
     .then(function(storedProcedureResponse){
         console.log(storedProcedureResponse.resource.id + ' created successfully.');

@@ -40,7 +40,7 @@ module.exports = function(config, logger){
         var groupLinkDescriptor = req.body;
 
         logger.get().debug({req : req, groupLinkDescriptor : groupLinkDescriptor}, 'Updating groupLink object...');
-        var documentResponse = yield dal.executeStoredProcedureAsync(constants.groupLinksUpdateStoredProcName, [ groupLinkDescriptor ]);
+        var documentResponse = yield dal.executeStoredProcedureAsync(constants.nodeLinksUpdateStoredProcName, [ groupLinkDescriptor ]);
 
         var results = documentResponse.result;
         logger.get().debug({req : req, groupLinkDescriptor : results}, 'groupLink object updated successfully.');

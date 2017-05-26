@@ -3,29 +3,29 @@
 var constants = require('../../common/constants.json');
 
 module.exports = {
-    'groupLinksUpdateStoredProc': {
-        id : constants.groupLinksUpdateStoredProcName,
+    'nodeLinksUpdateStoredProc': {
+        id : constants.nodeLinksUpdateStoredProcName,
         /*
         @nodeLinkDescriptor: Contains nodeId field and parentNodeId field. parentNodeId can 
         be undefined. (see code on handling)
         */
-        serverScript : function groupLinksUpdateStoredProc(nodeLinkDescriptor) {
+        serverScript : function nodeLinksUpdateStoredProc(nodeLinkDescriptor) {
             
             var emptyGuid = "00000000-0000-0000-0000-000000000000";
 
-            if (!nodeLinkDescriptor.groupId){
-                throw new Error('groupId not found.');
+            if (!nodeLinkDescriptor.nodeId){
+                throw new Error('nodeId not found.');
             }
 
-            if (nodeLinkDescriptor.groupId === emptyGuid){
-                throw new Error('Group of empty guid is special and that should not be altered.');
+            if (nodeLinkDescriptor.nodeId === emptyGuid){
+                throw new Error('Node of empty guid is special and that should not be altered.');
             }
 
-            var groupId = nodeLinkDescriptor.groupId;
+            var nodeId = nodeLinkDescriptor.nodeId;
 
-            var newParentGroupId = nodeLinkDescriptor.parentGroupId;
-            if (!newParentGroupId){
-                newParentGroupId = emptyGuid;
+            var newParentNodeId = nodeLinkDescriptor.parentNodeId;
+            if (!newParentNodeId){
+                newParentNodeId = emptyGuid;
             }
 
             var context = getContext();
@@ -38,17 +38,17 @@ module.exports = {
                 "self" : "self"
             }
 
-            // step 1: check if newParentGroupId exists in tree
-            checkNodeExistence(newParentGroupId, function(){
+            // step 1: check if newParentNodeId exists in tree
+            checkNodeExistence(newParentNodeId, function(){
                 // step 2: Check circular dependencies
-                checkCircularDependencies(groupId, newParentGroupId, function(){
-                    // step 3: make sure that group's self-link (ancestor = groupid, descendant = groupId, distance = 0)
+                checkCircularDependencies(nodeId, newParentNodeId, function(){
+                    // step 3: make sure that node's self-link (ancestor = nodeId, descendant = nodeId, distance = 0)
                     // exists
-                    ensureSelf(groupId, function(result){
-                        // step 4: delete group links from old ancestors
-                        deleteNodeLinks(groupId, function(ancestorsLinksForDeletion, descendantsLinksForDeletion, linksDeleted){
-                            // step 5: add group links to new ancestors
-                            addNodeLinks(groupId, newParentGroupId, function(ancestorsLinksForAddition, descendantsLinksForAddition, linksAdded){
+                    ensureSelf(nodeId, function(result){
+                        // step 4: delete node links from old ancestors
+                        deleteNodeLinks(nodeId, function(ancestorsLinksForDeletion, descendantsLinksForDeletion, linksDeleted){
+                            // step 5: add node links to new ancestors
+                            addNodeLinks(nodeId, newParentNodeId, function(ancestorsLinksForAddition, descendantsLinksForAddition, linksAdded){
                                 response.setBody({
                                     "linkToSelfAdded" : result.newEntity,
                                     "deletedLinksResult" : {

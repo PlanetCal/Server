@@ -17,7 +17,7 @@
     	"events":"events"
     },
 
-    "groupLinksUpdateStoredProcName" : "groupLinksUpdateStoredProc",
+    "nodeLinksUpdateStoredProcName" : "nodeLinksUpdateStoredProc",
 
     "emptyGuid" : "00000000-0000-0000-0000-000000000000"
 }
