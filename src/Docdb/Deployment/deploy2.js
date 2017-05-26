@@ -4,7 +4,7 @@ var argv = require('minimist')(process.argv.slice(2));
 var DocumentClient = require('documentdb-q-promises').DocumentClientWrapper;
 var config = require('../../common/config.json')[argv['env'] || 'development'];
 var triggers = require('../triggers/insertuniqueusertrigger.js');
-var storedProcedures = require('../storedprocedures/grouplinksupdatestoredprocedure.js');
+var nodeLinksUpdateStoredProcedure = require('../storedprocedures/nodelinksupdatestoredprocedure.js');
 var util = require('util');
 var constants = require('../../common/constants.json');
 var Q = require('q');
@@ -60,7 +60,7 @@ client.queryDatabases(querySpec).toArrayAsync()
         collection = collectionResponse.resource;
         console.log(collection.id + ' created successfully.');
         console.log('Creating stored procedure' + constants.nodeLinksUpdateStoredProcName + ' on collection ' + config.groupLinksCollectionName + '....');
-        return client.createStoredProcedureAsync(collection._self, storedProcedures.nodeLinksUpdateStoredProc, {});
+        return client.createStoredProcedureAsync(collection._self, nodeLinksUpdateStoredProcedure.nodeLinksUpdateStoredProc, {});
     })
     .then(function(storedProcedureResponse){
         console.log(storedProcedureResponse.resource.id + ' created successfully.');

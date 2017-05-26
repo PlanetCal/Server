@@ -4,7 +4,6 @@ var argv = require('minimist')(process.argv.slice(2));
 var DocumentClient = require('documentdb-q-promises').DocumentClientWrapper;
 var config = require('../../common/config.json')[argv['env'] || 'development'];
 var triggers = require('../triggers/insertuniqueusertrigger.js');
-var storedProcedures = require('../storedprocedures/grouplinksupdatestoredprocedure.js');
 var util = require('util');
 var constants = require('../../common/constants.json');
 var grouplinksdata = require('../testdata/grouplinksdata1.json');
