@@ -6,24 +6,24 @@ module.exports = {
     'groupLinksUpdateStoredProc': {
         id : constants.groupLinksUpdateStoredProcName,
         /*
-        @groupLinkDescriptor: Contains groupId field and parentGroupId field. parentGroupId can 
+        @nodeLinkDescriptor: Contains nodeId field and parentNodeId field. parentNodeId can 
         be undefined. (see code on handling)
         */
-        serverScript : function groupLinksUpdateStoredProc(groupLinkDescriptor) {
+        serverScript : function groupLinksUpdateStoredProc(nodeLinkDescriptor) {
             
             var emptyGuid = "00000000-0000-0000-0000-000000000000";
 
-            if (!groupLinkDescriptor.groupId){
+            if (!nodeLinkDescriptor.groupId){
                 throw new Error('groupId not found.');
             }
 
-            if (groupLinkDescriptor.groupId === emptyGuid){
+            if (nodeLinkDescriptor.groupId === emptyGuid){
                 throw new Error('Group of empty guid is special and that should not be altered.');
             }
 
-            var groupId = groupLinkDescriptor.groupId;
+            var groupId = nodeLinkDescriptor.groupId;
 
-            var newParentGroupId = groupLinkDescriptor.parentGroupId;
+            var newParentGroupId = nodeLinkDescriptor.parentGroupId;
             if (!newParentGroupId){
                 newParentGroupId = emptyGuid;
             }
