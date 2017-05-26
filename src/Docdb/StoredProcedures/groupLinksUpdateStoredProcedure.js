@@ -46,9 +46,9 @@ module.exports = {
                     // exists
                     ensureSelf(groupId, function(result){
                         // step 4: delete group links from old ancestors
-                        deleteGroupLinks(groupId, function(ancestorsLinksForDeletion, descendantsLinksForDeletion, linksDeleted){
+                        deleteNodeLinks(groupId, function(ancestorsLinksForDeletion, descendantsLinksForDeletion, linksDeleted){
                             // step 5: add group links to new ancestors
-                            addGroupLinks(groupId, newParentGroupId, function(ancestorsLinksForAddition, descendantsLinksForAddition, linksAdded){
+                            addNodeLinks(groupId, newParentGroupId, function(ancestorsLinksForAddition, descendantsLinksForAddition, linksAdded){
                                 response.setBody({
                                     "linkToSelfAdded" : result.newEntity,
                                     "deletedLinksResult" : {
@@ -68,21 +68,21 @@ module.exports = {
                 });
             });
 
-            function getGroupLinks(groupId, groupLinkType, includeSelf, onLinkFeed, onComplete, continuation){
-                if (typeof(groupId) !== 'string'){
-                    throw new Error('groupId is not a string.');
+            function getNodeLinks(nodeId, nodeLinkType, includeSelf, onNodeLinkFeed, onComplete, continuation){
+                if (typeof(nodeId) !== 'string'){
+                    throw new Error('nodeId is not a string.');
                 }
 
-                if (typeof(groupLinkType) !== 'string'){
-                    throw new Error('groupLinkType is not a string.');
+                if (typeof(nodeLinkType) !== 'string'){
+                    throw new Error('nodeLinkType is not a string.');
                 }
 
                 if (typeof(includeSelf) !== 'boolean'){
                     throw new Error('includeSelf is not a boolean.');
                 }
 
-                if (typeof(onLinkFeed) !== 'function'){
-                    throw new Error('onLinkFeed is not a function.');
+                if (typeof(onNodeLinkFeed) !== 'function'){
+                    throw new Error('onNodeLinkFeed is not a function.');
                 }
 
                 if (typeof(onComplete) === 'string'){
@@ -96,17 +96,17 @@ module.exports = {
                 var result = __.chain()
                     .filter(
                         function(link){
-                            switch(groupLinkType){
+                            switch(nodeLinkType){
                                 case linkType.ancestor:
                                     return includeSelf 
-                                        ? link.descendant === groupId
-                                        : link.descendant === groupId && link.ancestor !== groupId;
+                                        ? link.descendant === nodeId
+                                        : link.descendant === nodeId && link.ancestor !== nodeId;
                                 case linkType.descendant:
                                     return includeSelf 
-                                        ? link.ancestor === groupId
-                                        : link.ancestor === groupId && link.descendant !== groupId;
+                                        ? link.ancestor === nodeId
+                                        : link.ancestor === nodeId && link.descendant !== nodeId;
                                 default:
-                                    return link.ancestor === groupId && link.descendant === groupId;
+                                    return link.ancestor === nodeId && link.descendant === nodeId;
                             }
                         })
                     .map(function(link){
@@ -117,17 +117,17 @@ module.exports = {
                         };
                     }).
                     value({continuation : continuation},
-                        function(err, linkFeed, options){
+                        function(err, nodeLinkFeed, options){
                             if (err){
                                 throw err;
                             }
 
-                            if (linkFeed && linkFeed.length > 0){
-                                onLinkFeed(linkFeed);
+                            if (nodeLinkFeed && nodeLinkFeed.length > 0){
+                                onNodeLinkFeed(nodeLinkFeed);
                             }
                             
                             if (options.continuation){
-                                getGroupLinks(groupId, groupLinkType, includeSelf, onLinkFeed, onComplete, options.continuation);
+                                getNodeLinks(nodeId, nodeLinkType, includeSelf, onNodeLinkFeed, onComplete, options.continuation);
                             }
                             else if (onComplete){
                                 onComplete();
@@ -135,22 +135,22 @@ module.exports = {
                         });
 
                 if (!result.isAccepted){
-                    throw new Error('filter call in getGroupLinks is not accepted. groupId: ' + groupId + 
-                        'groupLinkType: ' + groupLinkType);
+                    throw new Error('filter call in getNodeLinks is not accepted. nodeId: ' + nodeId + 
+                        'nodeLinkType: ' + nodeLinkType);
                 }
             }
 
-            function getAncestorsLinks(groupId, includeSelf, onComplete){
-                if (typeof(groupId) !== 'string'){
-                    throw new Error('groupId is not a string.');
+            function getAncestorsLinks(nodeId, includeSelf, onComplete){
+                if (typeof(nodeId) !== 'string'){
+                    throw new Error('nodeId is not a string.');
                 }
                 if (typeof(onComplete) !== 'function'){
                     throw new Error('onComplete is not a function.');
                 }
                 var resultList = [];
 
-                getGroupLinks(
-                    groupId, 
+                getNodeLinks(
+                    nodeId, 
                     linkType.ancestor, 
                     includeSelf, 
                     function(ancestorsLinks){
@@ -161,16 +161,16 @@ module.exports = {
                     });
             }
 
-            function getDescendantsLinks(groupId, onComplete){
-                if (typeof(groupId) !== 'string'){
-                    throw new Error('groupId is not a string.');
+            function getDescendantsLinks(nodeId, onComplete){
+                if (typeof(nodeId) !== 'string'){
+                    throw new Error('nodeId is not a string.');
                 }
                 if (typeof(onComplete) !== 'function'){
                     throw new Error('onComplete is not a function.');
                 }
                 var resultList = [];
 
-                getGroupLinks(groupId, 
+                getNodeLinks(nodeId, 
                     linkType.descendant, 
                     true, 
                     function(descendantsLinks){
@@ -181,9 +181,9 @@ module.exports = {
                     });
             }
 
-            function getGroupLinkToSelf(groupId, onComplete){
-                if (typeof(groupId) !== 'string'){
-                    throw new Error('groupId is not a string.');
+            function getNodeLinkToSelf(nodeId, onComplete){
+                if (typeof(nodeId) !== 'string'){
+                    throw new Error('nodeId is not a string.');
                 }
                 if (typeof(onComplete) !== 'function'){
                     throw new Error('onComplete is not a function.');
@@ -191,7 +191,7 @@ module.exports = {
 
                 var resultList = [];
 
-                getGroupLinks(groupId, 
+                getNodeLinks(nodeId, 
                     linkType.self, 
                     true, 
                     function(selfLinks){
@@ -202,9 +202,9 @@ module.exports = {
                     });
             }
 
-            function deleteGroupLinks(childRootGroupId, onComplete){
-                if (typeof(childRootGroupId) !== 'string'){
-                    throw new Error('childRootGroupId is not a string.');
+            function deleteNodeLinks(nodeId, onComplete){
+                if (typeof(nodeId) !== 'string'){
+                    throw new Error('nodeId is not a string.');
                 }
                 if (typeof(onComplete) !== 'function'){
                     throw new Error('onComplete is not a function.');
@@ -212,71 +212,68 @@ module.exports = {
 
                 // get all ancestors of currnet node and all descndants of current node
                 // generate combination of links to be deleted
-                getAncestorsLinks(childRootGroupId, false, function(ancestorsLinks){
-                    getDescendantsLinks(childRootGroupId, function(descendantsLinks){
-                        var links = [];
+                getAncestorsLinks(nodeId, false, function(ancestorsLinks){
+                    getDescendantsLinks(nodeId, function(descendantsLinks){
+                        var nodeLinks = [];
                         for (var i in ancestorsLinks){
                             for (var j in descendantsLinks){
-                                links.push({
+                                nodeLinks.push({
                                     ancestor : ancestorsLinks[i].ancestor,
                                     descendant : descendantsLinks[j].descendant
                                 });
                             }
                         }
-                        var cachedLinks = links.slice();
-                        deleteGroupLinksFromOldAncestors(links, function(){
-                            onComplete(ancestorsLinks, descendantsLinks, cachedLinks);
+                        var cachedNodeLinks = nodeLinks.slice();
+                        deleteNodeLinksFromOldAncestors(nodeLinks, function(){
+                            onComplete(ancestorsLinks, descendantsLinks, cachedNodeLinks);
                         });
                     });
                 });
             }
 
-            function deleteGroupLinksFromOldAncestors(links, onComplete, continuation){
-                if (!Array.isArray(links)){
-                    throw new Error('links  is not an array.');
+            function deleteNodeLinksFromOldAncestors(nodeLinks, onComplete, continuation){
+                if (!Array.isArray(nodeLinks)){
+                    throw new Error('nodeLinks is not an array.');
                 }
                 if (typeof(onComplete) !== 'function'){
                     throw new Error('onComplete is not a function.');
                 }
 
-                if (links && links.length > 0)
+                if (nodeLinks && nodeLinks.length > 0)
                 {
                     var result = __.filter(function(link){
-                            return link.ancestor === links[0].ancestor && link.descendant === links[0].descendant;
+                            return link.ancestor === nodeLinks[0].ancestor && link.descendant === nodeLinks[0].descendant;
                         },
                         {continuation : continuation},
-                        function(err, linkFeed, options){
-                            if (!linkFeed || linkFeed.length <= 0){
+                        function(err, nodeLinkFeed, options){
+                            if (!nodeLinkFeed || nodeLinkFeed.length <= 0){
                                 if (options.continuation){
                                     // can't find the entry, continue searching for it
-                                    deleteGroupLinksFromOldAncestors(links, onComplete, options.continuation);
-                                }
-                                else{
-                                    throw new Error('Cannot find ancestor: ' + links[0].ancestor + ' descendant: ' + links[0].descendant);
+                                    deleteNodeLinksFromOldAncestors(nodeLinks, onComplete, options.continuation);
                                 }
                             }
                             else{
                                 // found the entity (and there should only be one)
                                 // delete that link
-                                var isAccepted = __.deleteDocument(linkFeed[0]._self, {}, 
+                                var isAccepted = __.deleteDocument(nodeLinkFeed[0]._self, {}, 
                                     function (err, responseOptions) {
                                         if (err){
                                             throw err;
                                         } 
                                         // remove the first element, and recursively calling
                                         // this function 
-                                        links.shift();
-                                        deleteGroupLinksFromOldAncestors(links, onComplete);
+                                        nodeLinks.shift();
+                                        deleteNodeLinksFromOldAncestors(nodeLinks, onComplete);
                                     });
 
                                 if (!isAccepted){
-                                    throw new Error('deleteDocument call in deleteGroupLinksFromOldAncestors is not accepted.');
+                                    throw new Error('deleteDocument call in deleteNodeLinksFromOldAncestors is not accepted.');
                                 }
                             }
                         });
 
                     if (!result.isAccepted){
-                        throw new Error('filter call is not accepted in deleteGroupLinksFromOldAncestors');
+                        throw new Error('filter call is not accepted in deleteNodeLinksFromOldAncestors');
                     }
                 }
                 else{
@@ -285,19 +282,19 @@ module.exports = {
             }
 
 
-            function addGroupLinks(childRootGroupId, newParentGroupId, onComplete){
-                if (typeof(childRootGroupId) !== 'string'){
-                    throw new Error('childRootGroupId is not a string.');
+            function addNodeLinks(nodeId, parentNodeId, onComplete){
+                if (typeof(nodeId) !== 'string'){
+                    throw new Error('nodeId is not a string.');
                 }
-                if (typeof(newParentGroupId) !== 'string'){
-                    throw new Error('newParentGroupId is not a string.');
+                if (typeof(parentNodeId) !== 'string'){
+                    throw new Error('parentNodeId is not a string.');
                 }
                 if (typeof(onComplete) !== 'function'){
                     throw new Error('onComplete is not a function.');
                 }
 
-                getAncestorsLinks(newParentGroupId, true, function(ancestorsLinks){
-                    getDescendantsLinks(childRootGroupId, function(descendantsLinks){
+                getAncestorsLinks(parentNodeId, true, function(ancestorsLinks){
+                    getDescendantsLinks(nodeId, function(descendantsLinks){
                         var links = [];
                         for (var i in ancestorsLinks){
                             for (var j in descendantsLinks){
@@ -309,34 +306,34 @@ module.exports = {
                             }
                         }
                         var cachedLinks = links.slice();
-                        addGroupLinksToNewAncestors(links, function(){
+                        addNodeLinksToNewAncestors(links, function(){
                             onComplete(ancestorsLinks, descendantsLinks, cachedLinks);
                         });
                     });
                 });
             }
 
-            function addGroupLinksToNewAncestors(links, onComplete){
-                if (!Array.isArray(links)){
-                    throw new Error('links is not an array.');
+            function addNodeLinksToNewAncestors(nodeLinks, onComplete){
+                if (!Array.isArray(nodeLinks)){
+                    throw new Error('nodeLinks is not an array.');
                 }
                 if (typeof(onComplete) !== 'function'){
                     throw new Error('onComplete is not a function.');
                 }
 
-                if (links && links.length > 0){
-                    var isAccepted = __.createDocument(__.getSelfLink(), links[0],
+                if (nodeLinks && nodeLinks.length > 0){
+                    var isAccepted = __.createDocument(__.getSelfLink(), nodeLinks[0],
                         function(err){
                             if (err){
                                 throw err;
                             }
 
-                            links.shift();
+                            nodeLinks.shift();
 
-                            addGroupLinksToNewAncestors(links, onComplete);
+                            addNodeLinksToNewAncestors(nodeLinks, onComplete);
                         });
                     if (!isAccepted){
-                        throw new Error('createDocument call in addGroupLinksToNewAncestors is not accepted.');
+                        throw new Error('createDocument call in addNodeLinksToNewAncestors is not accepted.');
                     }
                 }
                 else{
@@ -344,21 +341,21 @@ module.exports = {
                 }
             }
 
-            function ensureSelf(groupId, onComplete){
-                if (typeof(groupId) !== 'string'){
-                    throw new Error('groupId is not a string.');
+            function ensureSelf(nodeId, onComplete){
+                if (typeof(nodeId) !== 'string'){
+                    throw new Error('nodeId is not a string.');
                 }
 
                 if (typeof(onComplete) !== 'function'){
                     throw new Error('onComplete is not a function.');
                 }
 
-                getGroupLinkToSelf(groupId, function(selfLinks){
+                getNodeLinkToSelf(nodeId, function(selfLinks){
                     if (!selfLinks || selfLinks.length <= 0){
                         var isAccepted = __.createDocument(__.getSelfLink(),
                             {
-                                "ancestor" : groupId,
-                                "descendant" : groupId,
+                                "ancestor" : nodeId,
+                                "descendant" : nodeId,
                                 "distance" : 0
                             },
                             function(err){
@@ -378,37 +375,37 @@ module.exports = {
                 });
             }
 
-            function checkCircularDependencies(groupId, newParentGroupId, onComplete){
-                if (typeof(groupId) !== 'string'){
-                    throw new Error('groupId is not a string.');
+            function checkCircularDependencies(nodeId, newParentNodeId, onComplete){
+                if (typeof(nodeId) !== 'string'){
+                    throw new Error('nodeId is not a string.');
                 }
-                if (typeof(newParentGroupId) !== 'string'){
-                    throw new Error('newParentGroupId is not a string.');
+                if (typeof(newParentNodeId) !== 'string'){
+                    throw new Error('newParentNodeId is not a string.');
                 }
                 if (typeof(onComplete) !== 'function'){
                     throw new Error('onComplete is not a function.');
                 }
-                getDescendantsLinks(groupId, function(descendantsLinks){
+                getDescendantsLinks(nodeId, function(descendantsLinks){
                     var result = true;
                     for (var i in descendantsLinks){
-                        if (descendantsLinks.descendant === newParentGroupId){
-                            throw new Error(newParentGroupId + ' is found in desendants of ' + groupId);
+                        if (descendantsLinks.descendant === newParentNodeId){
+                            throw new Error(newParentNodeId + ' is found in desendants of ' + nodeId);
                         }
                     }
                     onComplete();
                 });
             }
 
-            function checkNodeExistence(groupId, onComplete){
-                if (typeof(groupId) !== 'string'){
-                    throw new Error('groupId is not a string.');
+            function checkNodeExistence(nodeId, onComplete){
+                if (typeof(nodeId) !== 'string'){
+                    throw new Error('nodeId is not a string.');
                 }
                 if (typeof(onComplete) !== 'function'){
                     throw new Error('onComplete is not a function.');
                 }
-                getGroupLinkToSelf(groupId, function(selfLinks){
+                getNodeLinkToSelf(nodeId, function(selfLinks){
                     if (!selfLinks || selfLinks.length <= 0){
-                        throw new Error(groupId + ' is not found.');
+                        throw new Error(nodeId + ' is not found.');
                     }
                     onComplete();
                 });
