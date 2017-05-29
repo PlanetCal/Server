@@ -16,7 +16,7 @@ module.exports = function(config, logger){
     var errorcode = require('../../common/errorcode.json');
 
     router.get('/:id', helpers.wrap(function *(req, res) {
-        var fields 
+        var fields;
         if (req.query.fields){
             fields = req.query.fields.split('|');
         }
@@ -30,16 +30,12 @@ module.exports = function(config, logger){
         res.status(200).json(result);
     }));
 
-    router.get('/', helpers.wrap(function *(req, res) {        
-        if (!req.query.keywords) {
-            throw new BadRequestException('Keywords should be found in query string.', errorcode.KeywordsNotFoundInQueryString);
-        }
-
+    router.get('/', helpers.wrap(function *(req, res) {
         var documentResponse;
         logger.get().debug({req : req}, 'Retriving all group objects...');
         if (req.query.keywords) {
             var keywords = req.query.keywords.split('|');
-            var fields 
+            var fields;
             if (req.query.fields){
                 fields = req.query.fields.split('|');
             }
@@ -84,7 +80,6 @@ module.exports = function(config, logger){
         logger.get().debug({req : req}, 'Deleting group object...');
         var documentResponse = yield dal.removeAsync(req.params.id);
 
-        console.log(util.inspect(documentResponse));
         logger.get().debug({req : req}, 'group object deleted successfully. id: %s', req.params.id);
         res.status(200).json({ id : req.params.id });                        
     }));

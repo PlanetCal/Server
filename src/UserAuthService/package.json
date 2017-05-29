@@ -14,10 +14,11 @@
     "jwt-simple": "^0.5.1",
     "mongoose": "^4.8.5",
     "node-uuid": "^1.4.7",
-    "passport-http": "^0.3.0",
-    "passport-local": "^1.0.0",
     "passport": "^0.3.2",
-    "passport-http-bearer": "^1.0.1"
+    "passport-http": "^0.3.0",
+    "passport-http-bearer": "^1.0.1",
+    "passport-local": "^1.0.0",
+    "payload-validator": "^1.0.4"
   },
   "devDependencies": {},
   "scripts": {
