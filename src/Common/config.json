@@ -9,6 +9,7 @@
     "userDetailsCollectionName" : "userDetailsCollection",
     "eventsCollectionName" : "eventsCollection",
     "groupsCollectionName" : "groupsCollection",
+    "groupLinksCollectionName" : "groupLinksCollection",
     "apiServicePort" : 1337,
     "userAuthServicePort" : 1338,
     "userAuthServiceEndpoint" : "http://localhost:1338",
@@ -16,8 +17,10 @@
     "userDetailsServiceEndpoint" : "http://localhost:1339",
     "groupsServicePort" : 1340,
     "groupsServiceEndpoint" : "http://localhost:1340",
-    "eventsServicePort" : 1341,
-    "eventsServiceEndpoint" : "http://localhost:1341"
+    "groupLinksServicePort" : 1341,
+    "groupLinksServiceEndpoint" : "http://localhost:1341",
+    "eventsServicePort" : 1342,
+    "eventsServiceEndpoint" : "http://localhost:1342"
   },
   "production": {
     "jwtSecret" : "395b2bdd68bf70b057d49ac75982dda0fdb70cf46b54b9e3476e05e81feceb6f",
@@ -29,6 +32,7 @@
     "userDetailsCollectionName" : "userDetailsCollection",
     "eventsCollectionName" : "eventsCollection",
     "groupsCollectionName" : "groupsCollection",
+    "groupLinksCollectionName" : "groupLinksCollection",
     "apiServicePort" : 1337,
     "userAuthServicePort" : 1338,
     "userAuthServiceEndpoint" : "http://localhost:1338",
@@ -36,7 +40,9 @@
     "userDetailsServiceEndpoint" : "http://localhost:1339",
     "groupsServicePort" : 1340,
     "groupsServiceEndpoint" : "http://localhost:1340",
-    "eventsServicePort" : 1341,
-    "eventsServiceEndpoint" : "http://localhost:1341"
+    "groupLinksServicePort" : 1341,
+    "groupLinksServiceEndpoint" : "http://localhost:1341",
+    "eventsServicePort" : 1342,
+    "eventsServiceEndpoint" : "http://localhost:1342"
   }
 }

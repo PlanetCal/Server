@@ -14,7 +14,7 @@ app.use(accesslogger.getAccessLogger(logger));
 
 var bodyParser = require('body-parser');
 
-var config = require('../common/config.json')[app.get('env')];
+var config = require('../common/config.json')[app.get('env') || 'production'];
 var userDetailsController = require('./routes/userdetailscontroller.js')(config, logger);
 var helpers = require('../common/helpers.js');
 var BadRequestException = require('../common/error.js').BadRequestException;

@@ -1,25 +1,30 @@
-{	
-	"GenericUnauthorizedException" : "GenericUnauthorizedException",
-	"LoginFailed" : "LoginFailed",
-	"InvalidToken" : "InvalidToken",
+{   
+    "LoginFailed" : "LoginFailed",
+    "InvalidToken" : "InvalidToken",
 
-	"GenericBadRequestException" : "GenericBadRequestException",
-	"VersionNotFoundInHeader" : "VersionNotFoundInHeader",
-	"EventNotFoundInBody" : "EventNotFoundInBody",
-	"EmptyBody" : "EmptyBody",
-	"NoQueryString" : "NoQueryString",
-	"KeywordsNotFoundInQueryString" : "KeywordsNotFoundInQueryString",
-	"GroupsNotFoundInBody" : "GroupsNotFoundiInBody",
-	"EmailOrPasswordNotFoundInBody" : "EmailOrPasswordNotFoundInBody",
-	"UserDetailsNotFoundInBody" : "UserDetailsNotFoundInBody",
-	"InvalidQueryString" : "InvalidQueryString",
-	"GroupdIdsNotFoundInQueryString" : "GroupdIdsNotFoundInQueryString",
+    "EmailOrPasswordNotFoundInBody" : "EmailOrPasswordNotFoundInBody",
 
+    "UserDetailsNotFoundInBody" : "UserDetailsNotFoundInBody",
 
-	"GenericNotFoundException" : "GenericNotFoundException",
+    "GroupNotFoundInBody" : "GroupNotFoundInBody",
 
-	"GenericHttpRequestException" : "GenericHttpRequestException",
-	"GenericInternalServerException" : "GenericInternalServerException" ,
-	"GenericDatabaseException" : "GenericDatabaseException",
-	"GenericForbiddenException" : "GenericForbiddenException"
+    "GroupLinkDescriptorNotFoundInBody" : "GroupLinkDescriptorNotFoundInBody",
+    "DistanceNotFoundInQueryString" : "DistanceNotFoundInQueryString",
+
+    "GroupdIdsNotFoundInQueryString" : "GroupdIdsNotFoundInQueryString",
+
+    "EventNotFoundInBody" : "EventNotFoundInBody",
+    "KeywordsNotFoundInQueryString" : "KeywordsNotFoundInQueryString",
+
+    "InvalidQueryString" : "InvalidQueryString",
+    "NoQueryString" : "NoQueryString",
+    "EmptyBody" : "EmptyBody",
+    "VersionNotFoundInHeader" : "VersionNotFoundInHeader",
+    "GenericUnauthorizedException" : "GenericUnauthorizedException",
+    "GenericBadRequestException" : "GenericBadRequestException",
+    "GenericNotFoundException" : "GenericNotFoundException",
+    "GenericHttpRequestException" : "GenericHttpRequestException",
+    "GenericInternalServerException" : "GenericInternalServerException" ,
+    "GenericDatabaseException" : "GenericDatabaseException",
+    "GenericForbiddenException" : "GenericForbiddenException"
 }

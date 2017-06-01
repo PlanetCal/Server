@@ -1,0 +1,28 @@
+[
+  {
+    "ancestor": "00000000-0000-0000-0000-000000000000",
+    "descendant": "7439d7c0-da4c-42ae-b666-ceebd5d29c61",
+    "distance": 1
+  },
+  {
+    "ancestor": "7439d7c0-da4c-42ae-b666-ceebd5d29c61",
+    "descendant": "7439d7c0-da4c-42ae-b666-ceebd5d29c61",
+    "distance": 0
+  },
+  {
+    "ancestor": "7439d7c0-da4c-42ae-b666-ceebd5d29c61",
+    "descendant": "165a00bc-23d7-407e-aed0-62dbb1a661f7",
+    "distance": 1
+  },
+  {
+    "ancestor": "165a00bc-23d7-407e-aed0-62dbb1a661f7",
+    "descendant": "165a00bc-23d7-407e-aed0-62dbb1a661f7",
+    "distance": 0
+  },
+  {
+    "ancestor": "00000000-0000-0000-0000-000000000000",
+    "descendant": "165a00bc-23d7-407e-aed0-62dbb1a661f7",
+    "distance": 2
+  }
+
+]

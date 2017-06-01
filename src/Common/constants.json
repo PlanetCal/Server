@@ -4,6 +4,20 @@
         "userAuthServiceName" : "UserAuthService",
         "userDetailsServiceName" : "UserDetailsService",
         "groupsServiceName" : "GroupsService",
+        "groupLinksServiceName" : "GroupLinksService",
         "eventsServiceName" : "EventsService"
-    }
+    },
+
+    "urlNames": {
+    	"login" : "login",
+    	"userauth": "userauth",
+    	"userdetails" : "userdetails",
+    	"groups":"groups",
+    	"grouplinks":"grouplinks",
+    	"events":"events"
+    },
+
+    "nodeLinksUpdateStoredProcName" : "nodeLinksUpdateStoredProc",
+
+    "emptyGuid" : "00000000-0000-0000-0000-000000000000"
 }

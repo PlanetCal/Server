@@ -13,35 +13,37 @@ module.exports = {
 
         var collectionLink = 'dbs/' + databaseName + '/colls/' + collectionName;
 
-        this.insertAsync = function insertAsync(obj, options) {
+        this.insertAsync = function insertAsync(obj, options, errorHandler) {
             var client = this.getClient();
-            if (typeof(options) === 'undefined'){
-            	options = {};
-            }
-            return client.createDocumentAsync(collectionLink, obj, options).fail(function(err){
-                throw new DatabaseException(err);
-            });
-        }
 
-        this.getAsync = function getAsync(querySpec, options) {
-            var client = this.getClient();
-            if (typeof(options) === 'undefined'){
-            	options = {};
-            }
-            return client.queryDocuments(collectionLink, querySpec, options).toArrayAsync().fail(function(err){
-                throw new DatabaseException(err);
-            });
-        }
-
-        this.getAsync = function getAsync(querySpec, options) {
-            var client = this.getClient();
-            if (typeof(options) === 'undefined'){
+            if (typeof(options) === 'function' && typeof(errorHandler) === 'undefined'){
+                errorHandler = options;
                 options = {};
             }
+            else if (typeof(options) === 'undefined'){
+            	options = {};
+            }
+
+            return client.createDocumentAsync(collectionLink, obj, options).fail(function(err){
+                if (typeof(errorHandler) === 'function'){
+                    errorHandler(err);
+                }
+                else{
+                    throw new DatabaseException(err);
+                }
+            });
+        }
+
+        this.getAsync = function getAsync(querySpec, options) {
+            var client = this.getClient();
+            if (typeof(options) === 'undefined'){
+            	options = {};
+            }
             return client.queryDocuments(collectionLink, querySpec, options).toArrayAsync().fail(function(err){
                 throw new DatabaseException(err);
             });
         }
+
 
         this.updateAsync = function updateAsync(id, document, options) {
             // this assumes that all objects have id property
@@ -50,7 +52,7 @@ module.exports = {
             if (typeof(options) === 'undefined'){
             	options = {};
             }
-            return client.replaceDocumentAsync(documentLink, document).fail(function(err){
+            return client.replaceDocumentAsync(documentLink, document, options).fail(function(err){
                 throw new DatabaseException(err);
             });
         }
@@ -64,6 +66,18 @@ module.exports = {
             	options = {};
             }
             return client.deleteDocumentAsync(documentLink, options).fail(function(err){
+                throw new DatabaseException(err);
+            });
+        }
+
+        this.executeStoredProcedureAsync = function executeStoredProcedureAsync(storedProcedureName, params, options){
+            var client = this.getClient();
+
+            var storedProcedureLink = collectionLink + '/sprocs/' + storedProcedureName;
+            if (typeof(options) === 'undefined'){
+                options = {};
+            }
+            return client.executeStoredProcedureAsync(storedProcedureLink, params, options).fail(function(err){
                 throw new DatabaseException(err);
             });
         }

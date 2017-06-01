@@ -16,7 +16,7 @@ logger.get().debug('Starting %s.....', constants.userAuthServiceName);
 
 app.use(accesslogger.getAccessLogger(logger));
 
-var config = require('../common/config.json')[app.get('env')];
+var config = require('../common/config.json')[app.get('env') || 'production'];
 
 require('./userauthpassport.js')(passport, config, logger);
 var userLoginController = require('./routes/logincontroller.js')(passport, config, logger);
