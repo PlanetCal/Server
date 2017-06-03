@@ -48,7 +48,7 @@ app.use(passport.initialize());
 // enable CORS for all requests first
 app.use('/', corsController);
 
-// attach activity id to all requests
+// attach activity id to all requests and use bodyparser to parse body
 app.use('/', bodyParser.json(), function (req, res, err, next){
     if (err){
         throw new BadRequestException('Invalid Body', errorcode.InvalidBody);
@@ -73,7 +73,6 @@ var defaultCorsOptions = {
 
 
 // all requests are subject to version header check
-/*
 app.use('/', cors(defaultCorsOptions), function (req, res, next){
     if (!req.headers['version']){
         throw new BadRequestException('Cannot find version in header.', errorcode.VersionNotFoundInHeader);
@@ -82,8 +81,6 @@ app.use('/', cors(defaultCorsOptions), function (req, res, next){
         next();
     }
 });
-*/
-
 
 var getEventsCorsOptions = {
     origin : '*', 
@@ -132,7 +129,6 @@ app.post('/userauth', cors(userAuthCorsOptions), helpers.wrap(function *(req, re
 }));
 
 // all other urls - all APIs are subject to token authentication
-/*
 app.use('/*', cors(defaultCorsOptions), passport.authenticate('token-bearer', { session: false }),
     function (req, res, next){
         if (!req || !req.user){
@@ -149,7 +145,6 @@ app.use('/*', cors(defaultCorsOptions), passport.authenticate('token-bearer', { 
         }
     }
 );
-*/
 
 // other routes
 app.use('/userauth', userAuthController);
