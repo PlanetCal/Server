@@ -19,6 +19,7 @@
     "InvalidQueryString" : "InvalidQueryString",
     "NoQueryString" : "NoQueryString",
     "EmptyBody" : "EmptyBody",
+    "InvalidBody" : "InvalidBody",
     "VersionNotFoundInHeader" : "VersionNotFoundInHeader",
     "GenericUnauthorizedException" : "GenericUnauthorizedException",
     "GenericBadRequestException" : "GenericBadRequestException",

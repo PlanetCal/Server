@@ -37,17 +37,29 @@ var ForbiddenException = require('../common/error.js').ForbiddenException;
 var UnauthorizedException = require('../common/error.js').UnauthorizedException;
 var HttpRequestException = require('../common/error.js').HttpRequestException;
 var errorcode = require('../common/errorcode.json');
+var util = require('util');
 
 logger.get().debug('Starting %s.....', serviceNames.apiServiceName);
 
 app.set('view engine', 'ejs');
 
-app.use('/*', bodyParser.json());
-
 app.use(passport.initialize());
 
 // enable CORS for all requests first
 app.use('/', corsController);
+
+// attach activity id to all requests
+app.use('/', bodyParser.json(), function (req, res, err, next){
+    if (err){
+        throw new BadRequestException('Invalid Body', errorcode.InvalidBody);
+    }
+    else{
+        var activityid = uuid.v4();
+        req.headers['activityid'] = activityid;
+        logger.get().debug({req : req}, 'Attach ActivityId %s to request.', activityid);
+        next();
+    }
+});
 
 var defaultCorsOptions = {
     origin : '*', 
@@ -58,6 +70,7 @@ var defaultCorsOptions = {
     preflightContinue : true,
     credentials : true
 };
+
 
 // all requests are subject to version header check
 /*
@@ -71,13 +84,6 @@ app.use('/', cors(defaultCorsOptions), function (req, res, next){
 });
 */
 
-// attach activity id to all requests
-app.use('/', cors(defaultCorsOptions), function (req, res, next){
-    var activityid = uuid.v4();
-    req.headers['activityid'] = activityid;
-    logger.get().debug({req : req}, 'Attach ActivityId %s to request.', activityid);
-    next();
-});
 
 var getEventsCorsOptions = {
     origin : '*', 

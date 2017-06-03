@@ -12,7 +12,7 @@ module.exports = function(config, logger){
     var helpers = require('../../common/helpers.js');
     var BadRequestException = require('../../common/error.js').BadRequestException;
     var errorcode = require('../../common/errorcode.json');
-    var constants = require('../../constants.json');
+    var constants = require('../../common/constants.json');
     
     var corsOptions = {
       origin : '*', 
