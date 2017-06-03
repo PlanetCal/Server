@@ -22,6 +22,7 @@ app.use(accesslogger.getAccessLogger(logger));
 
 var config = require('../common/config.json')[app.get('env') || 'production'];
 require('./apiservicepassport.js')(passport, config, logger);
+var cors = require('cors');
 var loginController = require('./routes/logincontroller.js')(config, logger);
 var userAuthController = require('./routes/userauthcontroller.js')(config, logger);
 var userDetailsController = require('./routes/userdetailscontroller.js')(config, logger);
@@ -29,7 +30,6 @@ var eventsController = require('./routes/eventscontroller.js')(config, logger);
 var groupsController = require('./routes/groupscontroller.js')(config, logger);
 var grouplinksController = require('./routes/grouplinkscontroller.js')(config, logger);
 var corsController = require('./routes/corscontroller.js')(config, logger);
-var cors = require('cors');
 var helpers = require('../common/helpers.js');
 var BadRequestException = require('../common/error.js').BadRequestException;
 var NotFoundException = require('../common/error.js').NotFoundException;
@@ -42,9 +42,7 @@ logger.get().debug('Starting %s.....', serviceNames.apiServiceName);
 
 app.set('view engine', 'ejs');
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use('/*', bodyParser.json());
 
 app.use(passport.initialize());
 

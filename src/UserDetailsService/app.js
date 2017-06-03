@@ -32,7 +32,6 @@ app.use(accesslogger.getAccessLogger(logger));
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use('/userdetails', userDetailsController);
 

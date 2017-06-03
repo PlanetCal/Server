@@ -12,6 +12,7 @@ module.exports = function(config, logger){
     var helpers = require('../../common/helpers.js');
     var BadRequestException = require('../../common/error.js').BadRequestException;
     var errorcode = require('../../common/errorcode.json');
+    var constants = require('../../constants.json');
     
     var corsOptions = {
       origin : '*', 
@@ -42,7 +43,7 @@ module.exports = function(config, logger){
         if (!queryString || queryString.length <= 0){
             throw new BadRequestException('Query string is invalid.', errorcode.InvalidQueryString);
         }
-        var url = endpoint + '/' + urlNames.groups + '?' + qs.stringify(req.query);
+        var url = endpoint + '/' + urlNames.groups + '?' + queryString;
         var options = helpers.getRequestOption(req, url, 'GET'); 
         var results = yield *helpers.forwardHttpRequest(options, serviceNames.groupsServiceName);
         res.setHeader('Etag', etag(results));
