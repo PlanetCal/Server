@@ -12,6 +12,7 @@
     "DistanceNotFoundInQueryString" : "DistanceNotFoundInQueryString",
 
     "GroupdIdsNotFoundInQueryString" : "GroupdIdsNotFoundInQueryString",
+    "ParentGroupdIdsNotFoundInQueryString" : "ParentGroupdIdsNotFoundInQueryString",
 
     "EventNotFoundInBody" : "EventNotFoundInBody",
     "KeywordsNotFoundInQueryString" : "KeywordsNotFoundInQueryString",

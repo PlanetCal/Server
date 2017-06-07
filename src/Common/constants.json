@@ -5,6 +5,7 @@
         "userDetailsServiceName" : "UserDetailsService",
         "groupsServiceName" : "GroupsService",
         "groupLinksServiceName" : "GroupLinksService",
+        "groupsRecommendationServiceName" : "groupsRecommendationService",
         "eventsServiceName" : "EventsService"
     },
 
@@ -14,6 +15,7 @@
     	"userdetails" : "userdetails",
     	"groups":"groups",
     	"grouplinks":"grouplinks",
+        "groupsrecommendation":"groupsrecommendation",
     	"events":"events"
     },
 

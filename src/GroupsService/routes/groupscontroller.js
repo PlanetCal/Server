@@ -22,8 +22,8 @@ module.exports = function(config, logger){
         }
 
         logger.get().debug({req : req}, 'Retriving group object...');
-        var documentResponse = yield findGroupsByGroupIdsAsync(dal, req.params.id, fields);
-        var result = documentResponse.feed.length <= 0 ? {} : documentResponse.feed[0];
+        var documentResponse = yield findGroupsByGroupIdsAsync(req.params.id, fields);
+        var result = documentResponse.resource;
         logger.get().debug({req : req, group: result}, 'group object with fields retrieved successfully.');
 
         // TODO: assert when results has more than 1 element.
@@ -40,9 +40,9 @@ module.exports = function(config, logger){
                 fields = req.query.fields.split('|');
             }
 
-            documentResponse = yield findGroupByKeywordsAsync(dal, keywords, fields);
+            documentResponse = yield findGroupByKeywordsAsync(keywords, fields);
         }
-        var results = documentResponse.feed;
+        var results = documentResponse.resourcefeed;
         var filteredResults = helpers.removeDuplicatedItemsById(results);
         logger.get().debug({req : req, groups : filteredResults}, 'group objects retrieved successfully. unfiltered count: %d. filtered count: %d.', results.length, filteredResults.length);
         res.status(200).json(filteredResults);
@@ -84,53 +84,53 @@ module.exports = function(config, logger){
         res.status(200).json({ id : req.params.id });                        
     }));
 
+    function findGroupByKeywordsAsync(keywords, fields) {
+        var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
+        var querySpec = {
+            query: "SELECT e.id" + constraints + " e.keywords FROM e JOIN k IN e.keywords WHERE ARRAY_CONTAINS(@keywords, k)",
+            parameters: [
+                {
+                    name: '@keywords',
+                    value: keywords
+                }
+            ]
+        };
+
+        return dal.getAsync(querySpec);
+    }
+
+    function findGroupsByGroupIdsAsync(groupIds, fields) {
+        var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
+        var parameters = [
+            {
+                name: "@groupIds",
+                value: groupIds
+            }
+        ];
+
+        var querySpec = {
+            query: "SELECT e.id" + constraints + " FROM root e WHERE ARRAY_CONTAINS(@groupIds, e.groupdId)",
+            parameters: parameters
+        };
+        return dal.getAsync(querySpec);
+    }
+
+    function findGroupsByGroupIdAsync(groupId, fields) {
+        var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
+        var parameters = [
+            {
+                name: "@groupId",
+                value: groupId
+            }
+        ];
+
+        var querySpec = {
+            query: "SELECT e.id" + constraints + " FROM root e WHERE e.id = groupId",
+            parameters: parameters
+        };
+        return dal.getAsync(querySpec);
+    }
+
     return router;
 }
 
-function findGroupByKeywordsAsync(keywords, fields) {
-    var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
-    var querySpec = {
-        query: "SELECT e.id" + constraints + " e.keywords FROM e JOIN k IN e.keywords WHERE ARRAY_CONTAINS(@keywords, k)",
-        parameters: [
-            {
-                name: '@keywords',
-                value: keywords
-            }
-        ]
-    };
-
-    return dal.getAsync(querySpec);
-}
-
-function findGroupsByGroupIdsAsync(groupIds, fields) {
-    var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
-    console.log('contraints: ' + contrainsts);
-    var parameters = [
-        {
-            name: "@groupIds",
-            value: groupIds
-        }
-    ];
-
-    var querySpec = {
-        query: "SELECT e.id" + constraints + " FROM root e WHERE ARRAY_CONTAINS(@groupIds, e.groupdId)",
-        parameters: parameters
-    };
-    return dal.getAsync(querySpec);
-}
-
-function findGroupsByGroupIdAsync(dal, groupId, fields) {
-    var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
-    var parameters = [
-        {
-            name: "@groupId",
-            value: groupId
-        }
-    ];
-
-    var querySpec = {
-        query: "SELECT e.id" + constraints + " FROM root e WHERE e.id = groupId",
-        parameters: parameters
-    };
-    return dal.getAsync(querySpec);
-}

@@ -18,8 +18,8 @@ module.exports = function(config, logger){
     var util = require('util');
 
     router.get('/', helpers.wrap(function *(req, res) {        
-        if (!req.query.groupId) {
-            throw new BadRequestException('groupId should be found in query string.', errorcode.GroupdIdsNotFoundInQueryString);
+        if (!req.query.groupid) {
+            throw new BadRequestException('groupid should be found in query string.', errorcode.GroupdIdsNotFoundInQueryString);
         }
 
         if (!req.query.distance) {
@@ -28,7 +28,7 @@ module.exports = function(config, logger){
 
         logger.get().debug({req : req}, 'Retriving all grouplinks for groupid %s, distance %d...', req.query.groupid, req.query.distance);
 
-        var results = yield *findDescendantGroupLinksByGroupIdAndDistance(req.query.groupId, parseInt(req.query.distance));
+        var results = yield *findDescendantGroupLinksByGroupIdAndDistance(req.query.groupid, parseInt(req.query.distance));
         
         logger.get().debug({req : req, grouplinks : results}, 'Grouplink objects retrieved successfully. Count: %d', results.length);
         res.status(200).json(results);
