@@ -22,6 +22,7 @@ module.exports = function(config, logger){
     };
 
     router.options('/userauth', cors(corsOptions));
+    router.options('/userauth/*', cors(corsOptions));
 
     corsOptions = {
       origin : '*', 
@@ -30,10 +31,13 @@ module.exports = function(config, logger){
     };
 
     router.options('/userdetails', cors(corsOptions));
+    router.options('/userdetails/*', cors(corsOptions));
 
     router.options('/groups', cors(corsOptions));
+    router.options('/groups/*', cors(corsOptions));
 
     router.options('/events', cors(corsOptions));
+    router.options('/events/*', cors(corsOptions));
 
     corsOptions = {
       origin : '*', 
