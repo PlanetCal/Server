@@ -30,7 +30,6 @@ module.exports = {
 
             var context = getContext();
             var response = context.getResponse();
-            var collection = context.getCollection();
 
             var linkType = {
                 "ancestor" : "ancestor",

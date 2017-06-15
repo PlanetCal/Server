@@ -5,6 +5,7 @@
         "userDetailsServiceName" : "UserDetailsService",
         "groupsServiceName" : "GroupsService",
         "groupLinksServiceName" : "GroupLinksService",
+        "groupsRecommendationServiceName" : "groupsRecommendationService",
         "eventsServiceName" : "EventsService"
     },
 
@@ -14,10 +15,12 @@
     	"userdetails" : "userdetails",
     	"groups":"groups",
     	"grouplinks":"grouplinks",
+        "groupsrecommendation":"groupsrecommendation",
     	"events":"events"
     },
 
     "nodeLinksUpdateStoredProcName" : "nodeLinksUpdateStoredProc",
+    "nodeLinksQueryStoredProcName" : "nodeLinksQueryStoredProc",
 
     "emptyGuid" : "00000000-0000-0000-0000-000000000000"
 }

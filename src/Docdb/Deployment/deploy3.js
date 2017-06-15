@@ -8,6 +8,7 @@ var util = require('util');
 var constants = require('../../common/constants.json');
 var grouplinksdata = require('../testdata/grouplinksdata1.json');
 var co = require('co');
+var nodeLinksQueryStoredProcedure = require('../storedprocedures/nodeLinksQueryStoredProcedure.js');
 
 var client = new DocumentClient(config.documentdbEndpoint, { "masterKey": config.documentdbAuthKey });
 var helpers = require('../../common/helpers.js');
@@ -48,6 +49,9 @@ co(function*() {
 
     var collection = collectionResponse.feed[0];
 
+    return client.createStoredProcedureAsync(collection._self, nodeLinksQueryStoredProcedure.nodeLinksQueryStoredProc, {});
+
+/*
     for (var i in grouplinksdata){
         var documentResponse = yield client.createDocumentAsync(collection._self, grouplinksdata[i]);
         if (documentResponse.resource){
@@ -60,7 +64,9 @@ co(function*() {
             console.log(util.inspect(grouplinksdata[i]));
         }
     }
+ 
     return collectionResponse;
+*/
 
 }).then(undefined, function (err) {
     console.log(err);

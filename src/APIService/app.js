@@ -22,6 +22,7 @@ app.use(accesslogger.getAccessLogger(logger));
 
 var config = require('../common/config.json')[app.get('env') || 'production'];
 require('./apiservicepassport.js')(passport, config, logger);
+var cors = require('cors');
 var loginController = require('./routes/logincontroller.js')(config, logger);
 var userAuthController = require('./routes/userauthcontroller.js')(config, logger);
 var userDetailsController = require('./routes/userdetailscontroller.js')(config, logger);
@@ -29,7 +30,6 @@ var eventsController = require('./routes/eventscontroller.js')(config, logger);
 var groupsController = require('./routes/groupscontroller.js')(config, logger);
 var grouplinksController = require('./routes/grouplinkscontroller.js')(config, logger);
 var corsController = require('./routes/corscontroller.js')(config, logger);
-var cors = require('cors');
 var helpers = require('../common/helpers.js');
 var BadRequestException = require('../common/error.js').BadRequestException;
 var NotFoundException = require('../common/error.js').NotFoundException;
@@ -37,19 +37,29 @@ var ForbiddenException = require('../common/error.js').ForbiddenException;
 var UnauthorizedException = require('../common/error.js').UnauthorizedException;
 var HttpRequestException = require('../common/error.js').HttpRequestException;
 var errorcode = require('../common/errorcode.json');
+var util = require('util');
 
 logger.get().debug('Starting %s.....', serviceNames.apiServiceName);
 
 app.set('view engine', 'ejs');
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-
 app.use(passport.initialize());
 
 // enable CORS for all requests first
 app.use('/', corsController);
+
+// attach activity id to all requests and use bodyparser to parse body
+app.use('/', bodyParser.json(), function (req, res, err, next){
+    if (err){
+        throw new BadRequestException('Invalid Body', errorcode.InvalidBody);
+    }
+    else{
+        var activityid = uuid.v4();
+        req.headers['activityid'] = activityid;
+        logger.get().debug({req : req}, 'Attach ActivityId %s to request.', activityid);
+        next();
+    }
+});
 
 var defaultCorsOptions = {
     origin : '*', 
@@ -61,8 +71,8 @@ var defaultCorsOptions = {
     credentials : true
 };
 
+
 // all requests are subject to version header check
-/*
 app.use('/', cors(defaultCorsOptions), function (req, res, next){
     if (!req.headers['version']){
         throw new BadRequestException('Cannot find version in header.', errorcode.VersionNotFoundInHeader);
@@ -70,15 +80,6 @@ app.use('/', cors(defaultCorsOptions), function (req, res, next){
     else{
         next();
     }
-});
-*/
-
-// attach activity id to all requests
-app.use('/', cors(defaultCorsOptions), function (req, res, next){
-    var activityid = uuid.v4();
-    req.headers['activityid'] = activityid;
-    logger.get().debug({req : req}, 'Attach ActivityId %s to request.', activityid);
-    next();
 });
 
 var getEventsCorsOptions = {
@@ -128,7 +129,6 @@ app.post('/userauth', cors(userAuthCorsOptions), helpers.wrap(function *(req, re
 }));
 
 // all other urls - all APIs are subject to token authentication
-/*
 app.use('/*', cors(defaultCorsOptions), passport.authenticate('token-bearer', { session: false }),
     function (req, res, next){
         if (!req || !req.user){
@@ -145,7 +145,6 @@ app.use('/*', cors(defaultCorsOptions), passport.authenticate('token-bearer', { 
         }
     }
 );
-*/
 
 // other routes
 app.use('/userauth', userAuthController);

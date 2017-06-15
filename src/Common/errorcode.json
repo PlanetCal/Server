@@ -12,6 +12,7 @@
     "DistanceNotFoundInQueryString" : "DistanceNotFoundInQueryString",
 
     "GroupdIdsNotFoundInQueryString" : "GroupdIdsNotFoundInQueryString",
+    "ParentGroupdIdsNotFoundInQueryString" : "ParentGroupdIdsNotFoundInQueryString",
 
     "EventNotFoundInBody" : "EventNotFoundInBody",
     "KeywordsNotFoundInQueryString" : "KeywordsNotFoundInQueryString",
@@ -19,6 +20,7 @@
     "InvalidQueryString" : "InvalidQueryString",
     "NoQueryString" : "NoQueryString",
     "EmptyBody" : "EmptyBody",
+    "InvalidBody" : "InvalidBody",
     "VersionNotFoundInHeader" : "VersionNotFoundInHeader",
     "GenericUnauthorizedException" : "GenericUnauthorizedException",
     "GenericBadRequestException" : "GenericBadRequestException",

@@ -5,6 +5,7 @@ var DocumentClient = require('documentdb-q-promises').DocumentClientWrapper;
 var config = require('../../common/config.json')[argv['env'] || 'development'];
 var triggers = require('../triggers/insertuniqueusertrigger.js');
 var nodeLinksUpdateStoredProcedure = require('../storedprocedures/nodelinksupdatestoredprocedure.js');
+var nodeLinksQueryStoredProcedure = require('../storedprocedures/nodeLinksQueryStoredProcedure.js');
 var util = require('util');
 var constants = require('../../common/constants.json');
 var Q = require('q');
@@ -70,6 +71,12 @@ client.queryDatabases(querySpec).toArrayAsync()
                 descendant : emptyGuid, 
                 distance : 0
             });
+    })
+    .then(function(docuemntResponse){
+        var document = documentResponse.resource;
+        console.log(document.id + ' created successfully.');
+        console.log('Creating stored procedure' + constants.nodeLinksQueryStoredProcName + ' on collection ' + config.groupLinksCollectionName + '....');
+        return client.createStoredProcedureAsync(collection._self, nodeLinksUpdateStoredProcedure.nodeLinksQueryStoredProc, {});
     })
     .fail(function(err){ 
         console.log(err);

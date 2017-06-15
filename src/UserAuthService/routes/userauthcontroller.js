@@ -16,24 +16,24 @@ module.exports = function(passport, config, logger){
     var BadRequestException = require('../../common/error.js').BadRequestException;
     var ForbiddenException = require('../../common/error.js').ForbiddenException;
     var errorcode = require('../../common/errorcode.json');
+    var Validator = require('../../common/bodyschemavalidator.js');
+    var bodyschemavalidator = new Validator.BodySchemaValidator();
+    var userauthschema = require('./userauth.schema.json');
 
-    router.post('/', helpers.wrap(function *(req, res){
-        if (!req.body.email || !req.body.password || !req.body.name){
-            throw new BadRequestException('Cannot find email, password or name in body.', errorcode.EmailOrPasswordNotFoundInBody);
-        }
-        else{
-            logger.get().debug({req : req}, 'Creating userAuth object...');
+    bodyschemavalidator.addSchema(userauthschema, 'userauth');
 
-            var passwordCrypto = new PasswordCrypto();
-            var passwordHash = passwordCrypto.generateHash(req.body.password);
-            var options = { preTriggerInclude: config.insertUniqueUserTriggerName };   
+    router.post('/', bodyschemavalidator.validateSchema('userauth'), helpers.wrap(function *(req, res){
+        logger.get().debug({req : req}, 'Creating userAuth object...');
 
-            var documentResponse = yield dal.insertAsync({ email: req.body.email, passwordHash: passwordHash, name : req.body.name, firstTimeLogon : true }, options);
+        var passwordCrypto = new PasswordCrypto();
+        var passwordHash = passwordCrypto.generateHash(req.body.password);
+        var options = { preTriggerInclude: config.insertUniqueUserTriggerName };   
 
-            logger.get().debug({req : req, userAuth : documentResponse.resource }, 'userAuth object created successfully.');
+        var documentResponse = yield dal.insertAsync({ email: req.body.email, passwordHash: passwordHash, name : req.body.name, firstTimeLogon : true }, options);
 
-            res.status(201).json({ email : documentResponse.resource.email, id : documentResponse.resource.id, name : documentResponse.resource.name, firstTimeLogon : true });                
-        }
+        logger.get().debug({req : req, userAuth : documentResponse.resource }, 'userAuth object created successfully.');
+
+        res.status(201).json({ email : documentResponse.resource.email, id : documentResponse.resource.id, name : documentResponse.resource.name, firstTimeLogon : true });                
     }));
 
     router.put('/:id', helpers.wrap(function *(req, res){
