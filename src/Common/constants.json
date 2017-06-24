@@ -1,26 +1,30 @@
 {
-    "serviceNames":{
-        "apiServiceName" : "APIService",
-        "userAuthServiceName" : "UserAuthService",
-        "userDetailsServiceName" : "UserDetailsService",
-        "groupsServiceName" : "GroupsService",
-        "groupLinksServiceName" : "GroupLinksService",
-        "groupsRecommendationServiceName" : "groupsRecommendationService",
-        "eventsServiceName" : "EventsService"
+    "serviceNames": {
+        "apiServiceName": "APIService",
+        "userAuthServiceName": "UserAuthService",
+        "userDetailsServiceName": "UserDetailsService",
+        "groupsServiceName": "GroupsService",
+        "groupLinksServiceName": "GroupLinksService",
+        "groupsRecommendationServiceName": "groupsRecommendationService",
+        "eventsServiceName": "EventsService"
     },
-
     "urlNames": {
-    	"login" : "login",
-    	"userauth": "userauth",
-    	"userdetails" : "userdetails",
-    	"groups":"groups",
-    	"grouplinks":"grouplinks",
-        "groupsrecommendation":"groupsrecommendation",
-    	"events":"events"
+        "login": "login",
+        "userauth": "userauth",
+        "userdetails": "userdetails",
+        "groups": "groups",
+        "grouplinks": "grouplinks",
+        "groupsrecommendation": "groupsrecommendation",
+        "events": "events"
     },
-
-    "nodeLinksUpdateStoredProcName" : "nodeLinksUpdateStoredProc",
-    "nodeLinksQueryStoredProcName" : "nodeLinksQueryStoredProc",
-
-    "emptyGuid" : "00000000-0000-0000-0000-000000000000"
+    "emailConstants": {
+        "adminName": "planetcal@outlook.com",
+        "adminPassword": "",
+        "fromEmailAddress": "PlanetCal Admin <planetcal@outlook.com>",
+        "smtpHost": "smtp-mail.outlook.com",
+        "smtpCiphers": "SSLv3"
+    },
+    "nodeLinksUpdateStoredProcName": "nodeLinksUpdateStoredProc",
+    "nodeLinksQueryStoredProcName": "nodeLinksQueryStoredProc",
+    "emptyGuid": "00000000-0000-0000-0000-000000000000"
 }
