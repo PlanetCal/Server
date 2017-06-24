@@ -29,7 +29,8 @@ module.exports = function (passport, config, logger) {
         var passwordHash = passwordCrypto.generateHash(req.body.password);
         var options = { preTriggerInclude: config.insertUniqueUserTriggerName };
 
-        //helpers.sendEmail(logger, 'sachin kumar <sachin_kumar3@hotmail.com>', "sending email", 'this is great', '<html>is it not great</html>');
+        var toAddress = req.body.name + ' <' + req.body.email + '>';
+        //helpers.sendEmail(logger, toAddress, "sending email", 'this is great', '<html>is it not great</html>');
 
         var documentResponse = yield dal.insertAsync({ email: req.body.email, passwordHash: passwordHash, name: req.body.name, firstTimeLogon: true }, options);
 
