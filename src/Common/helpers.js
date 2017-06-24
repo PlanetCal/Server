@@ -110,8 +110,18 @@ module.exports = {
         });
     },
 
+    'generateGuid': function generateGuid() {
+        function s4() {
+            return Math.floor((1 + Math.random()) * 0x10000)
+                .toString(16)
+                .substring(1);
+        }
+        return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+            s4() + '-' + s4() + s4() + s4();
+    },
+
     // Documentation: https://github.com/eleith/emailjs    
-    'sendEmail': function sendEmail(logger, toAddress, subject, messageText, messageAlternateHtmlText) {
+    'sendEmail': function sendEmail(logger, toAddress, subject, messageHtmlText) {
         var server = email.server.connect({
             user: emailConstants.adminName,
             password: emailConstants.adminPassword,
@@ -121,12 +131,12 @@ module.exports = {
 
         var message = {
             from: emailConstants.fromEmailAddress,
-            text: messageText,
+            text: 'Your email Server does not support Html format. Please use any other modern emailId.',
             to: toAddress,
             subject: subject,
             attachment:
             [
-                { data: messageAlternateHtmlText, alternative: true }
+                { data: messageHtmlText, alternative: true }
             ]
         };
 

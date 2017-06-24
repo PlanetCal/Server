@@ -4,11 +4,13 @@ module.exports = function (passport, config, logger) {
 
     var router = require('express').Router();
     var PasswordCrypto = require('../passwordcrypto.js').PasswordCrypto;
-
+    var urlNames = require('../../common/constants.json')['urlNames'];
+    var userAuthUrl = urlNames.userauth;
     var databaseName = config.documentdbDatabaseName;
     var collectionName = config.usersCollectionName;
     var documentdbEndpoint = config.documentdbEndpoint;
     var documentdbAuthKey = config.documentdbAuthKey;
+    var apiServiceEndpoint = config.apiServiceEndpoint;
     var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
     var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
 
@@ -28,15 +30,13 @@ module.exports = function (passport, config, logger) {
         var passwordCrypto = new PasswordCrypto();
         var passwordHash = passwordCrypto.generateHash(req.body.password);
         var options = { preTriggerInclude: config.insertUniqueUserTriggerName };
-
-        var toAddress = req.body.name + ' <' + req.body.email + '>';
-        //helpers.sendEmail(logger, toAddress, "sending email", 'this is great', '<html>is it not great</html>');
-
-        var documentResponse = yield dal.insertAsync({ email: req.body.email, passwordHash: passwordHash, name: req.body.name, firstTimeLogon: true }, options);
+        var newGuid = helpers.generateGuid();
+        var documentResponse = yield dal.insertAsync({ email: req.body.email, passwordHash: passwordHash, name: req.body.name, firstTimeLogon: newGuid }, options);
 
         logger.get().debug({ req: req, userAuth: documentResponse.resource }, 'userAuth object created successfully.');
 
-        res.status(201).json({ email: documentResponse.resource.email, id: documentResponse.resource.id, name: documentResponse.resource.name, firstTimeLogon: true });
+        sendValidationEmail(helpers, logger, req, apiServiceEndpoint, userAuthUrl, documentResponse.resource.id, newGuid);
+        res.status(201).json({ email: documentResponse.resource.email, id: documentResponse.resource.id, name: documentResponse.resource.name });
     }));
 
     router.put('/:id', helpers.wrap(function* (req, res) {
@@ -76,4 +76,22 @@ module.exports = function (passport, config, logger) {
 
 function isOperationAuthorized(req) {
     return req.headers['auth-identity'] === req.params.id;
+}
+
+function sendValidationEmail(helpers, logger, req, apiServiceEndpoint, userAuthUrl, documentid, guid) {
+    var toAddress = req.body.name + ' <' + req.body.email + '>';
+    var subject = "Action: Complete the PlanetCal signup!"
+
+    var validationlink = apiServiceEndpoint + "/" + userAuthUrl + "/" + documentid + "_" + guid + "?version=1.0";
+
+    var messageBody = "";
+    messageBody += "<h2>Hello " + req.body.name + "</h2>";
+    messageBody += "<p>Welcome to PlanetCal</p>";
+    messageBody += "<p>You have just signed up for a new account on PlanetCal.</p>";
+    messageBody += "<p>Please complete the process by clicking on the following link.</p>";
+    messageBody += "<p><a href='" + validationlink + "'>Validate your email address</a></a></p>";
+    messageBody += "<p>Thank you</p>";
+    messageBody += "<p>PlanetCal team.</p>";
+
+    helpers.sendEmail(logger, toAddress, subject, messageBody);
 }
