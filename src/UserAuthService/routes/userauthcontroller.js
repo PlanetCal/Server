@@ -54,22 +54,15 @@ module.exports = function (passport, config, logger) {
             var result = documentGetResponse.feed.length <= 0 ? {} : documentGetResponse.feed[0];
 
             if (result.firstTimeLogon === true) {
-                res.status(200).json({ "Message": "Your planetCal account is already active!" });
+                res.status(200).json({ "Message": "Your planetCal account is already active! Plase use your emailId, and password to login." });
                 return;
 
             } else if (result.firstTimeLogon !== validationGuid) {
                 throw new ForbiddenException('Email validation failed. Please send the registration request again.');
             }
 
-            var documentWriteResponse = yield dal.updateAsync(userId, {
-                id: userId,
-                email: result.email,
-                name: result.name,
-                passwordHash: result.passwordHash,
-                firstTimeLogon: true
-            });
-            console.warn("sachinku update query done: " + documentWriteResponse);
-
+            result.firstTimeLogon = true;
+            var documentWriteResponse = yield dal.updateAsync(userId, result);
             res.status(200).json({ "Message": "Congratulations! Your planetCal account is now ready to use." });
         }
     }));
