@@ -31,7 +31,7 @@ module.exports = function (passport, config, logger) {
         var passwordHash = passwordCrypto.generateHash(req.body.password);
         var options = { preTriggerInclude: config.insertUniqueUserTriggerName };
         var newGuid = helpers.generateGuid();
-        var documentResponse = yield dal.insertAsync({ email: req.body.email, passwordHash: passwordHash, name: req.body.name, firstTimeLogon: newGuid }, options);
+        var documentResponse = yield dal.insertAsync({ email: req.body.email, passwordHash: passwordHash, name: req.body.name, emailValidation: newGuid }, options);
 
         logger.get().debug({ req: req, userAuth: documentResponse.resource }, 'userAuth object created successfully.');
 
@@ -53,15 +53,15 @@ module.exports = function (passport, config, logger) {
             var documentGetResponse = yield findUserByUserIdAsync(dal, userId);
             var result = documentGetResponse.feed.length <= 0 ? {} : documentGetResponse.feed[0];
 
-            if (result.firstTimeLogon === true) {
+            if (result.emailValidation === true) {
                 res.status(200).json({ "Message": "Your planetCal account is already active! Plase use your emailId, and password to login." });
                 return;
 
-            } else if (result.firstTimeLogon !== validationGuid) {
+            } else if (result.emailValidation !== validationGuid) {
                 throw new ForbiddenException('Email validation failed. Please send the registration request again.');
             }
 
-            result.firstTimeLogon = true;
+            result.emailValidation = true;
             var documentWriteResponse = yield dal.updateAsync(userId, result);
             res.status(200).json({ "Message": "Congratulations! Your planetCal account is now ready to use." });
         }
@@ -108,7 +108,7 @@ function isOperationAuthorized(req) {
 
 function findUserByUserIdAsync(dal, userId) {
     var querySpec = {
-        query: "SELECT e.id, e.email, e.name, e.passwordHash, e.firstTimeLogon FROM root e WHERE e.id = @userId",
+        query: "SELECT e.id, e.email, e.name, e.passwordHash, e.emailValidation FROM root e WHERE e.id = @userId",
         parameters: [
             {
                 name: "@userId",
