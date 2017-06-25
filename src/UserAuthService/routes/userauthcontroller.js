@@ -39,6 +39,18 @@ module.exports = function (passport, config, logger) {
         res.status(201).json({ email: documentResponse.resource.email, id: documentResponse.resource.id, name: documentResponse.resource.name });
     }));
 
+    router.get('/:id', helpers.wrap(function* (req, res) {
+        console.warn("sachin testing");
+        var registrationId = req.params.id;
+        if (!registrationId) {
+            throw new BadRequestException('Cannot find id.', errorcode.BadRegistrationId);
+        }
+        else {
+            logger.get().debug({ req: req }, 'Validating Email during registration: ' + registrationId);
+            res.status(200).json({ id: registrationId });
+        }
+    }));
+
     router.put('/:id', helpers.wrap(function* (req, res) {
         if (!req.body.email || !req.body.password || !req.body.name) {
             throw new BadRequestException('Cannot find email, password or name in body.', errorcode.EmailOrPasswordNotFoundInBody);

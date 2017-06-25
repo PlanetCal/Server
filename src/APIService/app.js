@@ -75,7 +75,7 @@ var defaultCorsOptions = {
 // all requests are subject to version header check
 app.use('/', cors(defaultCorsOptions), function (req, res, next) {
     if (!req.headers['version'] && !req.query.version) {
-        throw new BadRequestException('Cannot find version in header.', errorcode.VersionNotFoundInHeader);
+        throw new BadRequestException('Cannot find version.', errorcode.VersionNotFound);
     }
     else {
         next();
@@ -124,6 +124,14 @@ var userAuthCorsOptions = {
 // kicks in because this is userAuth creation
 app.post('/userauth', cors(userAuthCorsOptions), helpers.wrap(function* (req, res) {
     var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth', 'POST');
+    var results = yield* helpers.forwardHttpRequest(options, serviceNames.userAuthServiceName);
+    res.status(200).json(JSON.parse(results));
+}));
+
+// forward this to userAuth service before token authenication
+// kicks in because this is userAuth get. IT is to validate the email id.
+app.get('/userauth/:id', cors(userAuthCorsOptions), helpers.wrap(function* (req, res) {
+    var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth/' + req.params.id, 'GET');
     var results = yield* helpers.forwardHttpRequest(options, serviceNames.userAuthServiceName);
     res.status(200).json(JSON.parse(results));
 }));
