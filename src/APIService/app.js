@@ -49,61 +49,61 @@ app.use(passport.initialize());
 app.use('/', corsController);
 
 // attach activity id to all requests and use bodyparser to parse body
-app.use('/', bodyParser.json(), function (req, res, err, next){
-    if (err){
+app.use('/', bodyParser.json(), function (req, res, err, next) {
+    if (err) {
         throw new BadRequestException('Invalid Body', errorcode.InvalidBody);
     }
-    else{
+    else {
         var activityid = uuid.v4();
         req.headers['activityid'] = activityid;
-        logger.get().debug({req : req}, 'Attach ActivityId %s to request.', activityid);
+        logger.get().debug({ req: req }, 'Attach ActivityId %s to request.', activityid);
         next();
     }
 });
 
 var defaultCorsOptions = {
-    origin : '*', 
-    methods : ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders : ['Content-Type'],
-    exposedHeaders : ['Version'],
-    optionsSuccessStatus : 200,
-    preflightContinue : true,
-    credentials : true
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type'],
+    exposedHeaders: ['Version'],
+    optionsSuccessStatus: 200,
+    preflightContinue: true,
+    credentials: true
 };
 
 
 // all requests are subject to version header check
-app.use('/', cors(defaultCorsOptions), function (req, res, next){
-    if (!req.headers['version']){
-        throw new BadRequestException('Cannot find version in header.', errorcode.VersionNotFoundInHeader);
+app.use('/', cors(defaultCorsOptions), function (req, res, next) {
+    if (!req.headers['version'] && !req.query.version) {
+        throw new BadRequestException('Cannot find version.', errorcode.VersionNotFound);
     }
-    else{
+    else {
         next();
     }
 });
 
 var getEventsCorsOptions = {
-    origin : '*', 
-    methods : ['GET'],
-    allowedHeaders : ['Content-Type'],
-    exposedHeaders : ['Version'],
-    optionsSuccessStatus : 200,
-    preflightContinue : true,
-    credentials : true
+    origin: '*',
+    methods: ['GET'],
+    allowedHeaders: ['Content-Type'],
+    exposedHeaders: ['Version'],
+    optionsSuccessStatus: 200,
+    preflightContinue: true,
+    credentials: true
 };
 
 // anonymous events retrieval
-app.get('/events', cors(getEventsCorsOptions), helpers.wrap(function *(req, res, next){
+app.get('/events', cors(getEventsCorsOptions), helpers.wrap(function* (req, res, next) {
     var queryString = qs.stringify(req.query);
 
-    if (!queryString || queryString.length <= 0){
+    if (!queryString || queryString.length <= 0) {
         var url = config.eventsServiceEndpoint + '/' + urlNames.events;
-        var options = helpers.getRequestOption(req, url, 'GET'); 
-        var results = yield *helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
+        var options = helpers.getRequestOption(req, url, 'GET');
+        var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
         res.setHeader('Etag', etag(results));
         res.status(200).json(JSON.parse(results));
     }
-    else{
+    else {
         next();
     }
 }));
@@ -111,35 +111,43 @@ app.get('/events', cors(getEventsCorsOptions), helpers.wrap(function *(req, res,
 app.use('/login', loginController);
 
 var userAuthCorsOptions = {
-    origin : '*', 
-    methods : ['POST', 'PUT', 'DELETE'],
-    allowedHeaders : ['Content-Type'],
-    exposedHeaders : ['Version'],
-    optionsSuccessStatus : 200,
-    preflightContinue : true,
-    credentials : true
+    origin: '*',
+    methods: ['POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type'],
+    exposedHeaders: ['Version'],
+    optionsSuccessStatus: 200,
+    preflightContinue: true,
+    credentials: true
 };
 
 // forward this to userAuth service before token authenication
 // kicks in because this is userAuth creation
-app.post('/userauth', cors(userAuthCorsOptions), helpers.wrap(function *(req, res){
-    var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth', 'POST'); 
-    var results = yield *helpers.forwardHttpRequest(options, serviceNames.userAuthServiceName);
+app.post('/userauth', cors(userAuthCorsOptions), helpers.wrap(function* (req, res) {
+    var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth', 'POST');
+    var results = yield* helpers.forwardHttpRequest(options, serviceNames.userAuthServiceName);
+    res.status(200).json(JSON.parse(results));
+}));
+
+// forward this to userAuth service before token authenication
+// kicks in because this is userAuth get. IT is to validate the email id.
+app.get('/userauth/:id', cors(userAuthCorsOptions), helpers.wrap(function* (req, res) {
+    var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth/' + req.params.id, 'GET');
+    var results = yield* helpers.forwardHttpRequest(options, serviceNames.userAuthServiceName);
     res.status(200).json(JSON.parse(results));
 }));
 
 // all other urls - all APIs are subject to token authentication
 app.use('/*', cors(defaultCorsOptions), passport.authenticate('token-bearer', { session: false }),
-    function (req, res, next){
-        if (!req || !req.user){
+    function (req, res, next) {
+        if (!req || !req.user) {
             // token authentication fail.
             return new UnauthorizedException('Token authentication failed.', errorcode.LoginFailed);
         }
-        else{
+        else {
             // set auth-identity header so that internal services
             // know the caller's identity
             req.headers['auth-identity'] = req.user;
-            logger.get().debug({req : req}, 'Attach auth-identity %s to request header.', req.user);
+            logger.get().debug({ req: req }, 'Attach auth-identity %s to request header.', req.user);
             // continue calling middleware in line
             next();
         }
@@ -154,15 +162,15 @@ app.use('/groups', groupsController);
 app.use('/grouplinkss', grouplinksController);
 
 // error handling for other routes
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     next(new NotFoundException('Resource specified by URL cannot be located.', errorcode.GenericNotFoundException));
 });
 
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
     helpers.handleServiceException(err, req, res, serviceNames.apiServiceName, logger, app.get('env') === 'development');
 });
 
 var port = process.env.PORT || config.apiServicePort;
-var server = app.listen(port, function(){
+var server = app.listen(port, function () {
     logger.get().debug('%s started at http://localhost:%d/', serviceNames.apiServiceName, server.address().port);
 });
