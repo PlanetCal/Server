@@ -22,5 +22,6 @@
     "GenericInternalServerException": "GenericInternalServerException",
     "GenericDatabaseException": "GenericDatabaseException",
     "GenericForbiddenException": "GenericForbiddenException",
+    "EmailValidationPending": "EmailValidationPending",
     "BadRegistrationId": "BadRegistrationId"
 }

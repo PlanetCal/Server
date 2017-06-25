@@ -5,7 +5,9 @@ module.exports = function (passport, config, logger) {
     var router = require('express').Router();
     var TokenGenerator = new require('../../common/tokengenerator.js').TokenGenerator;
     var helpers = require('../../common/helpers.js');
+    var errorcode = require('../../common/errorcode.json');
     var ForbiddenException = require('../../common/error.js').ForbiddenException;
+    var EmailValidationPendingException = require('../../common/error.js').EmailValidationPendingException;
 
     var databaseName = config.documentdbDatabaseName;
     var collectionName = config.usersCollectionName;
@@ -18,6 +20,10 @@ module.exports = function (passport, config, logger) {
         logger.get().debug({ req: req, userAuth: req.user }, 'User authenticatd.');
 
         if (req.user && req.user.email && req.user.id && req.user.name) {
+            if (req.user.emailValidation !== true) {
+                throw new EmailValidationPendingException('EmailValidationPending');
+            }
+
             logger.get().debug({ req: req }, 'Generating token...');
             var tokenGenerator = new TokenGenerator(config);
             var token = tokenGenerator.encode({ email: req.user.email, id: req.user.id, name: req.user.name, time: Date.now() });
