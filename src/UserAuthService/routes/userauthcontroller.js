@@ -40,14 +40,37 @@ module.exports = function (passport, config, logger) {
     }));
 
     router.get('/:id', helpers.wrap(function* (req, res) {
-        console.warn("sachin testing");
         var registrationId = req.params.id;
         if (!registrationId) {
             throw new BadRequestException('Cannot find id.', errorcode.BadRegistrationId);
         }
         else {
             logger.get().debug({ req: req }, 'Validating Email during registration: ' + registrationId);
-            res.status(200).json({ id: registrationId });
+            var fields = registrationId.split('_');
+
+            var userId = fields[0];
+            var validationGuid = fields[1];
+            var documentGetResponse = yield findUserByUserIdAsync(dal, userId);
+            var result = documentGetResponse.feed.length <= 0 ? {} : documentGetResponse.feed[0];
+
+            if (result.firstTimeLogon === true) {
+                res.status(200).json({ "Message": "Your planetCal account is already active!" });
+                return;
+
+            } else if (result.firstTimeLogon !== validationGuid) {
+                throw new ForbiddenException('Email validation failed. Please send the registration request again.');
+            }
+
+            var documentWriteResponse = yield dal.updateAsync(userId, {
+                id: userId,
+                email: result.email,
+                name: result.name,
+                passwordHash: result.passwordHash,
+                firstTimeLogon: true
+            });
+            console.warn("sachinku update query done: " + documentWriteResponse);
+
+            res.status(200).json({ "Message": "Congratulations! Your planetCal account is now ready to use." });
         }
     }));
 
@@ -90,9 +113,22 @@ function isOperationAuthorized(req) {
     return req.headers['auth-identity'] === req.params.id;
 }
 
+function findUserByUserIdAsync(dal, userId) {
+    var querySpec = {
+        query: "SELECT e.id, e.email, e.name, e.passwordHash, e.firstTimeLogon FROM root e WHERE e.id = @userId",
+        parameters: [
+            {
+                name: "@userId",
+                value: userId
+            }
+        ]
+    };
+    return dal.getAsync(querySpec);
+}
+
 function sendValidationEmail(helpers, logger, req, apiServiceEndpoint, userAuthUrl, documentid, guid) {
     var toAddress = req.body.name + ' <' + req.body.email + '>';
-    var subject = "Action: Complete the PlanetCal signup!"
+    var subject = "Action required: Complete the PlanetCal signup!"
 
     var validationlink = apiServiceEndpoint + "/" + userAuthUrl + "/" + documentid + "_" + guid + "?version=1.0";
 
