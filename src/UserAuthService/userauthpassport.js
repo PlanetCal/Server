@@ -61,7 +61,7 @@ function getUserQuerySpecFromEmail(email) {
         throw new InternalServerException('email is not a string.');
     }
 
-    var queryString = "SELECT e.id, e.email, e.name, e.passwordHash, e.emailValidation FROM root e WHERE e.email = @email";
+    var queryString = "SELECT e.id, e.email, e.name, e.passwordHash, e.emailValidation, e.createdTime, e.updatedTime FROM root e WHERE e.email = @email";
 
     var parameters = [
         {
@@ -81,7 +81,7 @@ function getUserQuerySpecFromId(id) {
         throw new InternalServerException('id is not a string.');
     }
 
-    var queryString = "SELECT e.id, e._self, e.email, e.name, e.passwordHash, e.emailValidation FROM root e WHERE e.id = @id";
+    var queryString = "SELECT e.id, e._self, e.email, e.name, e.passwordHash, e.emailValidation, e.createdTime, e.updatedTime FROM root e WHERE e.id = @id";
 
     var parameters = [
         {

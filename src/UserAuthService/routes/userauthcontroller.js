@@ -31,7 +31,16 @@ module.exports = function (passport, config, logger) {
         var passwordHash = passwordCrypto.generateHash(req.body.password);
         var options = { preTriggerInclude: config.insertUniqueUserTriggerName };
         var newGuid = helpers.generateGuid();
-        var documentResponse = yield dal.insertAsync({ email: req.body.email, passwordHash: passwordHash, name: req.body.name, emailValidation: newGuid }, options);
+        var currentUtcDateTime = (new Date()).toUTCString();
+        var documentResponse = yield dal.insertAsync(
+            {
+                email: req.body.email,
+                passwordHash: passwordHash,
+                name: req.body.name,
+                emailValidation: newGuid,
+                createdTime: currentUtcDateTime,
+                modifiedTime: ''
+            }, options);
 
         logger.get().debug({ req: req, userAuth: documentResponse.resource }, 'userAuth object created successfully.');
 
@@ -62,6 +71,7 @@ module.exports = function (passport, config, logger) {
             }
 
             result.emailValidation = true;
+            result.modifiedTime = (new Date()).toUTCString();
             var documentWriteResponse = yield dal.updateAsync(userId, result);
             res.status(200).json({ "Message": "Congratulations! Your planetCal account is now ready to use." });
         }
@@ -108,7 +118,7 @@ function isOperationAuthorized(req) {
 
 function findUserByUserIdAsync(dal, userId) {
     var querySpec = {
-        query: "SELECT e.id, e.email, e.name, e.passwordHash, e.emailValidation FROM root e WHERE e.id = @userId",
+        query: "SELECT e.id, e.email, e.name, e.passwordHash, e.emailValidation, e.createdTime, e.updatedTime FROM root e WHERE e.id = @userId",
         parameters: [
             {
                 name: "@userId",
