@@ -68,6 +68,8 @@ module.exports = function (passport, config, logger) {
                     throw new ForbiddenException('Email validation failed. Please send the password change request again.');
                 } else {
                     result.passwordHash = result.newPasswordHash;
+                    delete result.newPasswordHash;
+                    delete result.newEmailValidation;
                 }
             }
             //new registration scenario
