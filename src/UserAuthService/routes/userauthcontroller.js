@@ -62,14 +62,24 @@ module.exports = function (passport, config, logger) {
             var documentGetResponse = yield findUserByUserIdAsync(dal, userId);
             var result = documentGetResponse.feed.length <= 0 ? {} : documentGetResponse.feed[0];
 
-            if (result.emailValidation === true) {
-                res.status(200).json({ "Message": "Your planetCal account is already active! Plase use your emailId, and password to login." });
-                return;
-
-            } else if (result.emailValidation !== validationGuid) {
-                throw new ForbiddenException('Email validation failed. Please send the registration request again.');
+            //password change scenarios
+            if (result.newEmailValidation && result.newPasswordHash) {
+                if (result.newEmailValidation !== validationGuid) {
+                    throw new ForbiddenException('Email validation failed. Please send the password change request again.');
+                } else {
+                    result.passwordHash = result.newPasswordHash;
+                }
             }
+            //new registration scenario
+            else {
+                if (result.emailValidation === true) {
+                    res.status(200).json({ "Message": "Your planetCal account is already active! Plase use your emailId, and password to login." });
+                    return;
 
+                } else if (result.emailValidation !== validationGuid) {
+                    throw new ForbiddenException('Email validation failed. Please send the registration request again.');
+                }
+            }
             result.emailValidation = true;
             result.modifiedTime = (new Date()).toUTCString();
             var documentWriteResponse = yield dal.updateAsync(userId, result);
@@ -94,9 +104,9 @@ module.exports = function (passport, config, logger) {
             }
 
             var newGuid = helpers.generateGuid();
-            result.passwordHash = passwordHash;
+            result.newPasswordHash = passwordHash;
             result.modifiedTime = (new Date()).toUTCString();
-            result.emailValidation = newGuid;
+            result.newEmailValidation = newGuid;
 
             var documentResponse = yield dal.updateAsync(result.id, result);
 
@@ -129,7 +139,7 @@ function isOperationAuthorized(req) {
 
 function findUserByUserIdAsync(dal, userId) {
     var querySpec = {
-        query: "SELECT e.id, e.email, e.name, e.passwordHash, e.emailValidation, e.createdTime, e.updatedTime FROM root e WHERE e.id = @userId",
+        query: "SELECT e.id, e.email, e.name, e.passwordHash, e.emailValidation, e.newPasswordHash, e.newEmailValidation, e.createdTime, e.updatedTime FROM root e WHERE e.id = @userId",
         parameters: [
             {
                 name: "@userId",
@@ -169,7 +179,11 @@ function sendValidationEmail(helpers, logger, name, email, apiServiceEndpoint, u
     else {
         messageBody += "<p>Thank you for using PlanetCal.</p>";
         messageBody += "<p>We have received a request to change the password of your account.</p>";
-        messageBody += "<p>Please complete the change password process by clicking on the following link.</p>";
+        messageBody += "<p>Was it you?</p>";
+        messageBody += "<h2>No.</h2>";
+        messageBody += "<p>Please ignore this email. Your current password will continue to work.</p>";
+        messageBody += "<h2>Yes</h2>";
+        messageBody += "<p>Please complete the change password process by clicking on the following link.</p > ";
     }
 
     messageBody += "<p><a href='" + validationlink + "'>Validate your email address</a></a></p>";
