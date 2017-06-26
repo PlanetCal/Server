@@ -23,5 +23,6 @@
     "GenericDatabaseException": "GenericDatabaseException",
     "GenericForbiddenException": "GenericForbiddenException",
     "EmailValidationPending": "EmailValidationPending",
-    "BadRegistrationId": "BadRegistrationId"
+    "BadRegistrationId": "BadRegistrationId",
+    "UserNotFound": "UserNotFound"
 }
