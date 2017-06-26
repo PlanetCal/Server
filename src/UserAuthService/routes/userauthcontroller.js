@@ -44,7 +44,7 @@ module.exports = function (passport, config, logger) {
 
         logger.get().debug({ req: req, userAuth: documentResponse.resource }, 'userAuth object created successfully.');
 
-        sendValidationEmail(helpers, logger, req, apiServiceEndpoint, userAuthUrl, documentResponse.resource.id, newGuid);
+        sendValidationEmail(helpers, logger, req.body.name, req.body.email, apiServiceEndpoint, userAuthUrl, documentResponse.resource.id, newGuid, true);
         res.status(201).json({ email: documentResponse.resource.email, id: documentResponse.resource.id, name: documentResponse.resource.name });
     }));
 
@@ -62,14 +62,26 @@ module.exports = function (passport, config, logger) {
             var documentGetResponse = yield findUserByUserIdAsync(dal, userId);
             var result = documentGetResponse.feed.length <= 0 ? {} : documentGetResponse.feed[0];
 
-            if (result.emailValidation === true) {
-                res.status(200).json({ "Message": "Your planetCal account is already active! Plase use your emailId, and password to login." });
-                return;
-
-            } else if (result.emailValidation !== validationGuid) {
-                throw new ForbiddenException('Email validation failed. Please send the registration request again.');
+            //password change scenarios
+            if (result.newEmailValidation && result.newPasswordHash) {
+                if (result.newEmailValidation !== validationGuid) {
+                    throw new ForbiddenException('Email validation failed. Please send the password change request again.');
+                } else {
+                    result.passwordHash = result.newPasswordHash;
+                    delete result.newPasswordHash;
+                    delete result.newEmailValidation;
+                }
             }
+            //new registration scenario
+            else {
+                if (result.emailValidation === true) {
+                    res.status(200).json({ "Message": "Your planetCal account is already active! Plase use your emailId, and password to login." });
+                    return;
 
+                } else if (result.emailValidation !== validationGuid) {
+                    throw new ForbiddenException('Email validation failed. Please send the registration request again.');
+                }
+            }
             result.emailValidation = true;
             result.modifiedTime = (new Date()).toUTCString();
             var documentWriteResponse = yield dal.updateAsync(userId, result);
@@ -77,21 +89,32 @@ module.exports = function (passport, config, logger) {
         }
     }));
 
-    router.put('/:id', helpers.wrap(function* (req, res) {
-        if (!req.body.email || !req.body.password || !req.body.name) {
-            throw new BadRequestException('Cannot find email, password or name in body.', errorcode.EmailOrPasswordNotFoundInBody);
-        }
-        else if (!isOperationAuthorized(req)) {
-            throw new ForbiddenException('Forbidden.');
+    router.put('/', helpers.wrap(function* (req, res) {
+        if (!req.body.email || !req.body.password) {
+            throw new BadRequestException('Cannot find email, or password in body.', errorcode.EmailOrPasswordNotFoundInBody);
         }
         else {
             logger.get().debug({ req: req }, 'Updating userAuth object...');
             var passwordCrypto = new PasswordCrypto();
             var passwordHash = passwordCrypto.generateHash(req.body.password);
 
-            var documentResponse = yield dal.updateAsync(req.params.id, { email: req.body.email, passwordHash: passwordHash, id: req.params.id, name: req.body.name });
+            var documentGetResponse = yield findUserByEmailAsync(dal, req.body.email);
+            var result = documentGetResponse.feed.length <= 0 ? {} : documentGetResponse.feed[0];
+
+            if (!result.id) {
+                throw new BadRequestException('User is not found in the user database.', errorcode.UserNotFound);
+            }
+
+            var newGuid = helpers.generateGuid();
+            result.newPasswordHash = passwordHash;
+            result.modifiedTime = (new Date()).toUTCString();
+            result.newEmailValidation = newGuid;
+
+            var documentResponse = yield dal.updateAsync(result.id, result);
 
             logger.get().debug({ req: req, userAuth: documentResponse.resource }, 'userAuth object updated successfully.');
+
+            sendValidationEmail(helpers, logger, result.name, result.email, apiServiceEndpoint, userAuthUrl, result.id, newGuid, false);
 
             res.status(200).json({ id: documentResponse.resource.id });
         }
@@ -118,7 +141,7 @@ function isOperationAuthorized(req) {
 
 function findUserByUserIdAsync(dal, userId) {
     var querySpec = {
-        query: "SELECT e.id, e.email, e.name, e.passwordHash, e.emailValidation, e.createdTime, e.updatedTime FROM root e WHERE e.id = @userId",
+        query: "SELECT e.id, e.email, e.name, e.passwordHash, e.emailValidation, e.newPasswordHash, e.newEmailValidation, e.createdTime, e.updatedTime FROM root e WHERE e.id = @userId",
         parameters: [
             {
                 name: "@userId",
@@ -129,17 +152,42 @@ function findUserByUserIdAsync(dal, userId) {
     return dal.getAsync(querySpec);
 }
 
-function sendValidationEmail(helpers, logger, req, apiServiceEndpoint, userAuthUrl, documentid, guid) {
-    var toAddress = req.body.name + ' <' + req.body.email + '>';
+function findUserByEmailAsync(dal, email) {
+    var querySpec = {
+        query: "SELECT e.id, e.email, e.name, e.passwordHash, e.emailValidation, e.createdTime, e.updatedTime FROM root e WHERE e.email = @email",
+        parameters: [
+            {
+                name: "@email",
+                value: email
+            }
+        ]
+    };
+    return dal.getAsync(querySpec);
+}
+
+function sendValidationEmail(helpers, logger, name, email, apiServiceEndpoint, userAuthUrl, documentid, guid, isNewRegistration) {
+    var toAddress = name + ' <' + email + '>';
     var subject = "Action required: Complete the PlanetCal signup!"
 
     var validationlink = apiServiceEndpoint + "/" + userAuthUrl + "/" + documentid + "_" + guid + "?version=1.0";
 
     var messageBody = "";
-    messageBody += "<h2>Hello " + req.body.name + "</h2>";
-    messageBody += "<p>Welcome to PlanetCal</p>";
-    messageBody += "<p>You have just signed up for a new account on PlanetCal.</p>";
-    messageBody += "<p>Please complete the process by clicking on the following link.</p>";
+    messageBody += "<h2>Hello " + name + "</h2>";
+    if (isNewRegistration) {
+        messageBody += "<p>Welcome to PlanetCal</p>";
+        messageBody += "<p>You have just signed up for a new account on PlanetCal.</p>";
+        messageBody += "<p>Please complete the registration process by clicking on the following link.</p>";
+    }
+    else {
+        messageBody += "<p>Thank you for using PlanetCal.</p>";
+        messageBody += "<p>We have received a request to change the password of your account.</p>";
+        messageBody += "<p>Was it you?</p>";
+        messageBody += "<h2>No.</h2>";
+        messageBody += "<p>Please ignore this email. Your current password will continue to work.</p>";
+        messageBody += "<h2>Yes</h2>";
+        messageBody += "<p>Please complete the change password process by clicking on the following link.</p > ";
+    }
+
     messageBody += "<p><a href='" + validationlink + "'>Validate your email address</a></a></p>";
     messageBody += "<p>Thank you</p>";
     messageBody += "<p>PlanetCal team.</p>";

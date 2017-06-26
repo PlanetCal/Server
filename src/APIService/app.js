@@ -136,6 +136,12 @@ app.get('/userauth/:id', cors(userAuthCorsOptions), helpers.wrap(function* (req,
     res.status(200).json(JSON.parse(results));
 }));
 
+app.put('/userauth', cors(userAuthCorsOptions), helpers.wrap(function* (req, res) {
+    var options = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/userauth', 'PUT');
+    var results = yield* helpers.forwardHttpRequest(options, serviceNames.userAuthServiceName);
+    res.status(200).json(JSON.parse(results));
+}));
+
 // all other urls - all APIs are subject to token authentication
 app.use('/*', cors(defaultCorsOptions), passport.authenticate('token-bearer', { session: false }),
     function (req, res, next) {
