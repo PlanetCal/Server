@@ -2,8 +2,10 @@
 
 var Promise = require('bluebird');
 var request = require('request-promise');
-var email = require("./node_modules/emailjs/email");
+var email = require('emailjs');
+var crypto = require('crypto');
 var emailConstants = require('./constants.json')['emailConstants'];
+var encryptConstants = require('./constants.json')['encryptConstants'];
 var ForbiddenException = require('./error.js').ForbiddenException;
 var UnauthorizedException = require('./error.js').UnauthorizedException;
 var InternalServerException = require('./error.js').InternalServerException;
@@ -120,14 +122,34 @@ module.exports = {
             s4() + '-' + s4() + s4() + s4();
     },
 
+    'encrypt': function encrypt(text) {
+        var cipher = crypto.createCipher(encryptConstants.algorithm, encryptConstants.password)
+        var crypted = cipher.update(text, encryptConstants.utf8, encryptConstants.hex)
+        crypted += cipher.final(encryptConstants.hex);
+        return crypted;
+    },
+
+    'decrypt': function decrypt(text) {
+        var decipher = crypto.createDecipher(encryptConstants.algorithm, encryptConstants.password)
+        var dec = decipher.update(text, encryptConstants.hex, encryptConstants.utf8)
+        dec += decipher.final(encryptConstants.utf8);
+        return dec;
+    },
+
     // Documentation: https://github.com/eleith/emailjs    
     'sendEmail': function sendEmail(logger, toAddress, subject, messageHtmlText) {
         var server = email.server.connect({
-            user: emailConstants.adminName,
-            password: emailConstants.adminPassword,
+            user: this.decrypt(emailConstants.adminEmail),
+            password: this.decrypt(emailConstants.adminPassword),
             host: emailConstants.smtpHost,
             tls: { ciphers: emailConstants.smtpCiphers }
         });
+
+        //Lets save this commented code.   
+        // var encryptedString = this.encrypt("hello");
+        // console.warn("sachinku: encryptedString:" + encryptedString);
+        // var decryptedString = this.decrypt(encryptedString);
+        // console.warn("sachinku: decryptedString:" + decryptedString);
 
         var message = {
             from: emailConstants.fromEmailAddress,
