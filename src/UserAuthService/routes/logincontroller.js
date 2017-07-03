@@ -18,15 +18,15 @@ module.exports = function (passport, config, logger) {
 
     router.post('/', passport.authenticate('local'), helpers.wrap(function* (req, res) {
         logger.get().debug({ req: req, userAuth: req.user }, 'User authenticatd.');
-
-        if (req.user && req.user.email && req.user.id && req.user.name) {
+        var email = req.user.email.toLowerCase();
+        if (req.user && email && req.user.id && req.user.name) {
             if (req.user.emailValidation !== true) {
                 throw new EmailValidationPendingException('EmailValidationPending');
             }
 
             logger.get().debug({ req: req }, 'Generating token...');
             var tokenGenerator = new TokenGenerator(config);
-            var token = tokenGenerator.encode({ email: req.user.email, id: req.user.id, name: req.user.name, time: Date.now() });
+            var token = tokenGenerator.encode({ email: email, id: req.user.id, name: req.user.name, time: Date.now() });
             logger.get().debug({ req: req }, 'Token generated successfully.');
             res.status(200).json({ token: token, id: req.user.id, name: req.user.name });
         }

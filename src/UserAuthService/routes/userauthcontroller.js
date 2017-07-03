@@ -32,9 +32,10 @@ module.exports = function (passport, config, logger) {
         var options = { preTriggerInclude: config.insertUniqueUserTriggerName };
         var newGuid = helpers.generateGuid();
         var currentUtcDateTime = (new Date()).toUTCString();
+        var email = req.body.email.toLowerCase();
         var documentResponse = yield dal.insertAsync(
             {
-                email: req.body.email,
+                email: email,
                 passwordHash: passwordHash,
                 name: req.body.name,
                 emailValidation: newGuid,
@@ -44,7 +45,7 @@ module.exports = function (passport, config, logger) {
 
         logger.get().debug({ req: req, userAuth: documentResponse.resource }, 'userAuth object created successfully.');
 
-        sendValidationEmail(helpers, logger, req.body.name, req.body.email, apiServiceEndpoint, userAuthUrl, documentResponse.resource.id, newGuid, true);
+        sendValidationEmail(helpers, logger, req.body.name, email, apiServiceEndpoint, userAuthUrl, documentResponse.resource.id, newGuid, true);
         res.status(201).json({ email: documentResponse.resource.email, id: documentResponse.resource.id, name: documentResponse.resource.name });
     }));
 
@@ -62,6 +63,7 @@ module.exports = function (passport, config, logger) {
             var documentGetResponse = yield findUserByUserIdAsync(dal, userId);
             var result = documentGetResponse.feed.length <= 0 ? {} : documentGetResponse.feed[0];
 
+            var successMessage = "";
             //password change scenarios
             if (result.newEmailValidation && result.newPasswordHash) {
                 if (result.newEmailValidation !== validationGuid) {
@@ -71,6 +73,7 @@ module.exports = function (passport, config, logger) {
                     delete result.newPasswordHash;
                     delete result.newEmailValidation;
                 }
+                successMessage = "Congratulations! Your planetCal account password has been updated successfully. Please use your new password to login.";
             }
             //new registration scenario
             else {
@@ -81,16 +84,19 @@ module.exports = function (passport, config, logger) {
                 } else if (result.emailValidation !== validationGuid) {
                     throw new ForbiddenException('Email validation failed. Please send the registration request again.');
                 }
+                successMessage = "Congratulations! Your planetCal account is now ready to use.";
             }
             result.emailValidation = true;
             result.modifiedTime = (new Date()).toUTCString();
             var documentWriteResponse = yield dal.updateAsync(userId, result);
-            res.status(200).json({ "Message": "Congratulations! Your planetCal account is now ready to use." });
+            res.status(200).json({ "Message": successMessage });
         }
     }));
 
     router.put('/', helpers.wrap(function* (req, res) {
-        if (!req.body.email || !req.body.password) {
+        var email = req.body.email.toLowerCase();
+
+        if (!email || !req.body.password) {
             throw new BadRequestException('Cannot find email, or password in body.', errorcode.EmailOrPasswordNotFoundInBody);
         }
         else {
@@ -98,7 +104,7 @@ module.exports = function (passport, config, logger) {
             var passwordCrypto = new PasswordCrypto();
             var passwordHash = passwordCrypto.generateHash(req.body.password);
 
-            var documentGetResponse = yield findUserByEmailAsync(dal, req.body.email);
+            var documentGetResponse = yield findUserByEmailAsync(dal, email);
             var result = documentGetResponse.feed.length <= 0 ? {} : documentGetResponse.feed[0];
 
             if (!result.id) {
@@ -167,25 +173,27 @@ function findUserByEmailAsync(dal, email) {
 
 function sendValidationEmail(helpers, logger, name, email, apiServiceEndpoint, userAuthUrl, documentid, guid, isNewRegistration) {
     var toAddress = name + ' <' + email + '>';
-    var subject = "Action required: Complete the PlanetCal signup!"
+    var subject = "";
 
     var validationlink = apiServiceEndpoint + "/" + userAuthUrl + "/" + documentid + "_" + guid + "?version=1.0";
 
     var messageBody = "";
     messageBody += "<h2>Hello " + name + "</h2>";
     if (isNewRegistration) {
+        subject = "Action required: Complete the PlanetCal signup!"
         messageBody += "<p>Welcome to PlanetCal</p>";
         messageBody += "<p>You have just signed up for a new account on PlanetCal.</p>";
         messageBody += "<p>Please complete the registration process by clicking on the following link.</p>";
     }
     else {
+        subject = "Action required: Approve the PlanetCal password change request!"
         messageBody += "<p>Thank you for using PlanetCal.</p>";
-        messageBody += "<p>We have received a request to change the password of your account.</p>";
-        messageBody += "<p>Was it you?</p>";
+        messageBody += "<p>We have received a request for the password change for this account.</p>";
+        messageBody += "<p>Is it you?</p>";
         messageBody += "<h2>No.</h2>";
         messageBody += "<p>Please ignore this email. Your current password will continue to work.</p>";
         messageBody += "<h2>Yes</h2>";
-        messageBody += "<p>Please complete the change password process by clicking on the following link.</p > ";
+        messageBody += "<p>Please complete the password change process by clicking on the following link.</p > ";
     }
 
     messageBody += "<p><a href='" + validationlink + "'>Validate your email address</a></a></p>";

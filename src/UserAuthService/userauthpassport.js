@@ -22,11 +22,10 @@ module.exports = function (passport, config, logger) {
         passReqToCallback: true
     },
         helpers.wrapLocalStrategyAuth(function* (req, email, password, done) {
+            email = email.toLowerCase();
             var querySpec = getUserQuerySpecFromEmail(email);
-
             var documentResponse = yield dal.getAsync(querySpec);
             var results = documentResponse.feed;
-
             var passwordCrypto = new PasswordCrypto();
 
             if (results && results.length > 0) {
