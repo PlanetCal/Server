@@ -3,6 +3,7 @@
 var Promise = require('bluebird');
 var request = require('request-promise');
 var email = require('emailjs');
+var azure = require('azure-storage');
 var crypto = require('crypto');
 var emailConstants = require('./constants.json')['emailConstants'];
 var encryptConstants = require('./constants.json')['encryptConstants'];
@@ -134,6 +135,24 @@ module.exports = {
         var dec = decipher.update(text, encryptConstants.hex, encryptConstants.utf8)
         dec += decipher.final(encryptConstants.utf8);
         return dec;
+    },
+
+    'uploadBlob': function uploadBlob(blobStorage, containerName) {
+        var blobSvc = azure.createBlobServiceAnonymous(blobStorage);
+
+        blobSvc.createContainerIfNotExists(containerName, { publicAccessLevel: 'blob' }, function (error, result, response) {
+            if (!error) {
+                // Container exists and allows
+                // anonymous read access to blob
+                // content and metadata within this container
+            }
+        });
+
+        blobSvc.createBlockBlobFromStream(containerName, 'myblob', stream, streamlength, function (error, result, response) {
+            if (!error) {
+                // file uploaded
+            }
+        });
     },
 
     // Documentation: https://github.com/eleith/emailjs    
