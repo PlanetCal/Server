@@ -26,7 +26,6 @@
     "emailConstants": {
         "adminEmail": "1482d59e24657b713c69eb18e6ef1394b80187bbdd",
         "adminPassword": "2485909b00663b2166",
-        "fromEmailAddress": "PlanetCal Admin <planetcal@outlook.com>",
         "smtpHost": "smtp-mail.outlook.com",
         "smtpCiphers": "SSLv3"
     },

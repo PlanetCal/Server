@@ -138,21 +138,22 @@ module.exports = {
 
     // Documentation: https://github.com/eleith/emailjs    
     'sendEmail': function sendEmail(logger, toAddress, subject, messageHtmlText) {
+        var adminUser=this.decrypt(emailConstants.adminEmail);
         var server = email.server.connect({
-            user: this.decrypt(emailConstants.adminEmail),
+            user: adminUser,
             password: this.decrypt(emailConstants.adminPassword),
             host: emailConstants.smtpHost,
             tls: { ciphers: emailConstants.smtpCiphers }
         });
 
         //Lets save this commented code.   
-        // var encryptedString = this.encrypt("hello");
+        // var encryptedString = this.encrypt("Hello");
         // console.warn("sachinku: encryptedString:" + encryptedString);
         // var decryptedString = this.decrypt(encryptedString);
         // console.warn("sachinku: decryptedString:" + decryptedString);
 
         var message = {
-            from: emailConstants.fromEmailAddress,
+            from: adminUser,
             text: 'Your email Server does not support Html format. Please use any other modern emailId.',
             to: toAddress,
             subject: subject,
