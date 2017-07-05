@@ -5,11 +5,16 @@ module.exports = function (config, logger) {
     var request = require('request-promise');
     var cors = require('cors');
     var etag = require('etag');
+    var multer = require('multer');
+    var upload = multer({ storage: multer.memoryStorage() });
 
     var serviceNames = require('../../common/constants.json')['serviceNames'];
     var urlNames = require('../../common/constants.json')['urlNames'];
-
     var helpers = require('../../common/helpers.js');
+
+    var blobStorage = config.blobStorage;
+    var blobStorageAccessKey = config.blobStorageAccessKey;
+    var blobContainer = config.blobContainer;
 
     var corsOptions = {
         origin: '*',
@@ -21,24 +26,13 @@ module.exports = function (config, logger) {
         credentials: true
     };
 
-    // router.get('/:id', cors(corsOptions), helpers.wrap(function *(req, res){
-    //     var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/' + req.params.id, 'GET'); 
-    //     var results = yield *helpers.forwardHttpRequest(options, serviceNames.userDetailsServiceName);
-    //     res.setHeader('Etag', etag(results));
-    //     res.status(200).json(JSON.parse(results));
-    // }));
+    router.post('/', cors(corsOptions), upload.single('blobdata'), helpers.wrap(function* (req, res) {
+        // req.file is the `avatar` file
+        // req.body will hold the text fields, if there were any
+        logger.get().debug({ req: req }, 'Uploading the blob.');
 
-    router.post('/', cors(corsOptions), helpers.wrap(function* (req, res) {
-        var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.blob, 'POST');
-        var results = yield* helpers.forwardHttpRequest(options, serviceNames.userDetailsServiceName);
-        res.status(201).json(JSON.parse(results));
+        res.status(201).json({ id: "hi how are you" });
     }));
-
-    // router.delete('/:id', cors(corsOptions), helpers.wrap(function *(req, res){
-    //     var options = helpers.getRequestOption(req,  config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/' + req.params.id, 'DELETE'); 
-    //     var results = yield *helpers.forwardHttpRequest(options, serviceNames.userDetailsServiceName);
-    //     res.status(200).json({id : req.params.id});
-    // }));
 
     return router;
 }

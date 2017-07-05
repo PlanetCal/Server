@@ -16,7 +16,6 @@ var bodyParser = require('body-parser');
 
 var config = require('../common/config.json')[app.get('env') || 'production'];
 var userDetailsController = require('./routes/userdetailscontroller.js')(config, logger);
-var blobController = require('./routes/blobcontroller.js')(config, logger);
 var helpers = require('../common/helpers.js');
 var BadRequestException = require('../common/error.js').BadRequestException;
 var ForbiddenException = require('../common/error.js').ForbiddenException;
@@ -35,7 +34,6 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.json());
 
 app.use('/userdetails', userDetailsController);
-app.use('/blob', blobController);
 
 // error handling for other routes
 app.use(function (req, res, next) {
