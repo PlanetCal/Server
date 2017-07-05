@@ -137,20 +137,20 @@ module.exports = {
         return dec;
     },
 
-    'uploadBlob': function uploadBlob(blobStorage, containerName) {
-        var blobSvc = azure.createBlobServiceAnonymous(blobStorage);
+    'uploadBlob': function uploadBlob(storageAccount, containerName, accessKey, file) {
+        var blobSvc = azure.createBlobService(storageAccount, accessKey);
 
         blobSvc.createContainerIfNotExists(containerName, { publicAccessLevel: 'blob' }, function (error, result, response) {
             if (!error) {
-                // Container exists and allows
-                // anonymous read access to blob
-                // content and metadata within this container
-            }
-        });
-
-        blobSvc.createBlockBlobFromStream(containerName, 'myblob', stream, streamlength, function (error, result, response) {
-            if (!error) {
-                // file uploaded
+                blobSvc.createBlockBlobFromStream(containerName, 'myblob', stream, streamlength, function (error, result, response) {
+                    if (!error) {
+                        console.warn("file uploaded")
+                    } else {
+                        throw new Error(error);
+                    }
+                });
+            } else {
+                throw new Error(error);
             }
         });
     },

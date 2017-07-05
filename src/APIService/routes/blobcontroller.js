@@ -30,7 +30,7 @@ module.exports = function (config, logger) {
         // req.file is the `avatar` file
         // req.body will hold the text fields, if there were any
         logger.get().debug({ req: req }, 'Uploading the blob.');
-
+        helpers.uploadBlob(blobStorage, blobContainer, blobStorageAccessKey, req.file);
         res.status(201).json({ id: "hi how are you" });
     }));
 
