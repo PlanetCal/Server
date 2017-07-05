@@ -1,39 +1,31 @@
-'use strict'
+﻿'use strict'
 
 var express = require('express');
 var app = express();
 
 var constants = require('../common/constants.json')['serviceNames'];
 var Logger = require('../common/logger.js').Logger;
-var logger = new Logger(constants.userDetailsServiceName, null, app.get('env') === 'development');
+var logger = new Logger(constants.groupLinksServiceName, null, app.get('env') === 'development');
 var accesslogger = require('../common/accesslogger.js');
 
-logger.get().debug('Starting %s.....', constants.userDetailsServiceName);
+logger.get().debug('Starting %s.....', constants.groupLinksServiceName);
 
 app.use(accesslogger.getAccessLogger(logger));
 
 var bodyParser = require('body-parser');
-
 var config = require('../common/config.json')[app.get('env') || 'production'];
-var userDetailsController = require('./routes/userdetailscontroller.js')(config, logger);
 var helpers = require('../common/helpers.js');
+var groupLinksController = require('./routes/groupLinkscontroller.js')(config, logger);
 var BadRequestException = require('../common/error.js').BadRequestException;
 var ForbiddenException = require('../common/error.js').ForbiddenException;
 var NotFoundException = require('../common/error.js').NotFoundException;
 var errorcode = require('../common/errorcode.json');
 
-var constants = require('../common/constants.json')['serviceNames'];
-var Logger = require('../common/logger.js').Logger;
-var logger = new Logger(constants.userDetailsServiceName, null, app.get('env') === 'development');
-var accesslogger = require('../common/accesslogger.js');
-
-app.use(accesslogger.getAccessLogger(logger));
-
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.json());
 
-app.use('/userdetails', userDetailsController);
+app.use('/grouplinks', groupLinksController);
 
 // error handling for other routes
 app.use(function(req, res, next) {
@@ -41,10 +33,10 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    helpers.handleServiceException(err, req, res, constants.userDetailsServiceName, logger, true);
+    helpers.handleServiceException(err, req, res, constants.groupLinksServiceName, logger, true);
 });
 
-var port = process.env.PORT || config.userDetailsServicePort;
+var port = process.env.PORT || config.groupLinksServicePort;
 var server = app.listen(port, function(){
-    logger.get().debug('%s started at http://localhost:%d/', constants.userDetailsServiceName, server.address().port);
+    logger.get().debug('%s started at http://localhost:%d/', constants.groupLinksServiceName, server.address().port);
 });

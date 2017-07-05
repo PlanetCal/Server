@@ -1,0 +1,35 @@
+{
+    "serviceNames": {
+        "apiServiceName": "APIService",
+        "userAuthServiceName": "UserAuthService",
+        "userDetailsServiceName": "UserDetailsService",
+        "groupsServiceName": "GroupsService",
+        "groupLinksServiceName": "GroupLinksService",
+        "groupsRecommendationServiceName": "groupsRecommendationService",
+        "eventsServiceName": "EventsService"
+    },
+    "urlNames": {
+        "login": "login",
+        "userauth": "userauth",
+        "userdetails": "userdetails",
+        "groups": "groups",
+        "grouplinks": "grouplinks",
+        "groupsrecommendation": "groupsrecommendation",
+        "events": "events"
+    },
+    "encryptConstants": {
+        "algorithm": "aes-256-ctr",
+        "password": "d6F3Efeq",
+        "utf8": "utf8",
+        "hex": "hex"
+    },
+    "emailConstants": {
+        "adminEmail": "1482d59e24657b713c69eb18e6ef1394b80187bbdd",
+        "adminPassword": "2485909b00663b2166",
+        "smtpHost": "smtp-mail.outlook.com",
+        "smtpCiphers": "SSLv3"
+    },
+    "nodeLinksUpdateStoredProcName": "nodeLinksUpdateStoredProc",
+    "nodeLinksQueryStoredProcName": "nodeLinksQueryStoredProc",
+    "emptyGuid": "00000000-0000-0000-0000-000000000000"
+}

@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = function(config){
+module.exports = function(config, logger){
     var router = require('express').Router();
     var helpers = require('../../common/helpers.js');
     var cors = require('cors');
@@ -22,6 +22,7 @@ module.exports = function(config){
     };
 
     router.options('/userauth', cors(corsOptions));
+    router.options('/userauth/*', cors(corsOptions));
 
     corsOptions = {
       origin : '*', 
@@ -30,10 +31,21 @@ module.exports = function(config){
     };
 
     router.options('/userdetails', cors(corsOptions));
+    router.options('/userdetails/*', cors(corsOptions));
 
     router.options('/groups', cors(corsOptions));
+    router.options('/groups/*', cors(corsOptions));
 
     router.options('/events', cors(corsOptions));
+    router.options('/events/*', cors(corsOptions));
+
+    corsOptions = {
+      origin : '*', 
+      methods : ['GET', 'PUT'],
+      optionsSuccessStatus : 200
+    };
+
+    router.options('/grouplinks', cors(corsOptions));
 
     return router;  
 }
