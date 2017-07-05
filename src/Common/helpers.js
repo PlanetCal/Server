@@ -157,7 +157,7 @@ module.exports = {
 
     // Documentation: https://github.com/eleith/emailjs    
     'sendEmail': function sendEmail(logger, toAddress, subject, messageHtmlText) {
-        var adminUser=this.decrypt(emailConstants.adminEmail);
+        var adminUser = this.decrypt(emailConstants.adminEmail);
         var server = email.server.connect({
             user: adminUser,
             password: this.decrypt(emailConstants.adminPassword),
