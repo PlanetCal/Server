@@ -11,10 +11,12 @@ module.exports = function (config, logger) {
     var serviceNames = require('../../common/constants.json')['serviceNames'];
     var urlNames = require('../../common/constants.json')['urlNames'];
     var helpers = require('../../common/helpers.js');
-
+    var FileUploadSizeLimitException = require('../../common/error.js').FileUploadSizeLimitException;
     var blobStorage = config.blobStorage;
     var blobStorageAccessKey = config.blobStorageAccessKey;
     var blobContainer = config.blobContainer;
+    var blobSizeLimitInMB = config.blobSizeLimitInMB;
+    var blobSizeLimitInBytes = blobSizeLimitInMB * 1024 * 1024;
 
     var corsOptions = {
         origin: '*',
@@ -35,6 +37,10 @@ module.exports = function (config, logger) {
                     if (part.filename) {
                         var size = part.byteCount;
                         var filename = part.filename;
+                        if (blobSizeLimitInBytes < size) {
+                            throw new FileUploadSizeLimitException("Size of file to upload is bigger than " + blobSizeLimitInMB + " MB");
+                        }
+
                         logger.get().debug({ req: req }, 'Uploading file: ' + filename);
                         blobService.createBlockBlobFromStream(blobContainer, filename, part, size, function (error) {
                             if (error) {
