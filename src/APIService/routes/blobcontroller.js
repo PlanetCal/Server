@@ -26,14 +26,6 @@ module.exports = function (config, logger) {
         credentials: true
     };
 
-    // router.post('/', cors(corsOptions), upload.single('blobdata'), helpers.wrap(function* (req, res) {
-    //     // req.file is the `avatar` file
-    //     // req.body will hold the text fields, if there were any
-    //     logger.get().debug({ req: req }, 'Uploading the blob.');
-    //     helpers.uploadBlob(blobStorage, blobContainer, blobStorageAccessKey, req.file);
-    //     res.status(201).json({ id: "hi how are you" });
-    // }));
-
     router.post('/', cors(corsOptions), helpers.wrap(function* (req, res) {
         var blobService = azure.createBlobService(blobStorage, blobStorageAccessKey);
         blobService.createContainerIfNotExists(blobContainer, { publicAccessLevel: 'blob' }, function (error, result, response) {
