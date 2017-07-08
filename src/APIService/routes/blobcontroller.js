@@ -47,7 +47,8 @@ module.exports = function (config, logger) {
                                 throw new Error(error);
                             } else {
                                 logger.get().debug({ req: req }, 'uploaded successfully: ' + filename);
-                                res.send('OK');
+                                var url = "https://" + blobStorage + ".blob.core.windows.net/" + blobContainer + "/" + filename;
+                                res.status(200).json({ url: url, size: size });
                             }
                         });
                     } else {
