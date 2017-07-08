@@ -34,7 +34,7 @@ module.exports = function (config, logger) {
     //     res.status(201).json({ id: "hi how are you" });
     // }));
 
-    router.post('/', cors(corsOptions), function (req, res) {
+    router.post('/', cors(corsOptions), helpers.wrap(function* (req, res) {
         var blobService = azure.createBlobService(blobStorage, blobStorageAccessKey);
         blobService.createContainerIfNotExists(blobContainer, { publicAccessLevel: 'blob' }, function (error, result, response) {
             if (!error) {
@@ -61,7 +61,7 @@ module.exports = function (config, logger) {
                 throw new Error(error);
             }
         });
-    });
+    }));
 
     return router;
 }
