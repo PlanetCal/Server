@@ -3,7 +3,6 @@
 var Promise = require('bluebird');
 var request = require('request-promise');
 var email = require('emailjs');
-var azure = require('azure-storage');
 var crypto = require('crypto');
 var emailConstants = require('./constants.json')['emailConstants'];
 var encryptConstants = require('./constants.json')['encryptConstants'];
@@ -137,24 +136,6 @@ module.exports = {
         return dec;
     },
 
-    'uploadBlob': function uploadBlob(storageAccount, containerName, accessKey, file) {
-        var blobSvc = azure.createBlobService(storageAccount, accessKey);
-
-        blobSvc.createContainerIfNotExists(containerName, { publicAccessLevel: 'blob' }, function (error, result, response) {
-            if (!error) {
-                blobSvc.createBlockBlobFromStream(containerName, 'myblob', stream, streamlength, function (error, result, response) {
-                    if (!error) {
-                        console.warn("file uploaded")
-                    } else {
-                        throw new Error(error);
-                    }
-                });
-            } else {
-                throw new Error(error);
-            }
-        });
-    },
-
     // Documentation: https://github.com/eleith/emailjs    
     'sendEmail': function sendEmail(logger, toAddress, subject, messageHtmlText) {
         var adminUser = this.decrypt(emailConstants.adminEmail);
@@ -165,11 +146,8 @@ module.exports = {
             tls: { ciphers: emailConstants.smtpCiphers }
         });
 
-        //Lets save this commented code.   
         // var encryptedString = this.encrypt("Hello");
-        // console.warn("sachinku: encryptedString:" + encryptedString);
         // var decryptedString = this.decrypt(encryptedString);
-        // console.warn("sachinku: decryptedString:" + decryptedString);
 
         var message = {
             from: adminUser,

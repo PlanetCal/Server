@@ -3,10 +3,10 @@
 module.exports = function (config, logger) {
     var router = require('express').Router();
     var request = require('request-promise');
+    var azure = require('azure-storage');
     var cors = require('cors');
     var etag = require('etag');
-    var multer = require('multer');
-    var upload = multer({ storage: multer.memoryStorage() });
+    var multiparty = require('multiparty');
 
     var serviceNames = require('../../common/constants.json')['serviceNames'];
     var urlNames = require('../../common/constants.json')['urlNames'];
@@ -26,13 +26,39 @@ module.exports = function (config, logger) {
         credentials: true
     };
 
-    router.post('/', cors(corsOptions), upload.single('blobdata'), helpers.wrap(function* (req, res) {
-        // req.file is the `avatar` file
-        // req.body will hold the text fields, if there were any
-        logger.get().debug({ req: req }, 'Uploading the blob.');
-        helpers.uploadBlob(blobStorage, blobContainer, blobStorageAccessKey, req.file);
-        res.status(201).json({ id: "hi how are you" });
-    }));
+    // router.post('/', cors(corsOptions), upload.single('blobdata'), helpers.wrap(function* (req, res) {
+    //     // req.file is the `avatar` file
+    //     // req.body will hold the text fields, if there were any
+    //     logger.get().debug({ req: req }, 'Uploading the blob.');
+    //     helpers.uploadBlob(blobStorage, blobContainer, blobStorageAccessKey, req.file);
+    //     res.status(201).json({ id: "hi how are you" });
+    // }));
+
+    router.post('/', cors(corsOptions), function (req, res) {
+        var blobService = azure.createBlobService(blobStorage, blobStorageAccessKey);
+        blobService.createContainerIfNotExists(blobContainer, { publicAccessLevel: 'blob' }, function (error, result, response) {
+            if (!error) {
+                var form = new multiparty.Form();
+                form.on('part', function (part) {
+                    if (part.filename) {
+                        var size = part.byteCount;
+                        var filename = part.filename;
+                        blobService.createBlockBlobFromStream(blobContainer, filename, part, size, function (error) {
+                            if (error) {
+                                throw new Error(error);
+                            }
+                        });
+                    } else {
+                        form.handlePart(part);
+                    }
+                });
+                form.parse(req);
+                res.send('OK');
+            } else {
+                throw new Error(error);
+            }
+        });
+    });
 
     return router;
 }
