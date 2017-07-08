@@ -43,9 +43,13 @@ module.exports = function (config, logger) {
                     if (part.filename) {
                         var size = part.byteCount;
                         var filename = part.filename;
+                        logger.get().debug({ req: req }, 'Uploading file: ' + filename);
                         blobService.createBlockBlobFromStream(blobContainer, filename, part, size, function (error) {
                             if (error) {
                                 throw new Error(error);
+                            } else {
+                                logger.get().debug({ req: req }, 'uploaded successfully: ' + filename);
+                                res.send('OK');
                             }
                         });
                     } else {
@@ -53,7 +57,6 @@ module.exports = function (config, logger) {
                     }
                 });
                 form.parse(req);
-                res.send('OK');
             } else {
                 throw new Error(error);
             }
