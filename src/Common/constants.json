@@ -15,7 +15,8 @@
         "groups": "groups",
         "grouplinks": "grouplinks",
         "groupsrecommendation": "groupsrecommendation",
-        "events": "events"
+        "events": "events",
+        "blob": "blob"
     },
     "encryptConstants": {
         "algorithm": "aes-256-ctr",

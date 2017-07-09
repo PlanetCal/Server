@@ -36,15 +36,15 @@ app.use(bodyParser.json());
 app.use('/userdetails', userDetailsController);
 
 // error handling for other routes
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     next(new NotFoundException('Resource specified by URL cannot be located.', errorcode.GenericNotFoundException));
 });
 
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
     helpers.handleServiceException(err, req, res, constants.userDetailsServiceName, logger, true);
 });
 
 var port = process.env.PORT || config.userDetailsServicePort;
-var server = app.listen(port, function(){
+var server = app.listen(port, function () {
     logger.get().debug('%s started at http://localhost:%d/', constants.userDetailsServiceName, server.address().port);
 });

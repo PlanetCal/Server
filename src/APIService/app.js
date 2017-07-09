@@ -26,6 +26,7 @@ var cors = require('cors');
 var loginController = require('./routes/logincontroller.js')(config, logger);
 var userAuthController = require('./routes/userauthcontroller.js')(config, logger);
 var userDetailsController = require('./routes/userdetailscontroller.js')(config, logger);
+var blobController = require('./routes/blobcontroller.js')(config, logger);
 var eventsController = require('./routes/eventscontroller.js')(config, logger);
 var groupsController = require('./routes/groupscontroller.js')(config, logger);
 var grouplinksController = require('./routes/grouplinkscontroller.js')(config, logger);
@@ -165,7 +166,8 @@ app.use('/userauth', userAuthController);
 app.use('/userdetails', userDetailsController);
 app.use('/events', eventsController);
 app.use('/groups', groupsController);
-app.use('/grouplinkss', grouplinksController);
+app.use('/grouplinks', grouplinksController);
+app.use('/blob', blobController);
 
 // error handling for other routes
 app.use(function (req, res, next) {

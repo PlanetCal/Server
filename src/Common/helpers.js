@@ -138,7 +138,7 @@ module.exports = {
 
     // Documentation: https://github.com/eleith/emailjs    
     'sendEmail': function sendEmail(logger, toAddress, subject, messageHtmlText) {
-        var adminUser=this.decrypt(emailConstants.adminEmail);
+        var adminUser = this.decrypt(emailConstants.adminEmail);
         var server = email.server.connect({
             user: adminUser,
             password: this.decrypt(emailConstants.adminPassword),
@@ -146,11 +146,8 @@ module.exports = {
             tls: { ciphers: emailConstants.smtpCiphers }
         });
 
-        //Lets save this commented code.   
         // var encryptedString = this.encrypt("Hello");
-        // console.warn("sachinku: encryptedString:" + encryptedString);
         // var decryptedString = this.decrypt(encryptedString);
-        // console.warn("sachinku: decryptedString:" + decryptedString);
 
         var message = {
             from: adminUser,
