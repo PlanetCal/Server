@@ -16,7 +16,8 @@ module.exports = function (config, logger) {
     var errorcode = require('../../common/errorcode.json');
     var blobStorage = config.blobStorage;
     var blobStorageAccessKey = config.blobStorageAccessKey;
-    var blobContainer = config.blobContainer;
+    var blobGroupContainer = config.blobGroupContainer;
+    var blobEventContainer = config.blobEventContainer;
     var blobSizeLimitInMB = config.blobSizeLimitInMB;
     var blobSizeLimitInBytes = blobSizeLimitInMB * 1024 * 1024;
 
@@ -41,6 +42,7 @@ module.exports = function (config, logger) {
             throw new BadRequestException('groupId and eventId are both present. Only one should be present in header.', errorcode.GroupIdAndEventIdBothFound);
         }
         var fileFirstPart = groupId ? groupId : eventId;
+        var blobContainer = groupId ? blobGroupContainer : blobEventContainer;
 
         var blobService = azure.createBlobService(blobStorage, blobStorageAccessKey);
         blobService.createContainerIfNotExists(blobContainer, { publicAccessLevel: 'blob' }, function (error, result, response) {
