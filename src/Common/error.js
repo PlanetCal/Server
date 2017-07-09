@@ -72,21 +72,6 @@ module.exports = {
         this.innerException = innerException;
     },
 
-    FileUploadSizeLimitException: function FileUploadSizeLimitException(message, innerException) {
-        const defaultHttpCode = 403;
-        this.code = defaultHttpCode;
-        this.constructor.prototype.__proto__ = Error.prototype;
-        Error.captureStackTrace(this, this.constructor);
-        this.name = 'FileUploadSizeLimitException';
-        this.errorcode = errorcode.FileUploadSizeLimit;
-        this.message = message;
-        if (innerException) {
-            this.code = innerException.code || defaultHttpCode;
-            this.code = innerException.errorcode || errorcode.EmailValidationPending;
-        }
-        this.innerException = innerException;
-    },
-
     UnauthorizedException: function UnauthorizedException(message, errorcode, innerException) {
         if (typeof (errorcode) === 'object') {
             innerException = errorcode;

@@ -12,6 +12,8 @@ module.exports = function (config, logger) {
     var urlNames = require('../../common/constants.json')['urlNames'];
     var helpers = require('../../common/helpers.js');
     var FileUploadSizeLimitException = require('../../common/error.js').FileUploadSizeLimitException;
+    var BadRequestException = require('../../common/error.js').BadRequestException;
+    var errorcode = require('../../common/errorcode.json');
     var blobStorage = config.blobStorage;
     var blobStorageAccessKey = config.blobStorageAccessKey;
     var blobContainer = config.blobContainer;
@@ -29,6 +31,17 @@ module.exports = function (config, logger) {
     };
 
     router.post('/', cors(corsOptions), helpers.wrap(function* (req, res) {
+
+        var groupId = req.headers['groupid'];
+        var eventId = req.headers['eventid'];
+
+        if (!groupId && !eventId) {
+            throw new BadRequestException('Cannot find groupId or eventId in the header for uploading file.', errorcode.GroupIdOrEventIdNotFound);
+        } else if (groupId && eventId) {
+            throw new BadRequestException('groupId and eventId are both present. Only one should be present in header.', errorcode.GroupIdAndEventIdBothFound);
+        }
+        var fileFirstPart = groupId ? groupId : eventId;
+
         var blobService = azure.createBlobService(blobStorage, blobStorageAccessKey);
         blobService.createContainerIfNotExists(blobContainer, { publicAccessLevel: 'blob' }, function (error, result, response) {
             if (!error) {
@@ -37,17 +50,26 @@ module.exports = function (config, logger) {
                     if (part.filename) {
                         var size = part.byteCount;
                         var filename = part.filename;
+                        //filename = "test";
+
+                        var extension = ".data";
+                        var indexOfdot = filename.lastIndexOf('.');
+                        if (indexOfdot > 0) {
+                            extension = filename.substr(indexOfdot).toLowerCase();
+                        }
+
                         if (blobSizeLimitInBytes < size) {
-                            throw new FileUploadSizeLimitException("Size of file to upload is bigger than " + blobSizeLimitInMB + " MB");
+                            throw new BadRequestException("Size of file to upload is bigger than " + blobSizeLimitInMB + " MB", errorcode.FileUploadSizeLimit);
                         }
 
                         logger.get().debug({ req: req }, 'Uploading file: ' + filename);
-                        blobService.createBlockBlobFromStream(blobContainer, filename, part, size, function (error) {
+                        var newFileName = fileFirstPart + extension;
+                        blobService.createBlockBlobFromStream(blobContainer, newFileName, part, size, function (error) {
                             if (error) {
                                 throw new Error(error);
                             } else {
                                 logger.get().debug({ req: req }, 'uploaded successfully: ' + filename);
-                                var url = "https://" + blobStorage + ".blob.core.windows.net/" + blobContainer + "/" + filename;
+                                var url = "https://" + blobStorage + ".blob.core.windows.net/" + blobContainer + "/" + newFileName;
                                 res.status(200).json({ url: url, size: size });
                             }
                         });

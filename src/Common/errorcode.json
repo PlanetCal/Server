@@ -25,5 +25,7 @@
     "EmailValidationPending": "EmailValidationPending",
     "FileUploadSizeLimit": "FileUploadSizeLimit",
     "BadRegistrationId": "BadRegistrationId",
+    "GroupIdOrEventIdNotFound": "GroupIdOrEventIdNotFound",
+    "GroupIdAndEventIdBothFound": "GroupIdAndEventIdBothFound",
     "UserNotFound": "UserNotFound"
 }
