@@ -27,7 +27,8 @@ module.exports = function (config, logger) {
     router.post('/', helpers.wrap(function* (req, res) {
         // TODO: Validate userdetails objects in body
         var userDetails = req.body;
-
+        //adding a private group
+        userDetails.followingGroups = [userDetails.id];
         checkCallerPermission(req, req.body.id);
 
         logger.get().debug({ req: req }, 'Creating userDetails object.');
