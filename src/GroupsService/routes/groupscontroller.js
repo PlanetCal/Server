@@ -22,8 +22,10 @@ module.exports = function (config, logger) {
         }
 
         logger.get().debug({ req: req }, 'Retriving group object...');
-        var documentResponse = yield findGroupsByGroupIdsAsync(req.params.id, fields);
-        var result = documentResponse.resource;
+        var documentResponse = yield findGroupsByGroupIdsAsync([req.params.id], fields);
+
+        var result = documentResponse.feed.length > 0 ? documentResponse.feed[0] : {};
+
         logger.get().debug({ req: req, group: result }, 'group object with fields retrieved successfully.');
 
         // TODO: assert when results has more than 1 element.
@@ -110,7 +112,7 @@ module.exports = function (config, logger) {
         ];
 
         var querySpec = {
-            query: "SELECT e.id" + constraints + " FROM root e WHERE ARRAY_CONTAINS(@groupIds, e.groupdId)",
+            query: "SELECT e.id" + constraints + " FROM root e WHERE ARRAY_CONTAINS(@groupIds, e.id)",
             parameters: parameters
         };
         return dal.getAsync(querySpec);
@@ -126,7 +128,7 @@ module.exports = function (config, logger) {
         ];
 
         var querySpec = {
-            query: "SELECT e.id" + constraints + " FROM root e WHERE e.id = groupId",
+            query: "SELECT e.id" + constraints + " FROM root e WHERE e.id = @groupId",
             parameters: parameters
         };
         return dal.getAsync(querySpec);
