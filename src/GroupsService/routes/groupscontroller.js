@@ -22,7 +22,10 @@ module.exports = function (config, logger) {
         }
 
         logger.get().debug({ req: req }, 'Retriving group object...');
-        var documentResponse = yield findGroupsByGroupIdsAsync([req.params.id], fields);
+
+        var userId = req.headers['auth-identity'];
+
+        var documentResponse = yield findGroupsByGroupIdsAsync([req.params.id], fields, userId);
 
         var result = documentResponse.feed.length > 0 ? documentResponse.feed[0] : {};
 
@@ -102,33 +105,49 @@ module.exports = function (config, logger) {
         return dal.getAsync(querySpec);
     }
 
-    function findGroupsByGroupIdsAsync(groupIds, fields) {
+    function findGroupsByGroupIdsAsync(groupIds, fields, userId) {
         var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
         var parameters = [
             {
                 name: "@groupIds",
                 value: groupIds
-            }
+            },
+            {
+                name: "@userId",
+                value: userId
+            },
+            {
+                name: "@privacy",
+                value: 'Private'
+            },
         ];
 
         var querySpec = {
-            query: "SELECT e.id" + constraints + " FROM root e WHERE ARRAY_CONTAINS(@groupIds, e.id)",
+            query: "SELECT e.id" + constraints + " FROM root e WHERE ARRAY_CONTAINS(@groupIds, e.id) and (e.owner=@userId or e.privacy != @privacy)",
             parameters: parameters
         };
         return dal.getAsync(querySpec);
     }
 
-    function findGroupsByGroupIdAsync(groupId, fields) {
+    function findGroupsByGroupIdAsync(groupId, fields, userId) {
         var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
         var parameters = [
             {
                 name: "@groupId",
                 value: groupId
-            }
+            },
+            {
+                name: "@userId",
+                value: userId
+            },
+            {
+                name: "@privacy",
+                value: 'Private'
+            },
         ];
 
         var querySpec = {
-            query: "SELECT e.id" + constraints + " FROM root e WHERE e.id = @groupId",
+            query: "SELECT e.id" + constraints + " FROM root e WHERE e.id = @groupId and (e.owner=@userId or e.privacy != @privacy)",
             parameters: parameters
         };
         return dal.getAsync(querySpec);
