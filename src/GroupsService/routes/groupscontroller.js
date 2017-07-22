@@ -18,7 +18,7 @@ module.exports = function (config, logger) {
     router.get('/:id', helpers.wrap(function* (req, res) {
         var fields;
         if (req.query.fields) {
-            fields = req.query.fields.split('|');
+            fields = req.query.fields.toLowerCase().split('|');
         }
 
         logger.get().debug({ req: req }, 'Retriving group object...');

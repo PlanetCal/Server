@@ -43,7 +43,7 @@ module.exports = function (config, logger) {
             id: userDetails.id,
             privacy: "Private",
             name: "Default",
-            discription: "The default group assigned to the logged in user by the app.",
+            description: "The default group assigned to the logged in user by the app.",
         };
         req.body = defaultGroup;
         var options = helpers.getRequestOption(req, config.groupsServiceEndpoint + '/' + urlNames.groups, 'POST');
