@@ -40,7 +40,6 @@ module.exports = function (passport, config, logger) {
                 name: req.body.name,
                 emailValidation: newGuid,
                 createdTime: currentUtcDateTime,
-                modifiedTime: ''
             }, options);
 
         logger.get().debug({ req: req, userAuth: documentResponse.resource }, 'userAuth object created successfully.');
