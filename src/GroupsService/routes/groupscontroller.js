@@ -33,13 +33,22 @@ module.exports = function (config, logger) {
     }));
 
     router.get('/', helpers.wrap(function* (req, res) {
-        var documentResponse;
         logger.get().debug({ req: req }, 'Retriving all group objects...');
 
         var keywords = req.query.keywords ? req.query.keywords.split('|') : null;
         var fields = req.query.fields ? req.query.fields.toLowerCase().split('|') : null;
+        var groupIds = req.query.groupids ? req.query.groupids.split('|') : null;
         var userId = req.headers['auth-identity'];
-        documentResponse = keywords ? yield findGroupByKeywordsAsync(keywords, fields, userId) : yield findAllGroupAsync(fields, userId);
+
+        var documentResponse;
+        if (keywords) {
+            documentResponse = yield findGroupByKeywordsAsync(keywords, fields, userId);
+        } else if (groupIds) {
+            documentResponse = yield findGroupsByGroupIdsAsync(groupIds, fields, userId);
+        }
+        else {
+            documentResponse = yield findAllGroupAsync(fields, userId);
+        }
 
         var results = documentResponse.feed;
         var filteredResults = helpers.removeDuplicatedItemsById(results);
