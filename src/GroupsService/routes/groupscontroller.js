@@ -16,10 +16,7 @@ module.exports = function (config, logger) {
     var errorcode = require('../../common/errorcode.json');
 
     router.get('/:id', helpers.wrap(function* (req, res) {
-        var fields;
-        if (req.query.fields) {
-            fields = req.query.fields.toLowerCase().split('|');
-        }
+        var fields = req.query.fields ? req.query.fields.toLowerCase().split('|') : null;
 
         logger.get().debug({ req: req }, 'Retriving group object...');
 
@@ -40,7 +37,7 @@ module.exports = function (config, logger) {
         logger.get().debug({ req: req }, 'Retriving all group objects...');
 
         var keywords = req.query.keywords ? req.query.keywords.split('|') : null;
-        var fields = req.query.fields ? req.query.fields.split('|') : null;
+        var fields = req.query.fields ? req.query.fields.toLowerCase().split('|') : null;
         var userId = req.headers['auth-identity'];
         documentResponse = keywords ? yield findGroupByKeywordsAsync(keywords, fields, userId) : yield findAllGroupAsync(fields, userId);
 
@@ -112,7 +109,6 @@ module.exports = function (config, logger) {
 
     function findAllGroupAsync(fields, userId) {
         var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
-        constraints = "";
         var querySpec = {
             query: "SELECT e.id" + constraints + " FROM root e WHERE e.owner = @userId or e.privacy != @privacy",
             parameters: [
