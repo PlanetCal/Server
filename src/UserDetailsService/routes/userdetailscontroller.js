@@ -10,6 +10,8 @@ module.exports = function (config, logger) {
     var documentdbEndpoint = config.documentdbEndpoint;
     var documentdbAuthKey = config.documentdbAuthKey;
     var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
+    var serviceNames = require('../../common/constants.json')['serviceNames'];
+    var urlNames = require('../../common/constants.json')['urlNames'];
     var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
 
     var helpers = require('../../common/helpers.js');
@@ -28,11 +30,24 @@ module.exports = function (config, logger) {
         // TODO: Validate userdetails objects in body
         var userDetails = req.body;
 
+        //adding a default group ref. It is created after creating the user details object.
+        userDetails.followingGroups = [userDetails.id];
         checkCallerPermission(req, req.body.id);
 
         logger.get().debug({ req: req }, 'Creating userDetails object.');
         var documentResponse = yield dal.insertAsync(userDetails, {});
         logger.get().debug({ req: req, userDetails: documentResponse.resource }, 'userDetails object created successfully.');
+
+        //Creating the default group.
+        var defaultGroup = {
+            id: userDetails.id,
+            privacy: "Private",
+            name: "Default",
+            description: "The default group assigned to the logged in user by the app.",
+        };
+        req.body = defaultGroup;
+        var options = helpers.getRequestOption(req, config.groupsServiceEndpoint + '/' + urlNames.groups, 'POST');
+        var results = yield* helpers.forwardHttpRequest(options, serviceNames.groupsServiceName);
 
         res.status(201).json({ id: documentResponse.resource.id });
     }));
@@ -43,6 +58,7 @@ module.exports = function (config, logger) {
 
         checkCallerPermission(req, req.params.id);
         checkCallerPermission(req, req.body.id);
+        userDetails.modifiedTime = (new Date()).toUTCString();
 
         logger.get().debug({ req: req }, 'Updating userDetails object.');
         var documentResponse = yield dal.updateAsync(req.params.id, userDetails);
