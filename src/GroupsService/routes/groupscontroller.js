@@ -16,7 +16,7 @@ module.exports = function (config, logger) {
     var errorcode = require('../../common/errorcode.json');
 
     router.get('/:id', helpers.wrap(function* (req, res) {
-        var fields = req.query.fields ? req.query.fields.toLowerCase().split('|') : null;
+        var fields = req.query.fields ? req.query.fields.split('|') : null;
 
         logger.get().debug({ req: req }, 'Retriving group object...');
 
@@ -36,7 +36,7 @@ module.exports = function (config, logger) {
         logger.get().debug({ req: req }, 'Retriving all group objects...');
 
         var keywords = req.query.keywords ? req.query.keywords.split('|') : null;
-        var fields = req.query.fields ? req.query.fields.toLowerCase().split('|') : null;
+        var fields = req.query.fields ? req.query.fields.split('|') : null;
         var groupIds = req.query.groupids ? req.query.groupids.split('|') : null;
         var userId = req.headers['auth-identity'];
 

@@ -19,7 +19,7 @@ module.exports = function (config, logger) {
     var errorcode = require('../../common/errorcode.json');
 
     router.get('/:id', helpers.wrap(function* (req, res) {
-        var fields = req.query.fields ? req.query.fields.toLowerCase().split('|') : null;
+        var fields = req.query.fields ? req.query.fields.split('|') : null;
 
         logger.get().debug({ req: req }, 'Retriving event object...');
         var documentResponse = yield findEventByEventIdAsync(dal, req.params.id, fields);
@@ -31,7 +31,7 @@ module.exports = function (config, logger) {
     }));
 
     router.get('/', helpers.wrap(function* (req, res) {
-        var fields = req.query.fields ? req.query.fields.toLowerCase().split('|') : null;
+        var fields = req.query.fields ? req.query.fields.split('|') : null;
 
         var groupids;
         if (req.query.groupids) {
