@@ -38,16 +38,13 @@ module.exports = function (config, logger) {
     router.get('/', helpers.wrap(function* (req, res) {
         var documentResponse;
         logger.get().debug({ req: req }, 'Retriving all group objects...');
-        if (req.query.keywords) {
-            var keywords = req.query.keywords.split('|');
-            var fields;
-            if (req.query.fields) {
-                fields = req.query.fields.split('|');
-            }
 
-            documentResponse = yield findGroupByKeywordsAsync(keywords, fields);
-        }
-        var results = documentResponse.resourcefeed;
+        var keywords = req.query.keywords ? req.query.keywords.split('|') : null;
+        var fields = req.query.fields ? req.query.fields.split('|') : null;
+        var userId = req.headers['auth-identity'];
+        documentResponse = keywords ? yield findGroupByKeywordsAsync(keywords, fields, userId) : yield findAllGroupAsync(fields, userId);
+
+        var results = documentResponse.feed;
         var filteredResults = helpers.removeDuplicatedItemsById(results);
         logger.get().debug({ req: req, groups: filteredResults }, 'group objects retrieved successfully. unfiltered count: %d. filtered count: %d.', results.length, filteredResults.length);
         res.status(200).json(filteredResults);
@@ -90,15 +87,43 @@ module.exports = function (config, logger) {
         res.status(200).json({ id: req.params.id });
     }));
 
-    function findGroupByKeywordsAsync(keywords, fields) {
+    function findGroupByKeywordsAsync(keywords, fields, userId) {
         var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
         var querySpec = {
-            query: "SELECT e.id" + constraints + " e.keywords FROM e JOIN k IN e.keywords WHERE ARRAY_CONTAINS(@keywords, k)",
+            query: "SELECT e.id" + constraints + " e.keywords FROM e JOIN k IN e.keywords WHERE ARRAY_CONTAINS(@keywords, k) and (e.owner=@userId or e.privacy != @privacy)",
             parameters: [
                 {
                     name: '@keywords',
                     value: keywords
-                }
+                },
+                {
+                    name: "@userId",
+                    value: userId
+                },
+                {
+                    name: "@privacy",
+                    value: 'Private'
+                },
+            ]
+        };
+
+        return dal.getAsync(querySpec);
+    }
+
+    function findAllGroupAsync(fields, userId) {
+        var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
+        constraints = "";
+        var querySpec = {
+            query: "SELECT e.id" + constraints + " FROM root e WHERE e.owner = @userId or e.privacy != @privacy",
+            parameters: [
+                {
+                    name: "@userId",
+                    value: userId
+                },
+                {
+                    name: "@privacy",
+                    value: 'Private'
+                },
             ]
         };
 
