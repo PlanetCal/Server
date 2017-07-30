@@ -56,7 +56,7 @@ module.exports = function (config, logger) {
         var results = yield* helpers.forwardHttpRequest(userDetailsRequestOptions, serviceNames.userDetailsServiceName);
         var userDetails = JSON.parse(results);
 
-        var groups;
+        var groups = '[]';
         // userDetailsRequestOptions must not be undefined
         // we need to retrieve events given userDetails.
         if (userDetails.followingGroups && userDetails.followingGroups.length > 0) {
