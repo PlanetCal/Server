@@ -74,6 +74,62 @@ module.exports = {
         return '';
     },
 
+    //Example of Filters: http://localhost:1337/groups?fields=name|description|category&filter=field1=value1$OR$field2=value2$AND$field3<value3
+    'convertFilterExpressionToParameters': function convertFilterExpressionToParameters(prefix, filterExpression, postfix) {
+        var whereClause = '';
+        var parameters = [];
+
+        if (filterExpression) {
+            var fields = filterExpression.split('$');
+
+            for (var i in fields) {
+                var result = this.operatorParser(fields[i]);
+
+                if (result && result.whereClause != '') {
+                    whereClause += prefix + "." + result.whereClause;
+                    parameters.push(result.parameter);
+                } else {
+                    whereClause += " " + fields[i] + " ";
+                }
+            }
+            whereClause += " " + postfix;
+        }
+        return {
+            filterExpression: whereClause,
+            parameters: parameters
+        }
+    },
+
+    'operatorParser': function operatorParser(clause) {
+        var operator = '';
+        if (clause.indexOf('=') !== -1) {
+            operator = '=';
+        } else if (clause.indexOf('!=') !== -1) {
+            operator = '!=';
+        } else if (clause.indexOf('<') !== -1) {
+            operator = '<';
+        } else if (clause.indexOf('>') !== -1) {
+            operator = '>';
+        } else if (clause.indexOf('<=') !== -1) {
+            operator = '<=';
+        } else if (clause.indexOf('>=') !== -1) {
+            operator = '>=';
+        }
+
+        if (operator !== '') {
+            var parts = clause.split(operator);
+            var whereClause = parts[0] + " " + operator + " @" + parts[0];
+            var parameter = {
+                name: "@" + parts[0],
+                value: parts[1]
+            };
+            return {
+                whereClause: whereClause,
+                parameter: parameter
+            }
+        }
+    },
+
     'constructResponseJsonFromExceptionRecursive': function constructResponseJsonFromExceptionRecursive(exceptionObject, logStack) {
         var returnedJson;
         if (exceptionObject) {
