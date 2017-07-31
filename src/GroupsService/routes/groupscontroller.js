@@ -37,6 +37,9 @@ module.exports = function (config, logger) {
 
         var keywords = req.query.keywords ? req.query.keywords.split('|') : null;
         var fields = req.query.fields ? req.query.fields.split('|') : null;
+        var filterExpression = req.query.filter;
+
+
         var groupIds = req.query.groupids ? req.query.groupids.split('|') : null;
         var userId = req.headers['auth-identity'];
 
@@ -47,7 +50,7 @@ module.exports = function (config, logger) {
             documentResponse = yield findGroupsByGroupIdsAsync(groupIds, fields, userId);
         }
         else {
-            documentResponse = yield findAllGroupAsync(fields, userId);
+            documentResponse = yield findAllGroupAsync(fields, userId, filterExpression);
         }
 
         var results = documentResponse.feed;
@@ -116,20 +119,28 @@ module.exports = function (config, logger) {
         return dal.getAsync(querySpec);
     }
 
-    function findAllGroupAsync(fields, userId) {
+    function findAllGroupAsync(fields, userId, filterExpression) {
         var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
+
+        var filterExpressionParsed = helpers.convertFilterExpressionToParameters('e', filterExpression, ' AND ');
+
+        var queryStatement = "SELECT e.id" + constraints + " FROM root e WHERE " + filterExpressionParsed.filterExpression + "(e.owner = @userId or e.privacy != @privacy)";
+
+        var parameters = filterExpressionParsed.parameters;
+
+        parameters.push({
+            name: "@userId",
+            value: userId
+        });
+
+        parameters.push({
+            name: "@privacy",
+            value: 'Private'
+        });
+
         var querySpec = {
-            query: "SELECT e.id" + constraints + " FROM root e WHERE e.owner = @userId or e.privacy != @privacy",
-            parameters: [
-                {
-                    name: "@userId",
-                    value: userId
-                },
-                {
-                    name: "@privacy",
-                    value: 'Private'
-                },
-            ]
+            query: queryStatement,
+            parameters: parameters
         };
 
         return dal.getAsync(querySpec);

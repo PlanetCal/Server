@@ -58,7 +58,14 @@ module.exports = function (config, logger) {
 
         checkCallerPermission(req, req.params.id);
         checkCallerPermission(req, req.body.id);
+
+        //obtain the existing saved object.        
+        var currentUserDetails = yield* getUserDetailsBasicAsync(req);
+
         userDetails.modifiedTime = (new Date()).toUTCString();
+        if (!userDetails.followingGroups) {
+            userDetails.followingGroups = currentUserDetails.followingGroups;
+        }
 
         logger.get().debug({ req: req }, 'Updating userDetails object.');
         var documentResponse = yield dal.updateAsync(req.params.id, userDetails);
