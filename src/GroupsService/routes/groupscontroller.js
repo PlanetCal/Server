@@ -66,6 +66,9 @@ module.exports = function (config, logger) {
         group.owner = req.headers['auth-identity'];
         group.creater = req.headers['auth-identity'];
         group.createdTime = (new Date()).toUTCString();
+
+        //Setting the id. If the object does not have it, the create call fails for some reason.
+        group.id = helpers.generateGuid();
         logger.get().debug({ req: req, group: group }, 'Creating group object...');
         var documentResponse = yield dal.insertAsync(group, {});
         logger.get().debug({ req: req, group: documentResponse.resource }, 'group object created successfully.');
