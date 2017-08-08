@@ -65,8 +65,9 @@ module.exports = {
             var client = this.getClient();
             var documentLink = collectionLink + '/docs/' + id;
             if (typeof (options) === 'undefined') {
-                options = {};
+                options = { partitionKey: [id] };
             }
+
             return client.deleteDocumentAsync(documentLink, options).fail(function (err) {
                 throw new DatabaseException(err);
             });
