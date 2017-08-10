@@ -77,7 +77,7 @@ module.exports = function (config, logger) {
         event['createdById'] = req.headers['auth-identity'];
         event['ownedById'] = req.headers['auth-identity'];
         */
-
+        event.id = helpers.generateGuid();
         logger.get().debug({ req: req }, 'Creating event object...');
         var documentResponse = yield dal.insertAsync(event, {});
         logger.get().debug({ req: req, event: documentResponse.resource }, 'Event object created successfully.');

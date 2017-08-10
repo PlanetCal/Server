@@ -27,5 +27,9 @@
     "BadRegistrationId": "BadRegistrationId",
     "GroupIdOrEventIdNotFound": "GroupIdOrEventIdNotFound",
     "GroupIdAndEventIdBothFound": "GroupIdAndEventIdBothFound",
-    "UserNotFound": "UserNotFound"
+    "UserNotFound": "UserNotFound",
+    "GroupIdNotFoundInPayload": "GroupIdNotFoundInPayload",
+    "MultipleGroupsFoundInPayload": "MultipleGroupsFoundInPayload",
+    "GroupNotExistant": "GroupNotExistant",
+    "UserNotAuthorized": "UserNotAuthorized"
 }
