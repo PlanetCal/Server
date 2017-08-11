@@ -91,7 +91,7 @@ module.exports = function (config, logger) {
         res.status(200).json({ id: req.params.id });
     }));
 
-    function findEventByEventIdAsync(eventId, fields) {
+    function findEventByEventIdAsync(dal, eventId, fields) {
         var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
         console.log('constraints: ' + constraints);
         var querySpec = {

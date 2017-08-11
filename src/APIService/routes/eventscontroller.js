@@ -54,7 +54,6 @@ module.exports = function (config, logger) {
     }));
 
     router.post('/', cors(corsOptions), helpers.wrap(function* (req, res) {
-
         if (req.body.groups.length <= 0) {
             throw new BadRequestException('Cannot find groups in the post payload', errorcode.GroupIdNotFoundInPayload);
         }
@@ -82,8 +81,70 @@ module.exports = function (config, logger) {
     }));
 
     router.put('/:id', cors(corsOptions), helpers.wrap(function* (req, res) {
-        var options = helpers.getRequestOption(req, endpoint + '/' + urlNames.events + '/' + req.params.id, 'PUT');
+        if (req.body.id !== req.params.id) {
+            throw new BadRequestException('Event Ids in body and in the url do not match.', errorcode.PayloadIdsDoNotMatch);
+        }
+
+        if (req.body.groups.length <= 0) {
+            throw new BadRequestException('Cannot find groups in the post payload', errorcode.GroupIdNotFoundInPayload);
+        }
+
+        if (req.body.groups.length > 1) {
+            throw new BadRequestException('groups property should only contain 1 group inside it.', errorcode.MultipleGroupsFoundInPayload);
+        }
+
+        //first get the event from database to retrieve its groups.
+        var eventsUrl = endpoint + '/' + urlNames.events + '/' + req.params.id
+        eventsUrl += '?fields=groups';
+        var options = helpers.getRequestOption(req, eventsUrl, 'GET');
+        var test = 1;
         var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
+        var event = JSON.parse(results);
+        if (!event || event.id !== req.params.id) {
+            throw new BadRequestException('Event with the id ' + req.params.id + ' does not exist', errorcode.EventNotExistant);
+        }
+
+        if (!event.groups || event.groups.length < 1) {
+            throw new InternalServerException('Existing event in the database does not have groups. Please contact the database admin.');
+        }
+
+        // second fetch the group to find out its owner, to check if current user is same or not.
+        var groupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '/' + event.groups[0];
+        groupsUrl += '?fields=owner|admins';
+        var options = helpers.getRequestOption(req, groupsUrl, 'GET');
+        var results = yield* helpers.forwardHttpRequest(options, serviceNames.groupsServiceName);
+        var group = JSON.parse(results);
+        if (!group || group.id !== event.groups[0]) {
+            //should it be internalServerError. Made it badRequestEx.. since this way, we can pass the ErrorCode out.
+            throw new BadRequestException('Groupid ' + event.groups[0] + ' associated with the existing event in db, does not exist', errorcode.GroupInExistingEventNotExistant);
+        }
+
+        if (req.headers['auth-identity'] !== group.owner) {
+            throw new BadRequestException('User is not authorized to update the event under the group with id ' + event.groups[0], errorcode.UserNotAuthorized);
+        };
+
+        // third, if current group is different than the group in the database, then fetch current group to check its owner.
+        if (group.id !== req.body.groups[0]) {
+
+            // second fetch the group to find out its owner, to check if current user is same or not.
+            var newGroupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '/' + req.body.groups[0];
+            newGroupsUrl += '?fields=owner|admins';
+            var newOptions = helpers.getRequestOption(req, newGroupsUrl, 'GET');
+            var newResults = yield* helpers.forwardHttpRequest(newOptions, serviceNames.groupsServiceName);
+            var newGroup = JSON.parse(newResults);
+            if (!newGroup || newGroup.id !== req.body.groups[0]) {
+                //should it be internalServerError. Made it badRequestEx.. since this way, we can pass the ErrorCode out.
+                throw new BadRequestException('Groupid ' + req.body.groups[0] + ' does not exist', errorcode.GroupNotExistant);
+            }
+
+            if (req.headers['auth-identity'] !== newGroup.owner) {
+                throw new BadRequestException('User is not authorized to update the event under the group with id ' + req.body.groups[0], errorcode.UserNotAuthorized);
+            };
+        }
+
+        // forth, update the event.
+        var eventOptions = helpers.getRequestOption(req, endpoint + '/' + urlNames.events + '/' + req.params.id, 'PUT');
+        var eventResults = yield* helpers.forwardHttpRequest(eventOptions, serviceNames.eventsServiceName);
         res.status(200).json({ id: req.params.id });
     }));
 
