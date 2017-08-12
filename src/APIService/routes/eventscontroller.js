@@ -95,7 +95,7 @@ module.exports = function (config, logger) {
 
         //first get the event from database to retrieve its groups.
         var eventsUrl = endpoint + '/' + urlNames.events + '/' + req.params.id
-        eventsUrl += '?fields=groups|createdBy|modifiedBy';
+        eventsUrl += '?fields=groups|createdBy|createdTime|modifiedBy';
         var options = helpers.getRequestOption(req, eventsUrl, 'GET');
         var test = 1;
         var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
