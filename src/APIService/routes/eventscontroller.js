@@ -95,7 +95,7 @@ module.exports = function (config, logger) {
 
         //first get the event from database to retrieve its groups.
         var eventsUrl = endpoint + '/' + urlNames.events + '/' + req.params.id
-        eventsUrl += '?fields=groups';
+        eventsUrl += '?fields=groups|createdBy|modifiedBy';
         var options = helpers.getRequestOption(req, eventsUrl, 'GET');
         var test = 1;
         var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
@@ -108,23 +108,28 @@ module.exports = function (config, logger) {
             throw new InternalServerException('Existing event in the database does not have groups. Please contact the database admin.');
         }
 
-        // second fetch the group to find out its owner, to check if current user is same or not.
-        var groupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '/' + event.groups[0];
-        groupsUrl += '?fields=owner|admins';
-        var options = helpers.getRequestOption(req, groupsUrl, 'GET');
-        var results = yield* helpers.forwardHttpRequest(options, serviceNames.groupsServiceName);
-        var group = JSON.parse(results);
-        if (!group || group.id !== event.groups[0]) {
-            //should it be internalServerError. Made it badRequestEx.. since this way, we can pass the ErrorCode out.
-            throw new BadRequestException('Groupid ' + event.groups[0] + ' associated with the existing event in db, does not exist', errorcode.GroupInExistingEventNotExistant);
+        var permissionGranted = (event.createdBy && event.createdBy === req.headers['auth-identity']) || (event.modifiedBy && event.modifiedBy === req.headers['auth-identity']);
+        req.body.createdBy = event.createdBy;
+
+        if (!permissionGranted) {
+            // second fetch the group to find out its owner, to check if current user is same or not.
+            var groupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '/' + event.groups[0];
+            groupsUrl += '?fields=owner|admins';
+            var options = helpers.getRequestOption(req, groupsUrl, 'GET');
+            var results = yield* helpers.forwardHttpRequest(options, serviceNames.groupsServiceName);
+            var group = JSON.parse(results);
+            if (!group || group.id !== event.groups[0]) {
+                //should it be internalServerError. Made it badRequestEx.. since this way, we can pass the ErrorCode out.
+                throw new BadRequestException('Groupid ' + event.groups[0] + ' associated with the existing event in db, does not exist', errorcode.GroupInExistingEventNotExistant);
+            }
+
+            if (req.headers['auth-identity'] !== group.owner) {
+                throw new BadRequestException('User is not authorized to update the event under the group with id ' + event.groups[0], errorcode.UserNotAuthorized);
+            };
         }
 
-        if (req.headers['auth-identity'] !== group.owner) {
-            throw new BadRequestException('User is not authorized to update the event under the group with id ' + event.groups[0], errorcode.UserNotAuthorized);
-        };
-
         // third, if current group is different than the group in the database, then fetch current group to check its owner.
-        if (group.id !== req.body.groups[0]) {
+        if (event.groups[0] !== req.body.groups[0]) {
 
             // second fetch the group to find out its owner, to check if current user is same or not.
             var newGroupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '/' + req.body.groups[0];

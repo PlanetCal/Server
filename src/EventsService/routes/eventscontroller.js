@@ -58,11 +58,7 @@ module.exports = function (config, logger) {
     router.put('/:id', helpers.wrap(function* (req, res) {
         // TODO: Validate event object in body         
         var event = req.body;
-        /*
-        if (event['ownedById'] !== req.headers['auth-identity']){
-            throw new ForbiddenException('Forbidden');
-        }
-        */
+        event.modifiedBy = req.headers['auth-identity'];
         logger.get().debug({ req: req }, 'Updating event...');
         var documentResponse = yield dal.updateAsync(req.params.id, event);
         logger.get().debug({ req: req, event: documentResponse.resource }, 'Event updated successfully.');
@@ -70,13 +66,9 @@ module.exports = function (config, logger) {
     }));
 
     router.post('/', helpers.wrap(function* (req, res) {
-        // TODO: Validate event object in body         
         var event = req.body;
 
-        /*
-        event['createdById'] = req.headers['auth-identity'];
-        event['ownedById'] = req.headers['auth-identity'];
-        */
+        event.createdBy = req.headers['auth-identity'];
         event.id = helpers.generateGuid();
         logger.get().debug({ req: req }, 'Creating event object...');
         var documentResponse = yield dal.insertAsync(event, {});
