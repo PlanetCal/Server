@@ -86,7 +86,9 @@ module.exports = function (config, logger) {
             if (parentGroup.id != group.parentGroup) {
                 throw new BadRequestException('Specified parent group in payload does not exist.', errorcode.GroupNotExistant);
             }
-            var permissionGranted = (parentGroup.createdBy && parentGroup.createdBy === req.headers['auth-identity']) || (parentGroup.modifiedBy && parentGroup.modifiedBy === req.headers['auth-identity']);
+            var permissionGranted = parentGroup.privacy === "Open" ||
+                (parentGroup.createdBy && parentGroup.createdBy === req.headers['auth-identity']) ||
+                (parentGroup.modifiedBy && parentGroup.modifiedBy === req.headers['auth-identity']);
 
             if (!permissionGranted) {
                 throw new BadRequestException('User is not authorized to create a group under the group with id ' + parentGroup.id, errorcode.UserNotAuthorized);
@@ -115,6 +117,10 @@ module.exports = function (config, logger) {
         // TODO: Validate group objects in body
         var group = req.body;
 
+        if (group.id !== req.params.id) {
+            throw new BadRequestException('Group Ids in body and in the url do not match.', errorcode.PayloadIdsDoNotMatch);
+        }
+
         if (!group.category || allowedCategories.indexOf(group.category) < 0) {
             throw new BadRequestException('Group payload does not contain category field or it is not in the allowed category list.', errorcode.GroupShouldContainCategory);
         };
@@ -126,14 +132,123 @@ module.exports = function (config, logger) {
         group.modifiedBy = req.headers['auth-identity'];
         group.modifiedTime = (new Date()).toUTCString();
 
+        var userId = req.headers['auth-identity'];
+
+        //fetch existing group from the database so that we can check permissions        
+        var documentResponse = yield findGroupsByGroupIdsAsync([group.id], allowedGroupFields, userId);
+        var existingGroup = documentResponse.feed.length > 0 ? documentResponse.feed[0] : {};
+        if (existingGroup.id != group.id) {
+            throw new BadRequestException('Specified group in payload does not exist in the database. Can not update it.', errorcode.GroupNotExistant);
+        }
+        var permissionGranted = (existingGroup.createdBy && existingGroup.createdBy === req.headers['auth-identity']) ||
+            (existingGroup.modifiedBy && existingGroup.modifiedBy === req.headers['auth-identity']);
+
+        if (!permissionGranted) {
+            throw new BadRequestException('User is not authorized to update the group with id ' + existingGroup.id, errorcode.UserNotAuthorized);
+        }
+        group.createdBy = existingGroup.createdBy;
+        group.createdTime = existingGroup.createdTime;
+
+        //if group has a parentGroup, we need to check if user has permisison to create a sub group under it.
+        //And we also need to update both parent groups by first removing it, and then adding it from the second one.
+        var existingParentGroup = null;
+        if (existingGroup.parentGroup && existingGroup.parentGroup !== group.parentGroup) {
+            //fetch parentGroups
+            var groupIdsToQuery = [existingGroup.parentGroup];
+            if (group.parentGroup) {
+                groupIdsToQuery.push(group.parentGroup);
+            }
+            var documentResponse = yield findGroupsByGroupIdsAsync(groupIdsToQuery, allowedGroupFields, userId);
+
+            var existingParentGroup = null;
+            var newParentGroup = null;
+
+            for (var i = 0; i < documentResponse.feed.length; i++) {
+                var parentGroup = documentResponse.feed[i];
+                if (existingGroup.parentGroup === parentGroup.id) {
+                    existingParentGroup = parentGroup;
+
+                    //remove the currentGroup from existing parent Group.
+                    if (!existingParentGroup.childGroups) {
+                        existingParentGroup.childGroups = [];
+                    } else {
+                        var index = existingParentGroup.childGroups.indexOf(group.id);
+                        existingParentGroup.childGroups.splice(index, 1);
+                    }
+                }
+                else {
+                    newParentGroup = parentGroup;
+                    //Add the currentGroup to the childGroups of new parentGroup
+                    if (!newParentGroup.childGroups) {
+                        newParentGroup.childGroups = [];
+                    }
+                    newParentGroup.childGroups.push(group.id)
+                }
+                parentGroup.modifiedBy = req.headers['auth-identity'];
+                parentGroup.modifiedTime = (new Date()).toUTCString();
+                var permissionGranted = parentGroup.privacy === "Open" ||
+                    (parentGroup.createdBy && parentGroup.createdBy === req.headers['auth-identity']) ||
+                    (parentGroup.modifiedBy && parentGroup.modifiedBy === req.headers['auth-identity']);
+
+                if (!permissionGranted) {
+                    throw new BadRequestException('User is not authorized to update a group under the group with id ' + parentGroup.id, errorcode.UserNotAuthorized);
+                }
+            }
+
+            yield dal.updateAsync(newParentGroup.id, newParentGroup);
+            yield dal.updateAsync(existingParentGroup.id, existingParentGroup);
+        }
+
         logger.get().debug({ req: req, group: group }, 'Updating group object...');
-        var documentResponse = yield dal.updateAsync(req.params.id, group);
+
+        documentResponse = yield dal.updateAsync(req.params.id, group);
         logger.get().debug({ req: req, group: documentResponse.resource }, 'group object updated successfully.');
 
         res.status(200).json({ id: documentResponse.resource.id });
     }));
 
     router.delete('/:id', helpers.wrap(function* (req, res) {
+        var userId = req.headers['auth-identity'];
+        //fetch existing group from the database so that we can check permissions        
+        var documentResponse = yield findGroupsByGroupIdsAsync([req.params.id], allowedGroupFields, userId);
+        var existingGroup = documentResponse.feed.length > 0 ? documentResponse.feed[0] : {};
+        if (existingGroup.id != req.params.id) {
+            throw new BadRequestException('Specified group in payload does not exist in the database. Can not update it.', errorcode.GroupNotExistant);
+        }
+        var permissionGranted = (existingGroup.createdBy && existingGroup.createdBy === req.headers['auth-identity']) ||
+            (existingGroup.modifiedBy && existingGroup.modifiedBy === req.headers['auth-identity']);
+
+        if (!permissionGranted) {
+            throw new BadRequestException('User is not authorized to update the group with id ' + existingGroup.id, errorcode.UserNotAuthorized);
+        }
+
+        if (existingGroup.parentGroup) {
+            //fetch parentGroup
+            var documentResponse = yield findGroupsByGroupIdsAsync([existingGroup.parentGroup], allowedGroupFields, userId);
+            var parentGroup = documentResponse.feed.length > 0 ? documentResponse.feed[0] : {};
+            if (parentGroup.id != existingGroup.parentGroup) {
+                throw new BadRequestException('Specified parent group in payload does not exist.', errorcode.GroupNotExistant);
+            }
+            var permissionGranted = parentGroup.privacy === "Open" ||
+                (parentGroup.createdBy && parentGroup.createdBy === req.headers['auth-identity']) ||
+                (parentGroup.modifiedBy && parentGroup.modifiedBy === req.headers['auth-identity']);
+
+            if (!permissionGranted) {
+                throw new BadRequestException('User is not authorized to create a group under the group with id ' + parentGroup.id, errorcode.UserNotAuthorized);
+            }
+
+            parentGroup.modifiedBy = req.headers['auth-identity'];
+            parentGroup.modifiedTime = (new Date()).toUTCString();
+            if (!parentGroup.childGroups) {
+                parentGroup.childGroups = [];
+            } else {
+                var index = parentGroup.childGroups.indexOf(existingGroup.id);
+                parentGroup.childGroups.splice(index, 1);
+            }
+
+            var documentResponse = yield dal.updateAsync(parentGroup.id, parentGroup);
+        }
+
         logger.get().debug({ req: req }, 'Deleting group object...');
         var documentResponse = yield dal.removeAsync(req.params.id);
 
