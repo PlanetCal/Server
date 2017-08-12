@@ -110,6 +110,7 @@ module.exports = function (config, logger) {
 
         var permissionGranted = (event.createdBy && event.createdBy === req.headers['auth-identity']) || (event.modifiedBy && event.modifiedBy === req.headers['auth-identity']);
         req.body.createdBy = event.createdBy;
+        req.body.createdTime = event.createdTime;
 
         if (!permissionGranted) {
             // second fetch the group to find out its owner, to check if current user is same or not.

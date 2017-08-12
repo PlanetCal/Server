@@ -59,6 +59,8 @@ module.exports = function (config, logger) {
         // TODO: Validate event object in body         
         var event = req.body;
         event.modifiedBy = req.headers['auth-identity'];
+        event.modifiedTime = (new Date()).toUTCString();
+
         logger.get().debug({ req: req }, 'Updating event...');
         var documentResponse = yield dal.updateAsync(req.params.id, event);
         logger.get().debug({ req: req, event: documentResponse.resource }, 'Event updated successfully.');
@@ -69,6 +71,8 @@ module.exports = function (config, logger) {
         var event = req.body;
 
         event.createdBy = req.headers['auth-identity'];
+        event.createdTime = (new Date()).toUTCString();
+
         event.id = helpers.generateGuid();
         logger.get().debug({ req: req }, 'Creating event object...');
         var documentResponse = yield dal.insertAsync(event, {});
