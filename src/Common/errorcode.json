@@ -34,5 +34,7 @@
     "GroupInExistingEventNotExistant": "GroupInExistingEventNotExistant",
     "UserNotAuthorized": "UserNotAuthorized",
     "PayloadIdsDoNotMatch": "PayloadIdsDoNotMatch",
-    "EventNotExistant": "EventNotExistant"
+    "EventNotExistant": "EventNotExistant",
+    "GroupShouldContainCategory": "GroupShouldContainCategory",
+    "GroupShouldContainPrivacySetting": "GroupShouldContainPrivacySetting"
 }

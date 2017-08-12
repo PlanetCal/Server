@@ -115,7 +115,7 @@ module.exports = function (config, logger) {
         if (!permissionGranted) {
             // second fetch the group to find out its owner, to check if current user is same or not.
             var groupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '/' + event.groups[0];
-            groupsUrl += '?fields=owner|admins';
+            groupsUrl += '?fields=createdBy|modifiedBy|admins';
             var options = helpers.getRequestOption(req, groupsUrl, 'GET');
             var results = yield* helpers.forwardHttpRequest(options, serviceNames.groupsServiceName);
             var group = JSON.parse(results);
@@ -124,7 +124,7 @@ module.exports = function (config, logger) {
                 throw new BadRequestException('Groupid ' + event.groups[0] + ' associated with the existing event in db, does not exist', errorcode.GroupInExistingEventNotExistant);
             }
 
-            if (req.headers['auth-identity'] !== group.owner) {
+            if (req.headers['auth-identity'] !== group.createdBy && req.headers['auth-identity'] !== group.modifiedBy) {
                 throw new BadRequestException('User is not authorized to update the event under the group with id ' + event.groups[0], errorcode.UserNotAuthorized);
             };
         }
@@ -134,7 +134,7 @@ module.exports = function (config, logger) {
 
             // second fetch the group to find out its owner, to check if current user is same or not.
             var newGroupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '/' + req.body.groups[0];
-            newGroupsUrl += '?fields=owner|admins';
+            newGroupsUrl += '?fields=createdBy|modifiedBy|admins';
             var newOptions = helpers.getRequestOption(req, newGroupsUrl, 'GET');
             var newResults = yield* helpers.forwardHttpRequest(newOptions, serviceNames.groupsServiceName);
             var newGroup = JSON.parse(newResults);
@@ -142,8 +142,7 @@ module.exports = function (config, logger) {
                 //should it be internalServerError. Made it badRequestEx.. since this way, we can pass the ErrorCode out.
                 throw new BadRequestException('Groupid ' + req.body.groups[0] + ' does not exist', errorcode.GroupNotExistant);
             }
-
-            if (req.headers['auth-identity'] !== newGroup.owner) {
+            if (req.headers['auth-identity'] !== newGroup.createdBy && req.headers['auth-identity'] !== newGroup.modifiedBy) {
                 throw new BadRequestException('User is not authorized to update the event under the group with id ' + req.body.groups[0], errorcode.UserNotAuthorized);
             };
         }
@@ -176,7 +175,7 @@ module.exports = function (config, logger) {
         if (!permissionGranted) {
             // second fetch the group to find out its owner, to check if current user is same or not.
             var groupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '/' + event.groups[0];
-            groupsUrl += '?fields=owner|admins';
+            groupsUrl += '?fields=createdBy|modifiedBy|admins';
             var options = helpers.getRequestOption(req, groupsUrl, 'GET');
             var results = yield* helpers.forwardHttpRequest(options, serviceNames.groupsServiceName);
             var group = JSON.parse(results);
@@ -185,7 +184,7 @@ module.exports = function (config, logger) {
                 throw new BadRequestException('Groupid ' + event.groups[0] + ' associated with the existing event in db, does not exist', errorcode.GroupInExistingEventNotExistant);
             }
 
-            if (req.headers['auth-identity'] !== group.owner) {
+            if (req.headers['auth-identity'] !== group.createdBy && req.headers['auth-identity'] !== group.modifiedBy) {
                 throw new BadRequestException('User is not authorized to delete the event under the group with id ' + event.groups[0], errorcode.UserNotAuthorized);
             };
         }
