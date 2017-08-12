@@ -192,6 +192,23 @@ module.exports = {
         return dec;
     },
 
+    'areArraysIdentical': function areArraysIdentical(array1, array2) {
+        if (!array1 && !array2) {
+            return true;
+        }
+
+        if (!array1 || !array2 || array1.length !== array2.length) {
+            return false;
+        }
+
+        for (var i = 0; i < array1.length; i++) {
+            if (array1[i] != array2[i]) {
+                return false;
+            }
+        }
+        return true;
+    },
+
     // Documentation: https://github.com/eleith/emailjs    
     'sendEmail': function sendEmail(logger, toAddress, subject, messageHtmlText) {
         var adminUser = this.decrypt(emailConstants.adminEmail);

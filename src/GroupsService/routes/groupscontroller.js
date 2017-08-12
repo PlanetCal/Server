@@ -15,7 +15,7 @@ module.exports = function (config, logger) {
     var BadRequestException = require('../../common/error.js').BadRequestException;
     var errorcode = require('../../common/errorcode.json');
     var allowedCategories = ["School", "Office", "Sports", "Local", "Personal"];
-    var allowedGroupFields = ["name", "description", "icon", "parentGroup", "administrators", "location", "address", "contact", "website", "createdBy", "privacy", "category", "childGroups"];
+    var allowedGroupFields = ["name", "description", "icon", "parentGroup", "administrators", "location", "address", "contact", "website", "createdBy", "privacy", "category", "childGroups", "deleted"];
     var allowedPrivacySettings = ["Open", "Closed"];
 
     router.get('/:id', helpers.wrap(function* (req, res) {
@@ -140,6 +140,11 @@ module.exports = function (config, logger) {
         if (existingGroup.id != group.id) {
             throw new BadRequestException('Specified group in payload does not exist in the database. Can not update it.', errorcode.GroupNotExistant);
         }
+
+        if (!helpers.areArraysIdentical(existingGroup.childGroups, group.childGroups)) {
+            throw new BadRequestException('ChildGroups information has changed during update. It should remain same.', errorcode.ChildGroupsChanged);
+        }
+
         var permissionGranted = (existingGroup.createdBy && existingGroup.createdBy === req.headers['auth-identity']) ||
             (existingGroup.modifiedBy && existingGroup.modifiedBy === req.headers['auth-identity']);
 
@@ -213,7 +218,11 @@ module.exports = function (config, logger) {
         var documentResponse = yield findGroupsByGroupIdsAsync([req.params.id], allowedGroupFields, userId);
         var existingGroup = documentResponse.feed.length > 0 ? documentResponse.feed[0] : {};
         if (existingGroup.id != req.params.id) {
-            throw new BadRequestException('Specified group in payload does not exist in the database. Can not update it.', errorcode.GroupNotExistant);
+            throw new BadRequestException('Specified group does not exist in the database. Can not delete it.', errorcode.GroupNotExistant);
+        }
+
+        if (existingGroup.childGroups) {
+            throw new BadRequestException('Specified group contains childGroups. First delete the child groups before deleting this group. Can not delete it.', errorcode.GroupHasChildGroups);
         }
         var permissionGranted = (existingGroup.createdBy && existingGroup.createdBy === req.headers['auth-identity']) ||
             (existingGroup.modifiedBy && existingGroup.modifiedBy === req.headers['auth-identity']);

@@ -36,5 +36,7 @@
     "PayloadIdsDoNotMatch": "PayloadIdsDoNotMatch",
     "EventNotExistant": "EventNotExistant",
     "GroupShouldContainCategory": "GroupShouldContainCategory",
-    "GroupShouldContainPrivacySetting": "GroupShouldContainPrivacySetting"
+    "GroupShouldContainPrivacySetting": "GroupShouldContainPrivacySetting",
+    "ChildGroupsChanged": "ChildGroupsChanged",
+    "GroupHasChildGroups": "GroupHasChildGroups"
 }
