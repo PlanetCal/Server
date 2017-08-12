@@ -66,7 +66,9 @@ module.exports = function (config, logger) {
         // TODO: Validate group objects in body
         var group = req.body;
         //Setting the id. If the object does not have it, the create call fails for some reason.
-        group.id = helpers.generateGuid();
+        if (!group.id) {
+            group.id = helpers.generateGuid();
+        }
 
         if (!group.category || allowedCategories.indexOf(group.category) < 0) {
             throw new BadRequestException('Group payload does not contain category field or it is not in the allowed category list.', errorcode.GroupShouldContainCategory);
