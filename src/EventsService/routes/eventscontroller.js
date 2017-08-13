@@ -80,6 +80,26 @@ module.exports = function (config, logger) {
         res.status(200).json({ id: documentResponse.resource.id });
     }));
 
+    router.post('/deleteGroup', helpers.wrap(function* (req, res) {
+
+        var groups = req.body.groups;
+        logger.get().debug({ req: req }, 'Retrieving event objects by ids...');
+        var documentResponse = yield findEventsByGroupsIdsAsync(dal, groups, null);
+
+        var results = documentResponse.feed;
+        var filteredResults = helpers.removeDuplicatedItemsById(results);
+
+        logger.get().debug({ req: req, events: filteredResults }, 'Event objects retrieved successfully.');
+
+        for (var eventIndex in filteredResults) {
+            var event = filteredResults[eventIndex];
+            yield dal.removeAsync(event.id);
+            logger.get().debug({ req: req }, 'Event object deleted successfully. id: %s', event.id);
+        }
+        res.status(200).json(filteredResults);
+    }));
+
+
     router.delete('/:id', helpers.wrap(function* (req, res) {
         logger.get().debug({ req: req }, 'Deleting event object...');
         var documentResponse = yield dal.removeAsync(req.params.id);
@@ -112,7 +132,7 @@ module.exports = function (config, logger) {
         }];
 
         var querySpec = {
-            query: "SELECT e.id" + constraints + " FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g)",
+            query: "SELECT e.id" + constraints + " FROM e JOIN g IN e.groups WHERE ARRAY_CONTAINS(@groupsIds, g)",
             parameters: parameters
         };
         return dal.getAsync(querySpec);
