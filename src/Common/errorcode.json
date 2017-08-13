@@ -31,7 +31,6 @@
     "GroupIdNotFoundInPayload": "GroupIdNotFoundInPayload",
     "MultipleGroupsFoundInPayload": "MultipleGroupsFoundInPayload",
     "GroupNotExistant": "GroupNotExistant",
-    "GroupInExistingEventNotExistant": "GroupInExistingEventNotExistant",
     "UserNotAuthorized": "UserNotAuthorized",
     "PayloadIdsDoNotMatch": "PayloadIdsDoNotMatch",
     "EventNotExistant": "EventNotExistant",
