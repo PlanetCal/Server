@@ -1,10 +1,10 @@
 {
   "development": {
     "jwtSecret": "395b2bdd68bf70b057d49ac75982dda0fdb70cf46b54b9e3476e05e81feceb6f",
-    "documentdbEndpoint": "https://sachinplanetcal.documents.azure.com:443/",
-    "documentdbAuthKey": "wppLBoJHHo0aqf5IwyCjbjOdxV7rb2WeYL4dG07lMJnMcjXZEpnO6vQWcwkcACRPVxxcKcUWoPMhcknXlr4rLQ==",
-    "blobStorage": "sachinkuplanetcal",
-    "blobStorageAccessKey": "4EH/zVYjuLdK45O+hjkBLSlEUpXfi8v96BPx+NTRZHcX2uDLyR1vpA/da3iupUaNZVK+1qxVZkx6rXLjZ9O/Qw==",
+    "documentdbEndpoint": "https://planetcal1.documents.azure.com:443/",
+    "documentdbAuthKey": "hpoTrARhMKtYwv7UZ0lbW0AQQbhVGCMElFy2kaSyBzfbiLMqlLArgAwWRN1zgW3sxL5twtffXK5rSe6y3RZ6IQ==",
+    "blobStorage": "planetcal2",
+    "blobStorageAccessKey": "coNK2q0EQzxU1vOI18WvxkIn0sGgAiPlgfxjiXuWmBnVwBKiD36Vsp3ceSQRXjSpwbNiS514ZHXurM10G/3HuA==",
     "blobGroupContainer": "groups",
     "blobEventContainer": "events",
     "blobSizeLimitInMB": 5,
