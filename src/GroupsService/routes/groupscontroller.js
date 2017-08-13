@@ -17,6 +17,8 @@ module.exports = function (config, logger) {
     var allowedCategories = ["School", "Office", "Sports", "Local", "Personal"];
     var allowedGroupFields = ["name", "description", "icon", "parentGroup", "administrators", "location", "address", "contact", "website", "createdBy", "privacy", "category", "childGroups", "deleted"];
     var allowedPrivacySettings = ["Open", "Closed"];
+    var serviceNames = require('../../common/constants.json')['serviceNames'];
+    var urlNames = require('../../common/constants.json')['urlNames'];
 
     router.get('/:id', helpers.wrap(function* (req, res) {
         var fields = req.query.fields ? req.query.fields.split('|') : null;
@@ -259,6 +261,12 @@ module.exports = function (config, logger) {
 
             var documentResponse = yield dal.updateAsync(parentGroup.id, parentGroup);
         }
+
+        //Deleting corresponding Events too.
+        var eventsUrl = config.eventsServiceEndpoint + '/' + urlNames.events + '/deleteGroup';
+        req.body = { groups: [req.params.id] };
+        var options = helpers.getRequestOption(req, eventsUrl, 'POST');
+        var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
 
         logger.get().debug({ req: req }, 'Deleting group object...');
         var documentResponse = yield dal.removeAsync(req.params.id);
