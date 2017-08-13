@@ -6,39 +6,46 @@ var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var passport = require('passport');
 var app = express();
-var config = require('../common/config.json')[app.get('env')];
 
+var constants = require('../common/constants.json')['serviceNames'];
+var Logger = require('../common/logger.js').Logger;
+var logger = new Logger(constants.userAuthServiceName, null, app.get('env') === 'development');
+var accesslogger = require('../common/accesslogger.js');
 
-require('./userauthpassport.js')(passport, config);
-var UserLogin = require('./routes/logincontroller.js')(passport, config);
-var UserAuth = require('./routes/userauthcontroller.js')(passport, config);
-var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
+logger.get().debug('Starting %s.....', constants.userAuthServiceName);
+
+app.use(accesslogger.getAccessLogger(logger));
+
+var config = require('../common/config.json')[app.get('env') || 'production'];
+
+require('./userauthpassport.js')(passport, config, logger);
+var userLoginController = require('./routes/logincontroller.js')(passport, config, logger);
+var userAuthController = require('./routes/userauthcontroller.js')(passport, config, logger);
 var helpers = require('../common/helpers.js');
+
 var NotFoundException = require('../common/error.js').NotFoundException;
+var errorcode = require('../common/errorcode.json');
 
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(passport.initialize());
 
 // login
-app.use('/login', UserLogin);
-app.use('/userauth', UserAuth);
+app.use('/login', userLoginController);
+app.use('/userauth', userAuthController);
 
 // error handling for other routes
 app.use(function(req, res, next) {
-    next(new NotFoundException('Resource specified by URL cannot be located.'));
+    next(new NotFoundException('Resource specified by URL cannot be located.', errorcode.GenericNotFoundException));
 });
 
 app.use(function(err, req, res, next) {
-    err.serviceName = 'UserAuthService';
-    err.activityId = req.headers['activityid'];
-    res.status(err.code || 500).json(helpers.constructResponseJsonFromExceptionRecursive(err, true));
+    helpers.handleServiceException(err, req, res, constants.userAuthServiceName, logger, true);
 });
 
 var port = process.env.PORT || config.userAuthServicePort;
 var server = app.listen(port, function(){
-    console.log('http://localhost:' + server.address().port + '/');
+    logger.get().debug('%s started at http://localhost:%d/', constants.userAuthServiceName, server.address().port);
 });

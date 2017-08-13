@@ -1,0 +1,20 @@
+{
+  "title" : "userauth",
+  "description": "userauth object for logon",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "firstname of the account user"
+    },
+    "password": {
+      "type": "string",
+      "description": "lastname of the account user"
+    },
+    "email": {
+      "type": "string",
+      "description": "username of account"
+    }
+  },
+  "required": ["name", "password", "email"]
+}
