@@ -262,8 +262,8 @@ module.exports = function (config, logger) {
             var documentResponse = yield dal.updateAsync(parentGroup.id, parentGroup);
         }
 
-        //Deleting corresponding Events too.
-        var eventsUrl = config.eventsServiceEndpoint + '/' + urlNames.events + '/deleteGroup';
+        // Deleting corresponding Events too.
+        var eventsUrl = config.eventsServiceEndpoint + '/' + urlNames.events + '/deleteGroupsEvents';
         req.body = { groups: [req.params.id] };
         var options = helpers.getRequestOption(req, eventsUrl, 'POST');
         var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);

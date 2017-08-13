@@ -80,7 +80,7 @@ module.exports = function (config, logger) {
         res.status(200).json({ id: documentResponse.resource.id });
     }));
 
-    router.post('/deleteGroup', helpers.wrap(function* (req, res) {
+    router.post('/deleteGroupsEvents', helpers.wrap(function* (req, res) {
 
         var groups = req.body.groups;
         logger.get().debug({ req: req }, 'Retrieving event objects by ids...');
