@@ -58,11 +58,9 @@ module.exports = function (config, logger) {
     router.put('/:id', helpers.wrap(function* (req, res) {
         // TODO: Validate event object in body         
         var event = req.body;
-        /*
-        if (event['ownedById'] !== req.headers['auth-identity']){
-            throw new ForbiddenException('Forbidden');
-        }
-        */
+        event.modifiedBy = req.headers['auth-identity'];
+        event.modifiedTime = (new Date()).toUTCString();
+
         logger.get().debug({ req: req }, 'Updating event...');
         var documentResponse = yield dal.updateAsync(req.params.id, event);
         logger.get().debug({ req: req, event: documentResponse.resource }, 'Event updated successfully.');
@@ -70,19 +68,37 @@ module.exports = function (config, logger) {
     }));
 
     router.post('/', helpers.wrap(function* (req, res) {
-        // TODO: Validate event object in body         
         var event = req.body;
 
-        /*
-        event['createdById'] = req.headers['auth-identity'];
-        event['ownedById'] = req.headers['auth-identity'];
-        */
+        event.createdBy = req.headers['auth-identity'];
+        event.createdTime = (new Date()).toUTCString();
+
         event.id = helpers.generateGuid();
         logger.get().debug({ req: req }, 'Creating event object...');
         var documentResponse = yield dal.insertAsync(event, {});
         logger.get().debug({ req: req, event: documentResponse.resource }, 'Event object created successfully.');
         res.status(200).json({ id: documentResponse.resource.id });
     }));
+
+    router.post('/deleteGroupsEvents', helpers.wrap(function* (req, res) {
+
+        var groups = req.body.groups;
+        logger.get().debug({ req: req }, 'Retrieving event objects by ids...');
+        var documentResponse = yield findEventsByGroupsIdsAsync(dal, groups, null);
+
+        var results = documentResponse.feed;
+        var filteredResults = helpers.removeDuplicatedItemsById(results);
+
+        logger.get().debug({ req: req, events: filteredResults }, 'Event objects retrieved successfully.');
+
+        for (var eventIndex in filteredResults) {
+            var event = filteredResults[eventIndex];
+            yield dal.removeAsync(event.id);
+            logger.get().debug({ req: req }, 'Event object deleted successfully. id: %s', event.id);
+        }
+        res.status(200).json(filteredResults);
+    }));
+
 
     router.delete('/:id', helpers.wrap(function* (req, res) {
         logger.get().debug({ req: req }, 'Deleting event object...');
@@ -91,7 +107,7 @@ module.exports = function (config, logger) {
         res.status(200).json({ id: req.params.id });
     }));
 
-    function findEventByEventIdAsync(eventId, fields) {
+    function findEventByEventIdAsync(dal, eventId, fields) {
         var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
         console.log('constraints: ' + constraints);
         var querySpec = {
@@ -116,7 +132,7 @@ module.exports = function (config, logger) {
         }];
 
         var querySpec = {
-            query: "SELECT e.id" + constraints + " FROM root e JOIN g IN e.owningGroups WHERE ARRAY_CONTAINS(@groupsIds, g)",
+            query: "SELECT e.id" + constraints + " FROM e JOIN g IN e.groups WHERE ARRAY_CONTAINS(@groupsIds, g)",
             parameters: parameters
         };
         return dal.getAsync(querySpec);

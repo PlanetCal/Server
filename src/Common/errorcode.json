@@ -31,5 +31,11 @@
     "GroupIdNotFoundInPayload": "GroupIdNotFoundInPayload",
     "MultipleGroupsFoundInPayload": "MultipleGroupsFoundInPayload",
     "GroupNotExistant": "GroupNotExistant",
-    "UserNotAuthorized": "UserNotAuthorized"
+    "UserNotAuthorized": "UserNotAuthorized",
+    "PayloadIdsDoNotMatch": "PayloadIdsDoNotMatch",
+    "EventNotExistant": "EventNotExistant",
+    "GroupShouldContainCategory": "GroupShouldContainCategory",
+    "GroupShouldContainPrivacySetting": "GroupShouldContainPrivacySetting",
+    "ChildGroupsChanged": "ChildGroupsChanged",
+    "GroupHasChildGroups": "GroupHasChildGroups"
 }

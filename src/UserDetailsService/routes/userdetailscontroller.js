@@ -41,9 +41,10 @@ module.exports = function (config, logger) {
         //Creating the default group.
         var defaultGroup = {
             id: userDetails.id,
-            privacy: "Private",
-            name: "Default",
-            description: "The default group assigned to the logged in user by the app.",
+            privacy: "Closed",
+            category: "Personal",
+            name: "My personal Group",
+            description: "The default group assigned to me for creating private events. Nobody else can see it unless I share it with my friends, using share option.",
         };
         req.body = defaultGroup;
         var options = helpers.getRequestOption(req, config.groupsServiceEndpoint + '/' + urlNames.groups, 'POST');
