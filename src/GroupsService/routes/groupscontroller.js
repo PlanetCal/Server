@@ -270,7 +270,7 @@ module.exports = function (config, logger) {
 
         logger.get().debug({ req: req }, 'Deleting group object...');
 
-        var documentResponse = yield dal.removeAsync(req.params.id, {});
+        var documentResponse = yield dal.removeAsync(req.params.id);
 
         logger.get().debug({ req: req }, 'group object deleted successfully. id: %s', req.params.id);
         res.status(200).json({ id: req.params.id });
