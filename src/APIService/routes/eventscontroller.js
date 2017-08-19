@@ -174,7 +174,7 @@ module.exports = function (config, logger) {
 
         var permissionGranted = (event.createdBy && event.createdBy === req.headers['auth-identity']) || (event.modifiedBy && event.modifiedBy === req.headers['auth-identity']);
 
-        if (!permissionGranted && event.groups || event.groups.length >= 1) {
+        if (permissionGranted !== true && event.groups && event.groups.length >= 1) {
             // second fetch the group to find out its owner, to check if current user is same or not.
             var groupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '/' + event.groups[0];
             groupsUrl += '?fields=createdBy|modifiedBy|admins';
