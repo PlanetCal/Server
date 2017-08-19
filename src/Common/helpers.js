@@ -102,18 +102,18 @@ module.exports = {
 
     'operatorParser': function operatorParser(clause) {
         var operator = '';
-        if (clause.indexOf('=') !== -1) {
-            operator = '=';
+        if (clause.indexOf('<=') !== -1) {
+            operator = '<=';
+        } else if (clause.indexOf('>=') !== -1) {
+            operator = '>=';
         } else if (clause.indexOf('!=') !== -1) {
             operator = '!=';
+        } else if (clause.indexOf('=') !== -1) {
+            operator = '=';
         } else if (clause.indexOf('<') !== -1) {
             operator = '<';
         } else if (clause.indexOf('>') !== -1) {
             operator = '>';
-        } else if (clause.indexOf('<=') !== -1) {
-            operator = '<=';
-        } else if (clause.indexOf('>=') !== -1) {
-            operator = '>=';
         }
 
         if (operator !== '') {
