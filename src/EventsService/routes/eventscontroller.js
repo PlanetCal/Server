@@ -51,10 +51,17 @@ module.exports = function (config, logger) {
         }
 
         var results = documentResponse.feed;
-        var filteredResults = helpers.removeDuplicatedItemsById(results);
+        //var results = helpers.removeDuplicatedItemsById(results);
 
-        logger.get().debug({ req: req, events: filteredResults }, 'Event objects retrieved successfully.');
-        res.status(200).json(filteredResults);
+        // the following will only sort if startDateTime is part of the queried fields.         
+        results.sort(function (a, b) {
+            a = new Date(a.startDateTime);
+            b = new Date(b.startDateTime);
+            return a < b ? -1 : a > b ? 1 : 0;
+        });
+
+        logger.get().debug({ req: req, events: results }, 'Event objects retrieved successfully.');
+        res.status(200).json(results);
     }));
 
     router.put('/:id', helpers.wrap(function* (req, res) {
@@ -135,7 +142,6 @@ module.exports = function (config, logger) {
         var filterExpressionParsed = helpers.convertFilterExpressionToParameters('e', filterExpression, 'AND', '');
 
         var queryStatement = "SELECT e.id" + constraints + " FROM e JOIN g IN e.groups WHERE ARRAY_CONTAINS(@groupsIds, g) " + filterExpressionParsed.filterExpression;
-
         var parameters = filterExpressionParsed.parameters;
 
         parameters.push({
