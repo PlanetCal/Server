@@ -301,7 +301,7 @@ module.exports = function (config, logger) {
     function findAllGroupAsync(fields, userId, filterExpression) {
         var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
 
-        var filterExpressionParsed = helpers.convertFilterExpressionToParameters('e', filterExpression, ' AND ');
+        var filterExpressionParsed = helpers.convertFilterExpressionToParameters('e', filterExpression, '', ' AND ');
 
         var queryStatement = "SELECT e.id" + constraints + " FROM root e WHERE " + filterExpressionParsed.filterExpression + "(e.owner = @userId or e.privacy != @privacy)";
 

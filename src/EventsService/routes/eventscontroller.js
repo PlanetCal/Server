@@ -38,14 +38,16 @@ module.exports = function (config, logger) {
             groupids = req.query.groupids.split('|');
         }
 
+        var filterExpression = req.query.filter;
+
         var documentResponse;
-        if (!groupids && !fields) {
+        if (!groupids && !fields && !filterExpression) {
             logger.get().debug({ req: req }, 'Retrieving all event objects...');
             documentResponse = yield findAllEvents(dal);
         }
         else {
             logger.get().debug({ req: req }, 'Retrieving event objects by ids...');
-            documentResponse = yield findEventsByGroupsIdsAsync(dal, groupids, fields);
+            documentResponse = yield findEventsByGroupsIdsAsync(dal, groupids, fields, filterExpression);
         }
 
         var results = documentResponse.feed;
@@ -84,7 +86,7 @@ module.exports = function (config, logger) {
 
         var groups = req.body.groups;
         logger.get().debug({ req: req }, 'Retrieving event objects by ids...');
-        var documentResponse = yield findEventsByGroupsIdsAsync(dal, groups, null);
+        var documentResponse = yield findEventsByGroupsIdsAsync(dal, groups, null, null);
 
         var results = documentResponse.feed;
         var filteredResults = helpers.removeDuplicatedItemsById(results);
@@ -123,18 +125,29 @@ module.exports = function (config, logger) {
         return dal.getAsync(querySpec);
     }
 
-    function findEventsByGroupsIdsAsync(dal, groupIds, fields) {
-        var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
+    function findEventsByGroupsIdsAsync(dal, groupIds, fields, filterExpression) {
 
-        var parameters = [{
+        if (!groupIds || groupIds.length === 0) {
+            throw new BadRequestException('The query should specify the group Ids for which we need to get events', errorcode.GroupIdNotFoundInPayload);
+        }
+
+        var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
+        var filterExpressionParsed = helpers.convertFilterExpressionToParameters('e', filterExpression, 'AND', '');
+
+        var queryStatement = "SELECT e.id" + constraints + " FROM e JOIN g IN e.groups WHERE ARRAY_CONTAINS(@groupsIds, g) " + filterExpressionParsed.filterExpression;
+
+        var parameters = filterExpressionParsed.parameters;
+
+        parameters.push({
             name: "@groupsIds",
             value: groupIds
-        }];
+        });
 
         var querySpec = {
-            query: "SELECT e.id" + constraints + " FROM e JOIN g IN e.groups WHERE ARRAY_CONTAINS(@groupsIds, g)",
+            query: queryStatement,
             parameters: parameters
         };
+
         return dal.getAsync(querySpec);
     }
 
