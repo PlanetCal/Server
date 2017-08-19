@@ -75,7 +75,7 @@ module.exports = {
     },
 
     //Example of Filters: http://localhost:1337/groups?fields=name|description|category&filter=field1=value1$OR$field2=value2$AND$field3<value3
-    'convertFilterExpressionToParameters': function convertFilterExpressionToParameters(prefix, filterExpression, postfix) {
+    'convertFilterExpressionToParameters': function convertFilterExpressionToParameters(prefix, filterExpression, prepend, append) {
         var whereClause = '';
         var parameters = [];
 
@@ -83,7 +83,7 @@ module.exports = {
             var fields = filterExpression.split('$');
 
             for (var i in fields) {
-                var result = this.operatorParser(fields[i]);
+                var result = this.operatorParser(fields[i], i);
 
                 if (result && result.whereClause != '') {
                     whereClause += prefix + "." + result.whereClause;
@@ -92,7 +92,7 @@ module.exports = {
                     whereClause += " " + fields[i] + " ";
                 }
             }
-            whereClause += " " + postfix;
+            whereClause = prepend + " " + whereClause + " " + append;;
         }
         return {
             filterExpression: whereClause,
@@ -100,27 +100,28 @@ module.exports = {
         }
     },
 
-    'operatorParser': function operatorParser(clause) {
+    'operatorParser': function operatorParser(clause, fieldIndex) {
         var operator = '';
-        if (clause.indexOf('=') !== -1) {
-            operator = '=';
+        if (clause.indexOf('<=') !== -1) {
+            operator = '<=';
+        } else if (clause.indexOf('>=') !== -1) {
+            operator = '>=';
         } else if (clause.indexOf('!=') !== -1) {
             operator = '!=';
+        } else if (clause.indexOf('=') !== -1) {
+            operator = '=';
         } else if (clause.indexOf('<') !== -1) {
             operator = '<';
         } else if (clause.indexOf('>') !== -1) {
             operator = '>';
-        } else if (clause.indexOf('<=') !== -1) {
-            operator = '<=';
-        } else if (clause.indexOf('>=') !== -1) {
-            operator = '>=';
         }
 
         if (operator !== '') {
             var parts = clause.split(operator);
-            var whereClause = parts[0] + " " + operator + " @" + parts[0];
+            var fieldName = '@' + parts[0] + fieldIndex;
+            var whereClause = parts[0] + " " + operator + " " + fieldName;
             var parameter = {
-                name: "@" + parts[0],
+                name: fieldName,
                 value: parts[1]
             };
             return {
