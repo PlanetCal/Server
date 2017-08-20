@@ -63,7 +63,7 @@ module.exports = function (config, logger) {
         }
 
         var groupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '/' + req.body.groups[0];
-        groupsUrl += '?fields=createdBy|modifiedBy|admins|privacy';
+        groupsUrl += '?fields=createdBy|modifiedBy|administrators|privacy';
         var options = helpers.getRequestOption(req, groupsUrl, 'GET');
         var results = yield* helpers.forwardHttpRequest(options, serviceNames.groupsServiceName);
         var group = JSON.parse(results);
@@ -73,7 +73,7 @@ module.exports = function (config, logger) {
 
         var permissionGranted = group.privacy === "Open" ||
             (group.createdBy && group.createdBy === req.headers['auth-identity']) ||
-            group.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0;
+            (group.administrators && group.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0);
 
         if (!permissionGranted) {
             throw new BadRequestException('User is not authorized to create an event under the group with id ' + req.body.groups[0], errorcode.UserNotAuthorized);
@@ -116,7 +116,7 @@ module.exports = function (config, logger) {
         if (!permissionGranted && event.groups || event.groups.length >= 1) {
             // second fetch the group to find out its owner, to check if current user is same or not.
             var groupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '/' + event.groups[0];
-            groupsUrl += '?fields=createdBy|modifiedBy|admins|privacy';
+            groupsUrl += '?fields=createdBy|modifiedBy|administrators|privacy';
             var options = helpers.getRequestOption(req, groupsUrl, 'GET');
             var results = yield* helpers.forwardHttpRequest(options, serviceNames.groupsServiceName);
             var group = JSON.parse(results);
@@ -124,7 +124,7 @@ module.exports = function (config, logger) {
             if (group && group.id === event.groups[0]) {
 
                 var permissionGranted = (group.createdBy && group.createdBy === req.headers['auth-identity']) ||
-                    group.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0;
+                    (group.administrators && group.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0);
 
                 if (!permissionGranted) {
                     throw new BadRequestException('User is not authorized to update the event under the group with id ' + event.groups[0], errorcode.UserNotAuthorized);
@@ -137,7 +137,7 @@ module.exports = function (config, logger) {
 
             // second fetch the group to find out its owner, to check if current user is same or not.
             var newGroupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '/' + req.body.groups[0];
-            newGroupsUrl += '?fields=createdBy|modifiedBy|admins|privacy';
+            newGroupsUrl += '?fields=createdBy|modifiedBy|administrators|privacy';
             var newOptions = helpers.getRequestOption(req, newGroupsUrl, 'GET');
             var newResults = yield* helpers.forwardHttpRequest(newOptions, serviceNames.groupsServiceName);
             var newGroup = JSON.parse(newResults);
@@ -148,7 +148,7 @@ module.exports = function (config, logger) {
 
             var permissionGranted = newGroup.privacy === "Open" ||
                 (newGroup.createdBy && newGroup.createdBy === req.headers['auth-identity']) ||
-                newGroup.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0;
+                (newGroup.administrators && newGroup.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0);
 
             if (!permissionGranted) {
                 throw new BadRequestException('User is not authorized to update the event under the group with id ' + req.body.groups[0], errorcode.UserNotAuthorized);
@@ -179,14 +179,14 @@ module.exports = function (config, logger) {
         if (permissionGranted !== true && event.groups && event.groups.length >= 1) {
             // second fetch the group to find out its owner, to check if current user is same or not.
             var groupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '/' + event.groups[0];
-            groupsUrl += '?fields=createdBy|modifiedBy|admins';
+            groupsUrl += '?fields=createdBy|modifiedBy|administrators|privacy';
             var options = helpers.getRequestOption(req, groupsUrl, 'GET');
             var results = yield* helpers.forwardHttpRequest(options, serviceNames.groupsServiceName);
             var group = JSON.parse(results);
             if (group && group.id === event.groups[0]) {
 
                 var permissionGranted = (group.createdBy && group.createdBy === req.headers['auth-identity']) ||
-                    group.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0;
+                    (group.administrators && group.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0);
 
                 if (!permissionGranted) {
                     throw new BadRequestException('User is not authorized to update the event under the group with id ' + event.groups[0], errorcode.UserNotAuthorized);

@@ -172,7 +172,7 @@ module.exports = function (config, logger) {
         }
 
         var permissionGranted = (existingGroup.createdBy && existingGroup.createdBy === req.headers['auth-identity']) ||
-            existingGroup.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0;
+            (existingGroup.administrators && existingGroup.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0);
 
         if (!permissionGranted) {
             throw new BadRequestException('User is not authorized to update the group with id ' + existingGroup.id, errorcode.UserNotAuthorized);
