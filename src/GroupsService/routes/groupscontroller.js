@@ -80,6 +80,14 @@ module.exports = function (config, logger) {
             throw new BadRequestException('Group payload does not contain privacy field or it is not in the allowed list.', errorcode.GroupShouldContainPrivacySetting);
         };
 
+        if (group.administrators) {
+            for (var i = 0; i < group.administrators.length; i++) {
+                if (!helpers.isEmailValid(group.administrators[i])) {
+                    throw new BadRequestException(group.administrators[i] + ' is not a valid administrator email.', errorcode.InvalidEmail);
+                }
+            }
+        };
+
         var userId = req.headers['auth-identity'];
         //if group has a parentGroup, we need to check if user has permisison to create a sub group under it. 
         //And if it does, update the parentGroup by adding the current group under its childGroups.
@@ -133,6 +141,14 @@ module.exports = function (config, logger) {
 
         if (!group.privacy || allowedPrivacySettings.indexOf(group.privacy) < 0) {
             throw new BadRequestException('Group payload does not contain privacy field or it is not in the allowed list.', errorcode.GroupShouldContainPrivacySetting);
+        };
+
+        if (group.administrators) {
+            for (var i = 0; i < group.administrators.length; i++) {
+                if (!helpers.isEmailValid(group.administrators[i])) {
+                    throw new BadRequestException(group.administrators[i] + ' is not a valid administrator email.', errorcode.InvalidEmail);
+                }
+            }
         };
 
         group.modifiedBy = req.headers['auth-identity'];

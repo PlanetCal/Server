@@ -37,5 +37,6 @@
     "GroupShouldContainCategory": "GroupShouldContainCategory",
     "GroupShouldContainPrivacySetting": "GroupShouldContainPrivacySetting",
     "ChildGroupsChanged": "ChildGroupsChanged",
-    "GroupHasChildGroups": "GroupHasChildGroups"
+    "GroupHasChildGroups": "GroupHasChildGroups",
+    "InvalidEmail": "InvalidEmail"
 }
