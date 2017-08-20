@@ -153,7 +153,9 @@ app.use('/*', cors(defaultCorsOptions), passport.authenticate('token-bearer', { 
         else {
             // set auth-identity header so that internal services
             // know the caller's identity
-            req.headers['auth-identity'] = req.user;
+            req.headers['auth-identity'] = req.user.id;
+            req.headers['auth-email'] = req.user.email;
+            req.headers['auth-name'] = req.user.name;
             logger.get().debug({ req: req }, 'Attach auth-identity %s to request header.', req.user);
             // continue calling middleware in line
             next();

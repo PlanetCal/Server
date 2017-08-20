@@ -35,6 +35,8 @@ module.exports = {
             headers: {
                 'content-type': 'application/json; charset=utf-8',
                 'auth-identity': req.headers['auth-identity'],
+                'auth-email': req.headers['auth-email'],
+                'auth-name': req.headers['auth-name'],
                 'version': req.headers['version'],
                 'activityid': req.headers['activityid']
             },
@@ -210,8 +212,24 @@ module.exports = {
         return true;
     },
 
+    'getItemsfromFirstArrayAndNotInSecondArray': function getItemsfromFirstArrayAndNotInSecondArray(array1, array2) {
+        var newArray = [];
+        if (!array1 || array1.length === 0) {
+            return newArray;
+        }
+        if (!array2 || array2.length === 0) {
+            return array1;
+        }
+        array1.forEach(function (element) {
+            if (element && element.length > 0 && array2.indexOf(element) < 0) {
+                newArray.push(element);
+            }
+        });
+        return newArray;
+    },
+
     // Documentation: https://github.com/eleith/emailjs    
-    'sendEmail': function sendEmail(logger, toAddress, subject, messageHtmlText) {
+    'sendEmail': function sendEmail(logger, toAddress, subject, messageHtmlText, ccAddress) {
         var adminUser = this.decrypt(emailConstants.adminEmail);
         var server = email.server.connect({
             user: adminUser,
@@ -227,6 +245,7 @@ module.exports = {
             from: adminUser,
             text: 'Your email Server does not support Html format. Please use any other modern emailId.',
             to: toAddress,
+            cc: ccAddress ? ccAddress : "",
             subject: subject,
             attachment:
             [

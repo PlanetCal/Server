@@ -28,7 +28,8 @@
     "eventsServicePort": 1342,
     "eventsServiceEndpoint": "http://localhost:1342",
     "groupsRecommendationServicePort": 1343,
-    "groupsRecommendationServiceEndpoint": "http://localhost:1343"
+    "groupsRecommendationServiceEndpoint": "http://localhost:1343",
+    "planetCalLoginUrl": "http://localhost:8081/login"
   },
   "production": {
     "jwtSecret": "395b2bdd68bf70b057d49ac75982dda0fdb70cf46b54b9e3476e05e81feceb6f",
@@ -59,6 +60,7 @@
     "eventsServicePort": 1342,
     "eventsServiceEndpoint": "http://localhost:1342",
     "groupsRecommendationServicePort": 1343,
-    "groupsRecommendationServiceEndpoint": "http://localhost:1343"
+    "groupsRecommendationServiceEndpoint": "http://localhost:1343",
+    "planetCalLoginUrl": "http://localhost:8081/login"
   }
 }

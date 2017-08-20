@@ -149,6 +149,8 @@ module.exports = function (config, logger) {
             throw new BadRequestException('ChildGroups information has changed during update. It should remain same.', errorcode.ChildGroupsChanged);
         }
 
+        sendEmailsToAddedAndRemovedAdmins(logger, helpers, existingGroup.administrators, group.administrators, req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, group.name);
+
         var permissionGranted = (existingGroup.createdBy && existingGroup.createdBy === req.headers['auth-identity']) ||
             (existingGroup.modifiedBy && existingGroup.modifiedBy === req.headers['auth-identity']);
 
@@ -375,5 +377,49 @@ module.exports = function (config, logger) {
     }
 
     return router;
+}
+
+function sendEmailsToAddedAndRemovedAdmins(logger, helpers, originalGroup, updatedGroup, currentUserEmail, currentUserName, planetCalWebSiteLink, groupName) {
+    var adminsAdded = helpers.getItemsfromFirstArrayAndNotInSecondArray(updatedGroup, originalGroup);
+    var adminsRemoved = helpers.getItemsfromFirstArrayAndNotInSecondArray(originalGroup, updatedGroup);
+
+    for (var i = 0; i < adminsAdded.length; i++) {
+        sendGroupInviteEmail(logger, helpers, currentUserEmail, currentUserName, planetCalWebSiteLink, adminsAdded[i], groupName, true);
+    }
+
+    for (var i = 0; i < adminsRemoved.length; i++) {
+        sendGroupInviteEmail(logger, helpers, currentUserEmail, currentUserName, planetCalWebSiteLink, adminsRemoved[i], groupName, false);
+    }
+}
+
+function sendGroupInviteEmail(logger, helpers, currentUserEmail, currentUserName, planetCalWebSiteLink, adminEmail, groupName, added) {
+    var toAddress = 'Guest <' + adminEmail + '>';
+    var ccAddress = currentUserName + ' <' + currentUserEmail + '>';
+    var subject = "";
+
+    var messageBody = "";
+    messageBody += "<h2>Hello " + adminEmail + "</h2>";
+    if (added) {
+        subject = "You have been made administrator of PlanetCal group '" + groupName + "'";
+        messageBody += "<p>Congratulations!</p>";
+        messageBody += "<p>You have been enrolled as an administrator of the PlanetCal group " + groupName + " by " + currentUserName + "</p>";
+        messageBody += "<p>You can now edit this group, add or remove events under it.</p>";
+        messageBody += "<p>If you are already a member of PlanetCal. You can login any time to view the groups you are an administrator of, and much more.</p>";
+        messageBody += "<p>But if you are not a member of PlanetCal...</p>";
+        messageBody += "<p>Please register yourself by clicking on the following link.</p>";
+    }
+    else {
+        subject = "You are no longer an administrator of a PlanetCal group " + groupName;
+        messageBody += "<p>You have been removed as an administrator of the PlanetCal group " + groupName + " by " + currentUserName + "</p>";
+        messageBody += "<p>If you are already a member of PlanetCal. You can login any time to publish your own events for others, view other groups, create your own, and much more.</p>";
+        messageBody += "<p>If you are not a member of PlanetCal, you can still register to explore it further...</p>";
+        messageBody += "<p>Please complete the registration process by clicking on the following link, and chosing to register.</p>";
+    }
+
+    messageBody += "<p><a href='" + planetCalWebSiteLink + "'>PlanetCal registration</a></a></p>";
+    messageBody += "<p>Thank you</p>";
+    messageBody += "<p>PlanetCal team.</p>";
+
+    helpers.sendEmail(logger, toAddress, subject, messageBody, ccAddress);
 }
 

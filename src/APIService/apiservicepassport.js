@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = function(passport, config, logger){
+module.exports = function (passport, config, logger) {
     var helpers = require('../common/helpers.js');
     var BearerStrategy = require('passport-http-bearer').Strategy;
     var TokenGenerator = require('../common/tokengenerator.js').TokenGenerator;
@@ -8,22 +8,22 @@ module.exports = function(passport, config, logger){
     var errorcode = require('../common/errorcode.json')['errorcode'];
 
     passport.use('token-bearer', new BearerStrategy(
-        function(token, done) {
+        function (token, done) {
             logger.get().debug('Attempt to decode token %s.', token);
             var tokenGenerator = new TokenGenerator(config);
-            try{
+            try {
                 var decodedObject = tokenGenerator.decode(token);
-                    
-                if (!decodedObject || !decodedObject.id){
+
+                if (!decodedObject || !decodedObject.id) {
                     return done(new UnauthorizedException('Invalid token', errorcode.InvalidToken), false);
                 }
             }
-            catch(err){
-                return done(new UnauthorizedException('Invalid token', errorcode.InvalidToken), false);                
+            catch (err) {
+                return done(new UnauthorizedException('Invalid token', errorcode.InvalidToken), false);
             }
 
             logger.get().debug('Successfully decode token %s to user id %s.', token, decodedObject.id);
-            return done(null, decodedObject.id);
+            return done(null, { id: decodedObject.id, email: decodedObject.email, name: decodedObject.name });
         }
     ));
 }
