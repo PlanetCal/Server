@@ -259,6 +259,11 @@ module.exports = {
         });
     },
 
+    'isEmailValid': function isEmailValid(email) {
+        var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+        return regex.test(email);
+    },
+
     'handleServiceException': function handleServiceException(err, req, res, serviceName, logger, logStack) {
         err.serviceName = serviceName;
         err.activityId = req.headers['activityid'];

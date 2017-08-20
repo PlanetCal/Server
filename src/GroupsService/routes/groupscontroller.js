@@ -110,6 +110,8 @@ module.exports = function (config, logger) {
         group.createdBy = req.headers['auth-identity'];
         group.createdTime = (new Date()).toUTCString();
 
+        sendEmailsToAddedAndRemovedAdmins(logger, helpers, [], group.administrators, req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, group.name);
+
         logger.get().debug({ req: req, group: group }, 'Creating group object...');
         var documentResponse = yield dal.insertAsync(group, {});
         logger.get().debug({ req: req, group: documentResponse.resource }, 'group object created successfully.');
@@ -270,6 +272,8 @@ module.exports = function (config, logger) {
         var options = helpers.getRequestOption(req, eventsUrl, 'POST');
         var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
 
+        sendEmailsToAddedAndRemovedAdmins(logger, helpers, existingGroup.administrators, [], req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, existingGroup.name);
+
         logger.get().debug({ req: req }, 'Deleting group object...');
 
         var documentResponse = yield dal.removeAsync(req.params.id);
@@ -384,15 +388,18 @@ function sendEmailsToAddedAndRemovedAdmins(logger, helpers, originalGroup, updat
     var adminsRemoved = helpers.getItemsfromFirstArrayAndNotInSecondArray(originalGroup, updatedGroup);
 
     for (var i = 0; i < adminsAdded.length; i++) {
-        sendGroupInviteEmail(logger, helpers, currentUserEmail, currentUserName, planetCalWebSiteLink, adminsAdded[i], groupName, true);
+        sendGroupEmail(logger, helpers, currentUserEmail, currentUserName, planetCalWebSiteLink, adminsAdded[i], groupName, true);
     }
 
     for (var i = 0; i < adminsRemoved.length; i++) {
-        sendGroupInviteEmail(logger, helpers, currentUserEmail, currentUserName, planetCalWebSiteLink, adminsRemoved[i], groupName, false);
+        sendGroupEmail(logger, helpers, currentUserEmail, currentUserName, planetCalWebSiteLink, adminsRemoved[i], groupName, false);
     }
 }
 
-function sendGroupInviteEmail(logger, helpers, currentUserEmail, currentUserName, planetCalWebSiteLink, adminEmail, groupName, added) {
+function sendGroupEmail(logger, helpers, currentUserEmail, currentUserName, planetCalWebSiteLink, adminEmail, groupName, added) {
+    if (!helpers.isEmailValid(adminEmail)) {
+        return;
+    }
     var toAddress = 'Guest <' + adminEmail + '>';
     var ccAddress = currentUserName + ' <' + currentUserEmail + '>';
     var subject = "";
