@@ -46,6 +46,7 @@ module.exports = function (config, logger) {
 
 
         var groupIds = req.query.groupids ? req.query.groupids.split('|') : null;
+        var administeredByMe = req.query.administeredByMe;
         var userId = req.headers['auth-identity'];
 
         var documentResponse;
@@ -53,6 +54,9 @@ module.exports = function (config, logger) {
             documentResponse = yield findGroupByKeywordsAsync(keywords, fields, userId);
         } else if (groupIds) {
             documentResponse = yield findGroupsByGroupIdsAsync(groupIds, fields, userId);
+        } else if (administeredByMe === "true") {
+            var currentUsersEmail = req.headers['auth-email'];
+            documentResponse = yield findMyAdministeredGroups([currentUsersEmail], fields);
         }
         else {
             documentResponse = yield findAllGroupAsync(fields, userId, filterExpression);
@@ -167,14 +171,15 @@ module.exports = function (config, logger) {
             throw new BadRequestException('ChildGroups information has changed during update. It should remain same.', errorcode.ChildGroupsChanged);
         }
 
-        sendEmailsToAddedAndRemovedAdmins(logger, helpers, existingGroup.administrators, group.administrators, req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, group.name);
-
         var permissionGranted = (existingGroup.createdBy && existingGroup.createdBy === req.headers['auth-identity']) ||
-            (existingGroup.modifiedBy && existingGroup.modifiedBy === req.headers['auth-identity']);
+            existingGroup.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0;
 
         if (!permissionGranted) {
             throw new BadRequestException('User is not authorized to update the group with id ' + existingGroup.id, errorcode.UserNotAuthorized);
         }
+
+        sendEmailsToAddedAndRemovedAdmins(logger, helpers, existingGroup.administrators, group.administrators, req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, group.name);
+
         group.createdBy = existingGroup.createdBy;
         group.createdTime = existingGroup.createdTime;
 
@@ -348,6 +353,22 @@ module.exports = function (config, logger) {
         return dal.getAsync(querySpec);
     }
 
+    function findMyAdministeredGroups(admins, fields) {
+        var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
+        var queryStatement = "SELECT e.id" + constraints + " FROM e JOIN g IN e.administrators WHERE ARRAY_CONTAINS(@administrators, g)";
+
+        var parameters = [{
+            name: "@administrators",
+            value: admins
+        }];
+
+        var querySpec = {
+            query: queryStatement,
+            parameters: parameters
+        };
+        return dal.getAsync(querySpec);
+    }
+
     function findGroupsByGroupIdsAsync(groupIds, fields, userId) {
         var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
         var parameters = [
@@ -395,7 +416,6 @@ module.exports = function (config, logger) {
         };
         return dal.getAsync(querySpec);
     }
-
     return router;
 }
 
