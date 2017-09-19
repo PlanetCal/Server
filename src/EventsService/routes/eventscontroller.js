@@ -108,13 +108,13 @@ module.exports = function (config, logger) {
         res.status(200).json(filteredResults);
     }));
 
-
-    router.delete('/:id', helpers.wrap(function* (req, res) {
-        logger.get().debug({ req: req }, 'Deleting event object...');
-        var documentResponse = yield dal.removeAsync(req.params.id);
-        logger.get().debug({ req: req }, 'Event object deleted successfully. id: %s', req.params.id);
-        res.status(200).json({ id: req.params.id });
-    }));
+    // Delete is implemented at APIService level.
+    // router.delete('/:id', helpers.wrap(function* (req, res) {
+    //     logger.get().debug({ req: req }, 'Deleting event object...');
+    //     var documentResponse = yield dal.removeAsync(req.params.id, {});
+    //     logger.get().debug({ req: req }, 'Event object deleted successfully. id: %s', req.params.id);
+    //     res.status(200).json({ id: req.params.id });
+    // }));
 
     function findEventByEventIdAsync(dal, eventId, fields) {
         var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
@@ -141,7 +141,7 @@ module.exports = function (config, logger) {
         var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
         var filterExpressionParsed = helpers.convertFilterExpressionToParameters('e', filterExpression, 'AND', '');
 
-        var queryStatement = "SELECT e.id" + constraints + " FROM e JOIN g IN e.groups WHERE ARRAY_CONTAINS(@groupsIds, g) " + filterExpressionParsed.filterExpression;
+        var queryStatement = "SELECT e.id" + constraints + " FROM root e WHERE ARRAY_CONTAINS(@groupsIds, e.groupId) " + filterExpressionParsed.filterExpression;
         var parameters = filterExpressionParsed.parameters;
 
         parameters.push({
