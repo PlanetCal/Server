@@ -58,7 +58,7 @@ module.exports = function (config, logger) {
 
         var groups = '[]';
         // userDetailsRequestOptions must not be undefined
-        // we need to retrieve events given userDetails.
+        // we need to retrieve group details given userDetails.
         if (userDetails.followingGroups && userDetails.followingGroups.length > 0) {
             var groupIds = userDetails.followingGroups.join('|');
             var getGroupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '?groupids=' + groupIds;

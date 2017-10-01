@@ -94,7 +94,7 @@ var getEventsCorsOptions = {
 };
 
 // anonymous events retrieval
-app.get('/events', cors(getEventsCorsOptions), helpers.wrap(function* (req, res, next) {
+app.get('/eventsanonymous', cors(getEventsCorsOptions), helpers.wrap(function* (req, res, next) {
     var queryString = qs.stringify(req.query);
 
     if (!queryString || queryString.length <= 0) {

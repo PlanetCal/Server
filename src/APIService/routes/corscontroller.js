@@ -40,6 +40,7 @@ module.exports = function (config, logger) {
   router.options('/groups/*', cors(corsOptions));
 
   router.options('/events', cors(corsOptions));
+  router.options('/eventsanonymous', cors(corsOptions));
   router.options('/events/*', cors(corsOptions));
 
   corsOptions = {
