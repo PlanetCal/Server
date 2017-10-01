@@ -96,17 +96,14 @@ var getEventsCorsOptions = {
 // anonymous events retrieval
 app.get('/eventsanonymous', cors(getEventsCorsOptions), helpers.wrap(function* (req, res, next) {
     var queryString = qs.stringify(req.query);
-
-    if (!queryString || queryString.length <= 0) {
-        var url = config.eventsServiceEndpoint + '/' + urlNames.events;
-        var options = helpers.getRequestOption(req, url, 'GET');
-        var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
-        res.setHeader('Etag', etag(results));
-        res.status(200).json(JSON.parse(results));
+    var url = config.eventsServiceEndpoint + '/' + urlNames.events;
+    if (queryString && queryString.length > 0) {
+        url += '?' + queryString;
     }
-    else {
-        next();
-    }
+    var options = helpers.getRequestOption(req, url, 'GET');
+    var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
+    res.setHeader('Etag', etag(results));
+    res.status(200).json(JSON.parse(results));
 }));
 
 app.use('/login', loginController);
