@@ -96,8 +96,6 @@ var getEventsCorsOptions = {
 // anonymous events retrieval
 app.get('/eventsanonymous', cors(getEventsCorsOptions), helpers.wrap(function* (req, res, next) {
     var queryString = qs.stringify(req.query);
-
-
     var url = config.eventsServiceEndpoint + '/' + urlNames.events;
     if (queryString && queryString.length > 0) {
         url += '?' + queryString;

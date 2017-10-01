@@ -43,18 +43,23 @@ module.exports = function (config, logger) {
         // in this case append the query about the groups user is following            
         var userId = req.headers['auth-identity'];
 
-        if (!groupids && userId) {
+        if (!groupids) {
+            if (userId) {
+                //Get userDetails for the cureent user.        
+                var userDetailsRequestOptions = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/' + userId, 'GET');
+                var results = yield* helpers.forwardHttpRequest(userDetailsRequestOptions, serviceNames.userDetailsServiceName);
+                var userDetails = JSON.parse(results);
 
-            //Get userDetails for the cureent user.        
-            var userDetailsRequestOptions = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/' + userId, 'GET');
-            var results = yield* helpers.forwardHttpRequest(userDetailsRequestOptions, serviceNames.userDetailsServiceName);
-            var userDetails = JSON.parse(results);
+                var groups = yield* getChildGroups(userDetails.followingGroups, helpers, config, serviceNames, urlNames, req);
+                groupids = groups.concat(userDetails.followingGroups);
 
-            var groups = yield* getChildGroups(userDetails.followingGroups, helpers, config, serviceNames, urlNames, req);
-            var groupids = groups.concat(userDetails.followingGroups);
-
-            if (groupids.length == 0) {
-                groupids.push('blah');
+                if (groupids.length == 0) {
+                    groupids.push('blah');
+                }
+            } else {
+                //unauthenticated scenario.
+                // In this case, just pull the information about the public groups, and use that to display the data.
+                groupids = yield* getPublicGroups(helpers, config, serviceNames, urlNames, req);
             }
         }
 
@@ -223,5 +228,19 @@ function* getChildGroups(groups, helpers, config, serviceNames, urlNames, req) {
 
         return childgroups;
     }
+}
+
+function* getPublicGroups(helpers, config, serviceNames, urlNames, req) {
+    var getGroupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '?filter=privacy=Open&fields=privacy';
+    var groupsRequestOptions = helpers.getRequestOption(req, getGroupsUrl, 'GET');
+    var results = yield* helpers.forwardHttpRequest(groupsRequestOptions, serviceNames.groupsServiceName);
+    var groupsInfo = JSON.parse(results);
+
+    var publicGroupIds = [];
+    for (var i = 0; i < groupsInfo.length; i++) {
+        var groupInfo = groupsInfo[i];
+        publicGroupIds.push(groupInfo.id);
+    }
+    return publicGroupIds;
 }
 
