@@ -48,31 +48,40 @@ module.exports = function (config, logger) {
         var url;
         var queryString = qs.stringify(req.query);
 
-        if (!queryString || queryString.length <= 0) {
-            url = endpoint + '/' + urlNames.events;
+        url = endpoint + '/' + urlNames.events;
+
+        if (!queryString || queryString.length <= 0 || queryString.indexOf('groupids') == -1) {
+
+            // in this case append the query about the groups user is following            
+            var userId = req.headers['auth-identity'];
+
+            //Get userDetails for the cureent user.        
+            var userDetailsRequestOptions = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/' + userId, 'GET');
+            var results = yield* helpers.forwardHttpRequest(userDetailsRequestOptions, serviceNames.userDetailsServiceName);
+            var userDetails = JSON.parse(results);
+
+            var groups = yield* getChildGroups(userDetails.followingGroups, helpers, config, serviceNames, urlNames, req);
+            var totalGroups = groups.concat(userDetails.followingGroups);
+
+            if (totalGroups.length == 0) {
+                totalGroups.push('blah');
+            }
+
+            var groupIds = totalGroups.join('|');
+            url += '?groupids=' + groupIds;
+            if (queryString) {
+                url += '&' + queryString;
+            }
         }
         else {
-            url = endpoint + '/' + urlNames.events + '?' + queryString;
+            url += '?' + queryString;
         }
-        var userId = req.headers['auth-identity'];
 
-        //Get userDetails for the cureent user.        
-        var userDetailsRequestOptions = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/' + userId, 'GET');
-        var results = yield* helpers.forwardHttpRequest(userDetailsRequestOptions, serviceNames.userDetailsServiceName);
-        var userDetails = JSON.parse(results);
-
-        /////////////////////////  
-        var groups = yield* getChildGroups(userDetails.followingGroups, helpers, config, serviceNames, urlNames, req);
-
-        var totalGroups = groups.concat(userDetails.followingGroups);
-
-        var test = 1;
         var options = helpers.getRequestOption(req, url, 'GET');
         var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
         res.setHeader('Etag', etag(results));
         res.status(200).json(JSON.parse(results));
     }));
-
 
     router.post('/', cors(corsOptions), helpers.wrap(function* (req, res) {
         if (!req.body.groupId) {
