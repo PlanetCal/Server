@@ -50,30 +50,7 @@ module.exports = function (config, logger) {
 
         url = endpoint + '/' + urlNames.events;
 
-        if (!queryString || queryString.length <= 0 || queryString.indexOf('groupids') == -1) {
-
-            // in this case append the query about the groups user is following            
-            var userId = req.headers['auth-identity'];
-
-            //Get userDetails for the cureent user.        
-            var userDetailsRequestOptions = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/' + userId, 'GET');
-            var results = yield* helpers.forwardHttpRequest(userDetailsRequestOptions, serviceNames.userDetailsServiceName);
-            var userDetails = JSON.parse(results);
-
-            var groups = yield* getChildGroups(userDetails.followingGroups, helpers, config, serviceNames, urlNames, req);
-            var totalGroups = groups.concat(userDetails.followingGroups);
-
-            if (totalGroups.length == 0) {
-                totalGroups.push('blah');
-            }
-
-            var groupIds = totalGroups.join('|');
-            url += '?groupids=' + groupIds;
-            if (queryString) {
-                url += '&' + queryString;
-            }
-        }
-        else {
+        if (queryString && queryString.length > 0) {
             url += '?' + queryString;
         }
 
@@ -225,35 +202,4 @@ module.exports = function (config, logger) {
     }));
 
     return router;
-}
-
-function* getChildGroups(groups, helpers, config, serviceNames, urlNames, req) {
-
-    if (groups && groups.length > 0) {
-        var groupIds = groups.join('|');
-        var getGroupsUrl = config.groupsServiceEndpoint +
-            '/' + urlNames.groups +
-            '?groupids=' + groupIds + '&fields=childGroups';
-
-        var groupsRequestOptions = helpers.getRequestOption(req, getGroupsUrl, 'GET');
-        var results = yield* helpers.forwardHttpRequest(groupsRequestOptions, serviceNames.groupsServiceName);
-        var groupsInfo = JSON.parse(results);
-        var childgroups = [];
-
-        for (var i = 0; i < groupsInfo.length; i++) {
-            var groupInfo = groupsInfo[i];
-            if (groupInfo.childGroups) {
-                childgroups = childgroups.concat(groupInfo.childGroups);
-            }
-        }
-
-        if (childgroups.length > 0) {
-            var grandChildGroups = yield* getChildGroups(childgroups, helpers, config, serviceNames, urlNames, req);
-            if (grandChildGroups.length > 0) {
-                childgroups = childgroups.concat(grandChildGroups);
-            }
-        }
-
-        return childgroups;
-    }
 }

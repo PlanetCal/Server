@@ -10,6 +10,8 @@ module.exports = function (config, logger) {
     var collectionName = config.eventsCollectionName;
     var documentdbEndpoint = config.documentdbEndpoint;
     var documentdbAuthKey = config.documentdbAuthKey;
+    var urlNames = require('../../common/constants.json')['urlNames'];
+    var serviceNames = require('../../common/constants.json')['serviceNames'];
 
     var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
     var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
@@ -38,12 +40,30 @@ module.exports = function (config, logger) {
             groupids = req.query.groupids.split('|');
         }
 
+        // in this case append the query about the groups user is following            
+        var userId = req.headers['auth-identity'];
+
+        if (!groupids && userId) {
+
+            //Get userDetails for the cureent user.        
+            var userDetailsRequestOptions = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/' + userId, 'GET');
+            var results = yield* helpers.forwardHttpRequest(userDetailsRequestOptions, serviceNames.userDetailsServiceName);
+            var userDetails = JSON.parse(results);
+
+            var groups = yield* getChildGroups(userDetails.followingGroups, helpers, config, serviceNames, urlNames, req);
+            var groupids = groups.concat(userDetails.followingGroups);
+
+            if (groupids.length == 0) {
+                groupids.push('blah');
+            }
+        }
+
         var filterExpression = req.query.filter;
 
         var documentResponse;
-        if (!groupids && !fields && !filterExpression) {
+        if (!groupids && !fields) {
             logger.get().debug({ req: req }, 'Retrieving all event objects...');
-            documentResponse = yield findAllEvents(dal);
+            documentResponse = yield findAllEvents(dal, filterExpression);
         }
         else {
             logger.get().debug({ req: req }, 'Retrieving event objects by ids...');
@@ -157,13 +177,51 @@ module.exports = function (config, logger) {
         return dal.getAsync(querySpec);
     }
 
-    function findAllEvents() {
+    function findAllEvents(dal, filterExpression) {
+        var filterExpressionParsed = helpers.convertFilterExpressionToParameters('e', filterExpression, ' WHERE', '');
+
+        var queryStatement = 'SELECT * FROM root e' + filterExpressionParsed.filterExpression;
+        var parameters = filterExpressionParsed.parameters;
+
         var querySpec = {
-            query: "SELECT * FROM root"
+            query: queryStatement,
+            parameters: parameters
         };
+
         return dal.getAsync(querySpec);
     }
 
     return router;
+}
+
+function* getChildGroups(groups, helpers, config, serviceNames, urlNames, req) {
+
+    if (groups && groups.length > 0) {
+        var groupIds = groups.join('|');
+        var getGroupsUrl = config.groupsServiceEndpoint +
+            '/' + urlNames.groups +
+            '?groupids=' + groupIds + '&fields=childGroups';
+
+        var groupsRequestOptions = helpers.getRequestOption(req, getGroupsUrl, 'GET');
+        var results = yield* helpers.forwardHttpRequest(groupsRequestOptions, serviceNames.groupsServiceName);
+        var groupsInfo = JSON.parse(results);
+        var childgroups = [];
+
+        for (var i = 0; i < groupsInfo.length; i++) {
+            var groupInfo = groupsInfo[i];
+            if (groupInfo.childGroups) {
+                childgroups = childgroups.concat(groupInfo.childGroups);
+            }
+        }
+
+        if (childgroups.length > 0) {
+            var grandChildGroups = yield* getChildGroups(childgroups, helpers, config, serviceNames, urlNames, req);
+            if (grandChildGroups.length > 0) {
+                childgroups = childgroups.concat(grandChildGroups);
+            }
+        }
+
+        return childgroups;
+    }
 }
 
