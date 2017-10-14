@@ -11,6 +11,10 @@ var path = require('path');
 var qs = require('qs');
 
 var app = express();
+var argv = require('minimist')(process.argv.slice(2));
+var env = argv['env'] || 'development';
+app.set('env', env);
+console.log("environment = %s", app.get('env'));
 
 var serviceNames = require('../common/constants.json')['serviceNames'];
 var urlNames = require('../common/constants.json')['urlNames'];

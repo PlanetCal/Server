@@ -2,6 +2,10 @@
 
 var express = require('express');
 var app = express();
+var argv = require('minimist')(process.argv.slice(2));
+var env = argv['env'] || 'development';
+app.set('env', env);
+console.log("environment = %s", app.get('env'));
 
 var constants = require('../common/constants.json')['serviceNames'];
 var Logger = require('../common/logger.js').Logger;
@@ -28,15 +32,15 @@ app.use(bodyParser.json());
 app.use('/events', eventsController);
 
 // error handling for other routes
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     next(new NotFoundException('Resource specified by URL cannot be located.', errorcode.GenericNotFoundException));
 });
 
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
     helpers.handleServiceException(err, req, res, constants.eventsServiceName, logger, true);
 });
 
 var port = process.env.PORT || config.eventsServicePort;
-var server = app.listen(port, function(){
+var server = app.listen(port, function () {
     logger.get().debug('%s started at http://localhost:%d/', constants.eventsServiceName, server.address().port);
 });

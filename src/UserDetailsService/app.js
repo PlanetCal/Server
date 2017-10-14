@@ -2,6 +2,10 @@
 
 var express = require('express');
 var app = express();
+var argv = require('minimist')(process.argv.slice(2));
+var env = argv['env'] || 'development';
+app.set('env', env);
+console.log("environment = %s", app.get('env'));
 
 var constants = require('../common/constants.json')['serviceNames'];
 var Logger = require('../common/logger.js').Logger;

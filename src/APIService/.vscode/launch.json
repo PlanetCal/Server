@@ -8,7 +8,10 @@
             "type": "node",
             "request": "launch",
             "name": "Launch ApiService",
-            "program": "${workspaceRoot}\\app.js"
+            "program": "${workspaceRoot}\\app.js",
+            "args": [
+            "\--\--env\==development"
+            ]
         }
     ]
 }

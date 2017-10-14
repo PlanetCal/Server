@@ -8,6 +8,10 @@ var bodyParser = require('body-parser');
 var accounts = require('./routes/accounts');
 
 var app = express();
+var argv = require('minimist')(process.argv.slice(2));
+var env = argv['env'] || 'development';
+app.set('env', env);
+console.log("environment = %s", app.get('env'));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
