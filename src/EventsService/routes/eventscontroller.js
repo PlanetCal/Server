@@ -118,7 +118,7 @@ module.exports = function (config, logger) {
 
         var groups = req.body.groups;
         logger.get().debug({ req: req }, 'Retrieving event objects by ids...');
-        var documentResponse = yield findEventsByGroupsIdsAsync(dal, groups, null, null);
+        var documentResponse = yield findEventsByGroupsIdsAsync(dal, groups, ["groupId"], null);
 
         var results = documentResponse.feed;
         var filteredResults = helpers.removeDuplicatedItemsById(results);
@@ -127,7 +127,7 @@ module.exports = function (config, logger) {
 
         for (var eventIndex in filteredResults) {
             var event = filteredResults[eventIndex];
-            yield dal.removeAsync(event.id);
+            yield dal.removeAsync(event.id, { partitionKey: [event.groupId] });
             logger.get().debug({ req: req }, 'Event object deleted successfully. id: %s', event.id);
         }
         res.status(200).json(filteredResults);
