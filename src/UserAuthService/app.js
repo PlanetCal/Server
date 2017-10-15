@@ -7,7 +7,7 @@ var cookieParser = require('cookie-parser');
 var passport = require('passport');
 var app = express();
 var argv = require('minimist')(process.argv.slice(2));
-var env = argv['env'] || 'development';
+var env = argv['env'] || 'production';
 app.set('env', env);
 console.log("environment = %s", app.get('env'));
 
