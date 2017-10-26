@@ -31,7 +31,7 @@ IF NOT DEFINED DEPLOYMENT_TARGET (
 )
 
 IF NOT DEFINED DEPLOYMENT_REPOSITORY (
-  SET DEPLOYMENT_REPOSITORY=%~dp0%..\repository\src
+  SET DEPLOYMENT_REPOSITORY=%~dp0%\src
 )
 
 IF NOT DEFINED NEXT_MANIFEST_PATH (
@@ -60,8 +60,8 @@ echo Handling Basic Web Site deployment.
 
 @echo off
 echo Deploying Common files...
-echo xcopy %DEPLOYMENT_REPOSITORY%\Common %DEPLOYMENT_TARGET%\Common /Y
-xcopy %DEPLOYMENT_REPOSITORY%\Common %DEPLOYMENT_TARGET%\Common /Y
+echo xcopy %DEPLOYMENT_REPOSITORY%\Common\*.* %DEPLOYMENT_TARGET%\Common\ /Y
+xcopy %DEPLOYMENT_REPOSITORY%\Common\*.* %DEPLOYMENT_TARGET%\Common\ /Y
 
 :: 1. KuduSync
 IF /I "%IN_PLACE_DEPLOYMENT%" NEQ "1" (
