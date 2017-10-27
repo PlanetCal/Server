@@ -65,6 +65,7 @@ xcopy %DEPLOYMENT_REPOSITORY%\common\*.* %DEPLOYMENT_TARGET%\common\ /Y
 
 IF EXIST "%DEPLOYMENT_TARGET%\common\package.json" (
   pushd "%DEPLOYMENT_TARGET%\common"
+  echo call :ExecuteCmd !NPM_CMD! install --production
   call :ExecuteCmd !NPM_CMD! install --production
   IF !ERRORLEVEL! NEQ 0 goto error
   popd
