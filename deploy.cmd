@@ -60,8 +60,9 @@ echo Handling Basic Web Site deployment.
 
 @echo off
 echo Deploying common files...
-echo xcopy %DEPLOYMENT_REPOSITORY%\common\*.* %DEPLOYMENT_TARGET%\common\ /Y
-xcopy %DEPLOYMENT_REPOSITORY%\common\*.* %DEPLOYMENT_TARGET%\common\ /Y
+echo xcopy /s %DEPLOYMENT_REPOSITORY%\common\*.* %DEPLOYMENT_TARGET%\common\ /Y
+xcopy /s %DEPLOYMENT_REPOSITORY%\common\*.* %DEPLOYMENT_TARGET%\common\ /Y
+IF !ERRORLEVEL! NEQ 0 goto error
 
 IF EXIST "%DEPLOYMENT_TARGET%\common\package.json" (
   pushd "%DEPLOYMENT_TARGET%\common"
