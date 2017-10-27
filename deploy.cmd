@@ -59,9 +59,16 @@ IF NOT DEFINED KUDU_SYNC_CMD (
 echo Handling Basic Web Site deployment.
 
 @echo off
-echo Deploying Common files...
-echo xcopy %DEPLOYMENT_REPOSITORY%\Common\*.* %DEPLOYMENT_TARGET%\Common\ /Y
-xcopy %DEPLOYMENT_REPOSITORY%\Common\*.* %DEPLOYMENT_TARGET%\Common\ /Y
+echo Deploying common files...
+echo xcopy %DEPLOYMENT_REPOSITORY%\common\*.* %DEPLOYMENT_TARGET%\common\ /Y
+xcopy %DEPLOYMENT_REPOSITORY%\common\*.* %DEPLOYMENT_TARGET%\common\ /Y
+
+IF EXIST "%DEPLOYMENT_TARGET%\common\package.json" (
+  pushd "%DEPLOYMENT_TARGET%\common"
+  call :ExecuteCmd !NPM_CMD! install --production
+  IF !ERRORLEVEL! NEQ 0 goto error
+  popd
+)
 
 :: 1. KuduSync
 IF /I "%IN_PLACE_DEPLOYMENT%" NEQ "1" (
