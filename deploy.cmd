@@ -45,7 +45,7 @@ IF NOT DEFINED NEXT_MANIFEST_PATH (
 IF NOT DEFINED KUDU_SYNC_CMD (
   :: Install kudu sync
   echo Installing Kudu Sync
-  call npm install kudusync -g --silent
+  call npm install
   IF !ERRORLEVEL! NEQ 0 goto error
 
   :: Locally just running "kuduSync" would also work
@@ -59,14 +59,22 @@ IF NOT DEFINED KUDU_SYNC_CMD (
 echo Handling Basic Web Site deployment.
 
 @echo off
-echo Deploying Common files...
-echo xcopy %DEPLOYMENT_REPOSITORY%\Common\*.* %DEPLOYMENT_TARGET%\Common\ /Y
-xcopy %DEPLOYMENT_REPOSITORY%\Common\*.* %DEPLOYMENT_TARGET%\Common\ /Y
+echo Deploying common files...
+echo xcopy /s %DEPLOYMENT_REPOSITORY%\common\*.* %DEPLOYMENT_TARGET%\common\ /Y
+xcopy /s %DEPLOYMENT_REPOSITORY%\common\*.* %DEPLOYMENT_TARGET%\common\ /Y
+IF !ERRORLEVEL! NEQ 0 goto error
+
+IF EXIST "%DEPLOYMENT_TARGET%\common\package.json" (
+  pushd "%DEPLOYMENT_TARGET%\common"
+  call npm install
+  IF !ERRORLEVEL! NEQ 0 goto error
+  popd
+)
 
 :: 1. KuduSync
 IF /I "%IN_PLACE_DEPLOYMENT%" NEQ "1" (
-  ECHO call :ExecuteCmd "%KUDU_SYNC_CMD%" -v 50 -f "%DEPLOYMENT_SOURCE%\src\APIService" -t "%DEPLOYMENT_TARGET%" -n "%NEXT_MANIFEST_PATH%" -p "%PREVIOUS_MANIFEST_PATH%" -i ".git;.hg;.deployment;deploy.cmd"
-  call :ExecuteCmd "%KUDU_SYNC_CMD%" -v 50 -f "%DEPLOYMENT_SOURCE%\src\APIService" -t "%DEPLOYMENT_TARGET%" -n "%NEXT_MANIFEST_PATH%" -p "%PREVIOUS_MANIFEST_PATH%" -i ".git;.hg;.deployment;deploy.cmd"
+  ECHO call :ExecuteCmd "%KUDU_SYNC_CMD%" -v 50 -f "%DEPLOYMENT_SOURCE%\%PROJECT%" -t "%DEPLOYMENT_TARGET%" -n "%NEXT_MANIFEST_PATH%" -p "%PREVIOUS_MANIFEST_PATH%" -i ".git;.hg;.deployment;deploy.cmd"
+  call :ExecuteCmd "%KUDU_SYNC_CMD%" -v 50 -f "%DEPLOYMENT_SOURCE%\%PROJECT%" -t "%DEPLOYMENT_TARGET%" -n "%NEXT_MANIFEST_PATH%" -p "%PREVIOUS_MANIFEST_PATH%" -i ".git;.hg;.deployment;deploy.cmd"
   IF !ERRORLEVEL! NEQ 0 goto error
 )
 
