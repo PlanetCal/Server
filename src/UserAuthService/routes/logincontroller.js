@@ -28,7 +28,7 @@ module.exports = function (passport, config, logger) {
             var tokenGenerator = new TokenGenerator(config);
             var token = tokenGenerator.encode({ email: email, id: req.user.id, name: req.user.name, time: Date.now() });
             logger.get().debug({ req: req }, 'Token generated successfully.');
-            res.status(200).json({ token: token, id: req.user.id, name: req.user.name });
+            res.status(200).json({ token: token, id: req.user.id, name: req.user.name, email: email });
         }
         else {
             throw new ForbiddenException('Forbidden');
