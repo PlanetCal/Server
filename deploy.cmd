@@ -66,7 +66,8 @@ IF !ERRORLEVEL! NEQ 0 goto error
 
 IF EXIST "%DEPLOYMENT_TARGET%\common\package.json" (
   pushd "%DEPLOYMENT_TARGET%\common"
-  call npm install
+  echo Calling "npm install for common"
+    call npm install
   IF !ERRORLEVEL! NEQ 0 goto error
   popd
 )
@@ -78,6 +79,13 @@ IF /I "%IN_PLACE_DEPLOYMENT%" NEQ "1" (
   IF !ERRORLEVEL! NEQ 0 goto error
 )
 
+IF EXIST "%DEPLOYMENT_TARGET%\package.json" (
+  pushd "%DEPLOYMENT_TARGET%\"
+  echo Calling "npm install for service"
+  call npm install
+  IF !ERRORLEVEL! NEQ 0 goto error
+  popd
+)
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 goto end
 
