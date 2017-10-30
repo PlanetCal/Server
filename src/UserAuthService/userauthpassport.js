@@ -1,19 +1,19 @@
 'use strict'
 
 module.exports = function (passport, config, logger) {
-    var helpers = require('../common/helpers.js');
+    var helpers = require('./common/helpers.js');
     var LocalStrategy = require('passport-local').Strategy;
 
     var databaseName = config.documentdbDatabaseName;
     var collectionName = config.usersCollectionName;
     var documentdbEndpoint = config.documentdbEndpoint;
     var documentdbAuthKey = config.documentdbAuthKey;
-    var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
+    var DataAccessLayer = require('./common/dal.js').DataAccessLayer;
     var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
-    var errorcode = require('../common/errorcode.json');
+    var errorcode = require('./common/errorcode.json');
 
     var PasswordCrypto = require('./passwordcrypto.js').PasswordCrypto;
-    var UnauthorizedException = require('../common/error.js').UnauthorizedException;
+    var UnauthorizedException = require('./common/error.js').UnauthorizedException;
 
     passport.use('local', new LocalStrategy({
         // by default, local strategy uses username and password, we will override with email

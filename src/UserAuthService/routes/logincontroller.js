@@ -3,17 +3,17 @@
 module.exports = function (passport, config, logger) {
 
     var router = require('express').Router();
-    var TokenGenerator = new require('../../common/tokengenerator.js').TokenGenerator;
-    var helpers = require('../../common/helpers.js');
-    var errorcode = require('../../common/errorcode.json');
-    var ForbiddenException = require('../../common/error.js').ForbiddenException;
-    var EmailValidationPendingException = require('../../common/error.js').EmailValidationPendingException;
+    var TokenGenerator = new require('../common/tokengenerator.js').TokenGenerator;
+    var helpers = require('../common/helpers.js');
+    var errorcode = require('../common/errorcode.json');
+    var ForbiddenException = require('../common/error.js').ForbiddenException;
+    var EmailValidationPendingException = require('../common/error.js').EmailValidationPendingException;
 
     var databaseName = config.documentdbDatabaseName;
     var collectionName = config.usersCollectionName;
     var documentdbEndpoint = config.documentdbEndpoint;
     var documentdbAuthKey = config.documentdbAuthKey;
-    var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
+    var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
     var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
 
     router.post('/', passport.authenticate('local'), helpers.wrap(function* (req, res) {

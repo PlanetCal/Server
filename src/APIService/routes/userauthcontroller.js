@@ -4,10 +4,10 @@ module.exports = function (config, loggger) {
     var router = require('express').Router();
     var request = require('request-promise');
     var cors = require('cors');
-    var serviceNames = require('../../common/constants.json')['serviceNames'];
-    var urlNames = require('../../common/constants.json')['urlNames'];
-    var helpers = require('../../common/helpers.js');
-    var HttpRequestException = require('../../common/error.js').HttpRequestException;
+    var serviceNames = require('../common/constants.json')['serviceNames'];
+    var urlNames = require('../common/constants.json')['urlNames'];
+    var helpers = require('../common/helpers.js');
+    var HttpRequestException = require('../common/error.js').HttpRequestException;
 
     var corsOptions = {
         origin: '*',

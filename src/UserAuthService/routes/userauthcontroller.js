@@ -4,21 +4,21 @@ module.exports = function (passport, config, logger) {
 
     var router = require('express').Router();
     var PasswordCrypto = require('../passwordcrypto.js').PasswordCrypto;
-    var urlNames = require('../../common/constants.json')['urlNames'];
+    var urlNames = require('../common/constants.json')['urlNames'];
     var userAuthUrl = urlNames.userauth;
     var databaseName = config.documentdbDatabaseName;
     var collectionName = config.usersCollectionName;
     var documentdbEndpoint = config.documentdbEndpoint;
     var documentdbAuthKey = config.documentdbAuthKey;
     var apiServiceEndpoint = config.apiServiceEndpoint;
-    var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
+    var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
     var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
 
-    var helpers = require('../../common/helpers.js');
-    var BadRequestException = require('../../common/error.js').BadRequestException;
-    var ForbiddenException = require('../../common/error.js').ForbiddenException;
-    var errorcode = require('../../common/errorcode.json');
-    var Validator = require('../../common/bodyschemavalidator.js');
+    var helpers = require('../common/helpers.js');
+    var BadRequestException = require('../common/error.js').BadRequestException;
+    var ForbiddenException = require('../common/error.js').ForbiddenException;
+    var errorcode = require('../common/errorcode.json');
+    var Validator = require('../common/bodyschemavalidator.js');
     var bodyschemavalidator = new Validator.BodySchemaValidator();
     var userauthschema = require('./userauth.schema.json');
 

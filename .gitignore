@@ -42,6 +42,7 @@ dlldata.c
 
 # DNX
 project.lock.json
+package-lock.json
 artifacts/
 
 *_i.c
@@ -187,6 +188,11 @@ ClientBin/
 *.publishsettings
 node_modules/
 orleans.codegen.cs
+src/ApiService/common
+src/UserAuthService/common
+src/UserDetailsService/common
+src/EventsService/common
+src/GroupsService/common
 
 # RIA/Silverlight projects
 Generated_Code/

@@ -1,11 +1,11 @@
 'use strict'
 
 module.exports = function (passport, config, logger) {
-    var helpers = require('../common/helpers.js');
+    var helpers = require('./common/helpers.js');
     var BearerStrategy = require('passport-http-bearer').Strategy;
-    var TokenGenerator = require('../common/tokengenerator.js').TokenGenerator;
-    var UnauthorizedException = require('../common/error.js').UnauthorizedException;
-    var errorcode = require('../common/errorcode.json')['errorcode'];
+    var TokenGenerator = require('./common/tokengenerator.js').TokenGenerator;
+    var UnauthorizedException = require('./common/error.js').UnauthorizedException;
+    var errorcode = require('./common/errorcode.json')['errorcode'];
 
     passport.use('token-bearer', new BearerStrategy(
         function (token, done) {

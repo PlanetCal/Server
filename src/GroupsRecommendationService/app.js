@@ -7,25 +7,25 @@ var env = argv['env'] || 'production';
 app.set('env', env);
 console.log("environment = %s", app.get('env'));
 
-var serviceNames = require('../common/constants.json')['serviceNames'];
-var urlNames = require('../common/constants.json')['urlNames'];
-var Logger = require('../common/logger.js').Logger;
+var serviceNames = require('./common/constants.json')['serviceNames'];
+var urlNames = require('./common/constants.json')['urlNames'];
+var Logger = require('./common/logger.js').Logger;
 var logger = new Logger(serviceNames.groupsRecommendationServiceName, null, app.get('env') === 'development');
-var accesslogger = require('../common/accesslogger.js');
+var accesslogger = require('./common/accesslogger.js');
 
 logger.get().debug('Starting %s.....', serviceNames.groupsRecommendationServiceName);
 
 app.use(accesslogger.getAccessLogger(logger));
 
-var config = require('../common/config.json')[app.get('env') || 'production'];
-var helpers = require('../common/helpers.js');
+var config = require('./common/config.json')[app.get('env') || 'production'];
+var helpers = require('./common/helpers.js');
 var groupsRecommendationController = require('./routes/groupsrecommendationcontroller.js')(config, logger);
-var BadRequestException = require('../common/error.js').BadRequestException;
-var InternalServerException = require('../common/error.js').InternalServerException;
-var NotFoundException = require('../common/error.js').NotFoundException;
-var errorcode = require('../common/errorcode.json');
+var BadRequestException = require('./common/error.js').BadRequestException;
+var InternalServerException = require('./common/error.js').InternalServerException;
+var NotFoundException = require('./common/error.js').NotFoundException;
+var errorcode = require('./common/errorcode.json');
 var cache = require('memory-cache');
-var constants = require('../common/constants.json');
+var constants = require('./common/constants.json');
 var bodyParser = require('body-parser');
 var co = require('co');
 var util = require('util');

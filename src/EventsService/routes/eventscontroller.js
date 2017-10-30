@@ -5,20 +5,20 @@ module.exports = function (config, logger) {
     var express = require('express');
     var router = express.Router();
 
-    var helpers = require('../../common/helpers.js');
+    var helpers = require('../common/helpers.js');
     var databaseName = config.documentdbDatabaseName;
     var collectionName = config.eventsCollectionName;
     var documentdbEndpoint = config.documentdbEndpoint;
     var documentdbAuthKey = config.documentdbAuthKey;
-    var urlNames = require('../../common/constants.json')['urlNames'];
-    var serviceNames = require('../../common/constants.json')['serviceNames'];
+    var urlNames = require('../common/constants.json')['urlNames'];
+    var serviceNames = require('../common/constants.json')['serviceNames'];
 
-    var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
+    var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
     var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
 
-    var BadRequestException = require('../../common/error.js').BadRequestException;
-    var ForbiddenException = require('../../common/error.js').ForbiddenException;
-    var errorcode = require('../../common/errorcode.json');
+    var BadRequestException = require('../common/error.js').BadRequestException;
+    var ForbiddenException = require('../common/error.js').ForbiddenException;
+    var errorcode = require('../common/errorcode.json');
 
     router.get('/:id', helpers.wrap(function* (req, res) {
         var fields = req.query.fields ? req.query.fields.split('|') : null;

@@ -7,12 +7,12 @@ module.exports = function (config, logger) {
     var cors = require('cors');
     var etag = require('etag');
 
-    var serviceNames = require('../../common/constants.json')['serviceNames'];
-    var urlNames = require('../../common/constants.json')['urlNames'];
-    var helpers = require('../../common/helpers.js');
-    var BadRequestException = require('../../common/error.js').BadRequestException;
-    var errorcode = require('../../common/errorcode.json');
-    var constants = require('../../common/constants.json');
+    var serviceNames = require('../common/constants.json')['serviceNames'];
+    var urlNames = require('../common/constants.json')['urlNames'];
+    var helpers = require('../common/helpers.js');
+    var BadRequestException = require('../common/error.js').BadRequestException;
+    var errorcode = require('../common/errorcode.json');
+    var constants = require('../common/constants.json');
 
     var corsOptions = {
         origin: '*',

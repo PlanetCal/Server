@@ -2,7 +2,7 @@
 
 module.exports = function (config, logger) {
   var router = require('express').Router();
-  var helpers = require('../../common/helpers.js');
+  var helpers = require('../common/helpers.js');
   var cors = require('cors');
 
   const origin = '*'; //TODO: For now

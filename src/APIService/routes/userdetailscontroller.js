@@ -6,10 +6,10 @@ module.exports = function (config, logger) {
     var cors = require('cors');
     var etag = require('etag');
     var qs = require('qs');
-    var serviceNames = require('../../common/constants.json')['serviceNames'];
-    var urlNames = require('../../common/constants.json')['urlNames'];
+    var serviceNames = require('../common/constants.json')['serviceNames'];
+    var urlNames = require('../common/constants.json')['urlNames'];
 
-    var helpers = require('../../common/helpers.js');
+    var helpers = require('../common/helpers.js');
 
     var corsOptions = {
         origin: '*',

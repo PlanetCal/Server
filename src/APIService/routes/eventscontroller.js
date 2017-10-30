@@ -6,19 +6,19 @@ module.exports = function (config, logger) {
     var qs = require('qs');
     var cors = require('cors');
     var etag = require('etag');
-    var serviceNames = require('../../common/constants.json')['serviceNames'];
-    var urlNames = require('../../common/constants.json')['urlNames'];
+    var serviceNames = require('../common/constants.json')['serviceNames'];
+    var urlNames = require('../common/constants.json')['urlNames'];
 
-    var helpers = require('../../common/helpers.js');
-    var BadRequestException = require('../../common/error.js').BadRequestException;
-    var errorcode = require('../../common/errorcode.json');
+    var helpers = require('../common/helpers.js');
+    var BadRequestException = require('../common/error.js').BadRequestException;
+    var errorcode = require('../common/errorcode.json');
 
     var databaseName = config.documentdbDatabaseName;
     var collectionName = config.eventsCollectionName;
     var documentdbEndpoint = config.documentdbEndpoint;
     var documentdbAuthKey = config.documentdbAuthKey;
 
-    var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
+    var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
     var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
 
     var corsOptions = {

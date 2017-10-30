@@ -8,7 +8,7 @@ var assert = require('assert');
 
 var accountsDatabaseName = 'planetdatabase';
 var accountsCollectionName = 'accountscollection1';
-var Dal = require('../../common/dal.js');
+var Dal = require('../common/dal.js');
 var dal = new Dal.DataAccessLayer(accountsDatabaseName, accountsCollectionName);
 
 router.get('/:id', function (req, res) {

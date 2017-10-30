@@ -1,6 +1,6 @@
 'use strict'
 
-var config = require('../../common/config.json')['development'];
+var config = require('../common/config.json')['development'];
 
 module.exports = {
     'insertUniqueUserTrigger': {
@@ -34,6 +34,6 @@ module.exports = {
             }
         },
         triggerType: "pre",
-        triggerOperation : "create"
+        triggerOperation: "create"
     }
 }

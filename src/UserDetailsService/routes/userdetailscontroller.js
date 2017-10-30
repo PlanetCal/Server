@@ -9,15 +9,15 @@ module.exports = function (config, logger) {
     var collectionName = config.userDetailsCollectionName;
     var documentdbEndpoint = config.documentdbEndpoint;
     var documentdbAuthKey = config.documentdbAuthKey;
-    var DataAccessLayer = require('../../common/dal.js').DataAccessLayer;
-    var serviceNames = require('../../common/constants.json')['serviceNames'];
-    var urlNames = require('../../common/constants.json')['urlNames'];
+    var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
+    var serviceNames = require('../common/constants.json')['serviceNames'];
+    var urlNames = require('../common/constants.json')['urlNames'];
     var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
 
-    var helpers = require('../../common/helpers.js');
-    var BadRequestException = require('../../common/error.js').BadRequestException;
-    var ForbiddenException = require('../../common/error.js').ForbiddenException;
-    var errorcode = require('../../common/errorcode.json');
+    var helpers = require('../common/helpers.js');
+    var BadRequestException = require('../common/error.js').BadRequestException;
+    var ForbiddenException = require('../common/error.js').ForbiddenException;
+    var errorcode = require('../common/errorcode.json');
 
     router.get('/:id', helpers.wrap(function* (req, res) {
         logger.get().debug({ req: req }, 'Retriving userDetails object.');
