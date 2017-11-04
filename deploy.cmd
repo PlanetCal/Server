@@ -86,6 +86,14 @@ IF EXIST "%DEPLOYMENT_TARGET%\package.json" (
   IF !ERRORLEVEL! NEQ 0 goto error
   popd
 )
+
+IF EXIST "%DEPLOYMENT_TARGET%\app.js" (
+  pushd "%DEPLOYMENT_TARGET%"
+  echo starting the service
+  call node.exe app.js
+  IF !ERRORLEVEL! NEQ 0 goto error
+  popd
+)
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 goto end
 
@@ -111,4 +119,5 @@ exit /b 1
 
 :end
 endlocal
+
 echo Finished successfully.
