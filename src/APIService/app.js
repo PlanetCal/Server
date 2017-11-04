@@ -97,6 +97,25 @@ var getEventsCorsOptions = {
     credentials: true
 };
 
+// ping endpoint
+app.get('/ping', helpers.wrap(function* (req, res, next) {
+    var queryString = qs.stringify(req.query);
+    var reqHeaders = {};
+
+    Object.keys(req.headers).forEach(function (key) {
+        reqHeaders[key] = req.headers[key];
+    });
+
+    var results = {
+        'basicProperty': 'test',
+        'queryString': queryString,
+        'headers': reqHeaders
+    }
+    //var parseResult = JSON.parse(results);
+
+    res.status(200).json(results);
+}));
+
 // anonymous events retrieval
 app.get('/eventsanonymous', cors(getEventsCorsOptions), helpers.wrap(function* (req, res, next) {
     var queryString = qs.stringify(req.query);
