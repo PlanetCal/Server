@@ -21,7 +21,13 @@ module.exports = {
         this.internalLogger = bunyan.createLogger(
             {
                 name: loggerName,
-                src: isDebug
+                src: isDebug,
+                streams: [
+                    {
+                        path: 'planetCalApi.log',
+                        level: 'trace'
+                    }
+                ],
             });
 
         this.internalLogger.addSerializers({ req: reqSerializer });
@@ -37,7 +43,7 @@ module.exports = {
             return this.internalLogger;
         }
 
-        function  reqSerializer(req)  {
+        function reqSerializer(req) {
             if (!req || !req.headers) {
                 return req;
             }
@@ -50,14 +56,14 @@ module.exports = {
                 }
             });
 
-            return  {
-                method:  req.method,
-                url:  req.url,
+            return {
+                method: req.method,
+                url: req.url,
                 headers: headers
             };
         }
 
-        function  exceptionSerializer(exception)  {
+        function exceptionSerializer(exception) {
             if (!exception) {
                 return exception;
             }
