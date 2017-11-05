@@ -104,7 +104,6 @@ module.exports = function (passport, config, logger) {
             logger.get().debug('Generating password hash');
             var passwordHash = passwordCrypto.generateHash(req.body.password);
 
-            logger.get().debug({ email: email }, 'Trying to find the user using email.');
             var documentGetResponse = yield findUserByEmailAsync(dal, email);
             var result = documentGetResponse.feed.length <= 0 ? {} : documentGetResponse.feed[0];
 
@@ -164,6 +163,8 @@ function findUserByUserIdAsync(dal, userId) {
 }
 
 function findUserByEmailAsync(dal, email) {
+    logger.get().debug({ email: email }, 'Trying to find the user using email.');
+
     var querySpec = {
         query: "SELECT e.id, e.email, e.name, e.passwordHash, e.emailValidation, e.createdTime, e.updatedTime FROM root e WHERE e.email = @email",
         parameters: [
