@@ -10,7 +10,7 @@ console.log("environment = %s", app.get('env'));
 var serviceNames = require('./common/constants.json')['serviceNames'];
 var urlNames = require('./common/constants.json')['urlNames'];
 var Logger = require('./common/logger.js').Logger;
-var logger = new Logger(serviceNames.groupsRecommendationServiceName, null, app.get('env') === 'development');
+var logger = new Logger(serviceNames.groupsRecommendationServiceName, null, true);
 var accesslogger = require('./common/accesslogger.js');
 
 logger.get().debug('Starting %s.....', serviceNames.groupsRecommendationServiceName);

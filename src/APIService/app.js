@@ -19,7 +19,7 @@ console.log("environment = %s", app.get('env'));
 var serviceNames = require('./common/constants.json')['serviceNames'];
 var urlNames = require('./common/constants.json')['urlNames'];
 var Logger = require('./common/logger.js').Logger;
-var logger = new Logger(serviceNames.apiServiceName, null, app.get('env') === 'development');
+var logger = new Logger(serviceNames.apiServiceName, null, true);
 var accesslogger = require('./common/accesslogger.js');
 var etag = require('etag');
 app.use(accesslogger.getAccessLogger(logger));
