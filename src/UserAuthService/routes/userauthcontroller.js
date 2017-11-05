@@ -99,10 +99,12 @@ module.exports = function (passport, config, logger) {
             throw new BadRequestException('Cannot find email, or password in body.', errorcode.EmailOrPasswordNotFoundInBody);
         }
         else {
-            logger.get().debug({ req: req }, 'Updating userAuth object...');
+            logger.debug({ req: req }, 'Updating userAuth object...');
             var passwordCrypto = new PasswordCrypto();
+            logger.debug('Generating password hash');
             var passwordHash = passwordCrypto.generateHash(req.body.password);
 
+            logger.debug({ email: email }, 'Trying to find the user using email.');
             var documentGetResponse = yield findUserByEmailAsync(dal, email);
             var result = documentGetResponse.feed.length <= 0 ? {} : documentGetResponse.feed[0];
 
@@ -110,19 +112,19 @@ module.exports = function (passport, config, logger) {
                 throw new BadRequestException('User is not found in the user database.', errorcode.UserNotFound);
             }
 
-            logger.get().debug({ req: req, resultId: result.id }, 'Inside UserAuth Put, Found user using email id.');
+            logger.debug({ resultId: result.id }, 'Inside UserAuth Put, Found user using email id.');
 
             var newGuid = helpers.generateGuid();
             result.newPasswordHash = passwordHash;
             result.modifiedTime = (new Date()).toUTCString();
             result.newEmailValidation = newGuid;
 
-            logger.get().debug({ req: req, resultId: result.id }, 'Inside UserAuth Put, About to update the document.');
+            logger.debug({ resultId: result.id }, 'Inside UserAuth Put, About to update the document.');
             var documentResponse = yield dal.updateAsync(result.id, result);
 
-            logger.get().debug({ req: req, userAuth: documentResponse.resource }, 'userAuth object updated successfully.');
+            logger.debug({ userAuth: documentResponse.resource }, 'userAuth object updated successfully.');
 
-            logger.get().debug({ req: req }, 'Inside UserAuth Put, About to send the validation email');
+            logger.debug('Inside UserAuth Put, About to send the validation email');
             sendValidationEmail(helpers, logger, result.name, result.email, apiServiceEndpoint, userAuthUrl, result.id, newGuid, false);
 
             res.status(200).json({ id: documentResponse.resource.id });
