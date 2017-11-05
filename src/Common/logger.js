@@ -24,7 +24,7 @@ module.exports = {
                 src: isDebug,
                 streams: [
                     {
-                        path: 'planetCalApi.log',
+                        path: 'server.log',
                         level: 'trace'
                     }
                 ],

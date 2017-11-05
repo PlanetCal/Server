@@ -87,6 +87,14 @@ IF EXIST "%DEPLOYMENT_TARGET%\package.json" (
   popd
 )
 
+IF EXIST "%DEPLOYMENT_TARGET%\server.log" (
+  pushd "%DEPLOYMENT_TARGET%\"
+  echo Calling "deleting old server.log file"
+  call del server.log
+  IF !ERRORLEVEL! NEQ 0 goto error
+  popd
+)
+
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 goto end
 
