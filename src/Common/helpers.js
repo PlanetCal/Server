@@ -231,13 +231,17 @@ module.exports = {
     // Documentation: https://github.com/eleith/emailjs    
     'sendEmail': function sendEmail(logger, toAddress, subject, messageHtmlText, ccAddress) {
         var adminUser = this.decrypt(emailConstants.adminEmail);
+        var adminPassword = this.decrypt(emailConstants.adminPassword);
+
+        logger.get().info({ adminEmail: adminUser, adminPassword: adminPassword, smtpHost: emailConstants.smtpHost, smtpCiphers: emailConstants.smtpCiphers }, 'Inside Helper.SendEmail method, about to connect to smtp server');
         var server = email.server.connect({
             user: adminUser,
-            password: this.decrypt(emailConstants.adminPassword),
+            password: adminPassword,
             host: emailConstants.smtpHost,
             tls: { ciphers: emailConstants.smtpCiphers }
         });
 
+        logger.get().info('Inside Helper.SendEmail method, connected to smtp server, about to create a message object');
         // var encryptedString = this.encrypt("Hello");
         // var decryptedString = this.decrypt(encryptedString);
 
@@ -253,10 +257,12 @@ module.exports = {
             ]
         };
 
+        logger.get().info('Inside Helper.SendEmail method, about to send an email message');
         // send the message and get a callback with an error or details of the message that was sent
         server.send(message, function (err, message) {
             logger.get().info(err || message);
         });
+        logger.get().info('Inside Helper.SendEmail, sent an email message');
     },
 
     'isEmailValid': function isEmailValid(email) {

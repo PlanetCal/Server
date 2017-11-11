@@ -9,7 +9,7 @@ console.log("environment = %s", app.get('env'));
 
 var constants = require('./common/constants.json')['serviceNames'];
 var Logger = require('./common/logger.js').Logger;
-var logger = new Logger(constants.eventsServiceName, null, true);
+var logger = new Logger(constants.eventsServiceName, null, app.get('env') === 'development');
 var accesslogger = require('./common/accesslogger.js');
 
 logger.get().debug('Starting %s.....', constants.eventsServiceName);
