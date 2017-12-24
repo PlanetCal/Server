@@ -124,7 +124,10 @@ module.exports = function (config, logger) {
 
         sendEmailsToAddedAndRemovedAdmins(logger, helpers, [], group.administrators, req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, group.name);
 
+        yield* helpers.updateEntityGeoLocation(group, config.googleGeoCodeApiEndpoint, config.googleApiKey);
+
         logger.get().debug({ req: req, group: group }, 'Creating group object...');
+
         var documentResponse = yield dal.insertAsync(group, {});
         logger.get().debug({ req: req, group: documentResponse.resource }, 'group object created successfully.');
 
@@ -232,6 +235,7 @@ module.exports = function (config, logger) {
             yield dal.updateAsync(newParentGroup.id, newParentGroup);
             yield dal.updateAsync(existingParentGroup.id, existingParentGroup);
         }
+        yield* helpers.updateEntityGeoLocation(group, config.googleGeoCodeApiEndpoint, config.googleApiKey);
 
         logger.get().debug({ req: req, group: group }, 'Updating group object...');
 

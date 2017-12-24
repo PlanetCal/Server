@@ -96,7 +96,7 @@ module.exports = function (config, logger) {
         event.modifiedBy = req.headers['auth-identity'];
         event.modifiedTime = (new Date()).toUTCString();
 
-        yield* updateEventGeoLocation(helpers, config, event, req);
+        yield* helpers.updateEntityGeoLocation(event, config.googleGeoCodeApiEndpoint, config.googleApiKey);
 
         logger.get().debug({ req: req }, 'Updating event...');
         var documentResponse = yield dal.updateAsync(req.params.id, event);
@@ -111,7 +111,7 @@ module.exports = function (config, logger) {
         event.createdTime = (new Date()).toUTCString();
 
         event.id = helpers.generateGuid();
-        yield* updateEventGeoLocation(helpers, config, event, req);
+        yield* helpers.updateEntityGeoLocation(event, config.googleGeoCodeApiEndpoint, config.googleApiKey);
         logger.get().debug({ req: req }, 'Creating event object...');
         var documentResponse = yield dal.insertAsync(event, {});
         logger.get().debug({ req: req, event: documentResponse.resource }, 'Event object created successfully.');
@@ -246,28 +246,4 @@ function* getPublicGroups(helpers, config, serviceNames, urlNames, req) {
         publicGroupIds.push(groupInfo.id);
     }
     return publicGroupIds;
-}
-
-function* updateEventGeoLocation(helpers, config, event, req) {
-    if (event.address) {
-        var normalizedAddress = "address=" + event.address;
-        normalizedAddress = normalizedAddress.replace(/ /g, '+');
-
-        var url = config.googleGeoCodeApiEndpoint
-            + '?' +
-            normalizedAddress +
-            '&key='
-            + config.googleApiKey;
-
-        var options = {
-            method: 'GET',
-            url: url
-        };
-
-        var results = yield* helpers.forwardHttpRequest(options, "");
-        var geoLocation = JSON.parse(results);
-        if (geoLocation.status === 'OK') {
-            event.geoLocation = geoLocation.results[0].geometry.location;
-        }
-    }
 }

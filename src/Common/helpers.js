@@ -252,9 +252,9 @@ module.exports = {
             cc: ccAddress ? ccAddress : "",
             subject: subject,
             attachment:
-            [
-                { data: messageHtmlText, alternative: true }
-            ]
+                [
+                    { data: messageHtmlText, alternative: true }
+                ]
         };
 
         logger.get().info('Inside Helper.SendEmail method, about to send an email message');
@@ -284,5 +284,29 @@ module.exports = {
         }
 
         res.status(err.code || 500).json(exception);
+    },
+
+    'updateEntityGeoLocation': function* updateEntityGeoLocation(entity, googleGeoCodeApiEndpoint, googleApiKey) {
+        if (entity.address) {
+            var normalizedAddress = "address=" + entity.address;
+            normalizedAddress = normalizedAddress.replace(/ /g, '+');
+
+            var url = googleGeoCodeApiEndpoint
+                + '?' +
+                normalizedAddress +
+                '&key='
+                + googleApiKey;
+
+            var options = {
+                method: 'GET',
+                url: url
+            };
+
+            var results = yield* this.forwardHttpRequest(options, "");
+            var geoLocation = JSON.parse(results);
+            if (geoLocation.status === 'OK') {
+                entity.geoLocation = geoLocation.results[0].geometry.location;
+            }
+        }
     }
 }
