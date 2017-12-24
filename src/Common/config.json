@@ -29,7 +29,9 @@
     "eventsServiceEndpoint": "http://localhost:1342",
     "groupsRecommendationServicePort": 1343,
     "groupsRecommendationServiceEndpoint": "http://localhost:1343",
-    "planetCalLoginUrl": "http://localhost:8081/login"
+    "planetCalLoginUrl": "http://localhost:8081/login",
+    "googleApiKey": "AIzaSyBx8ndUQXUz_yfEpqlinriZelb9lxrJ3hk",
+    "googleGeoCodeApiEndpoint": "https://maps.googleapis.com/maps/api/geocode/json"
   },
   "production": {
     "jwtSecret": "395b2bdd68bf70b057d49ac75982dda0fdb70cf46b54b9e3476e05e81feceb6f",
@@ -61,6 +63,8 @@
     "eventsServiceEndpoint": "http://eventssvc.azurewebsites.net",
     "groupsRecommendationServicePort": 1343,
     "groupsRecommendationServiceEndpoint": "http://localhost:1343",
-    "planetCalLoginUrl": "http://azurepolymerclient.azurewebsites.net/login"
+    "planetCalLoginUrl": "http://azurepolymerclient.azurewebsites.net/login",
+    "googleApiKey": "AIzaSyBx8ndUQXUz_yfEpqlinriZelb9lxrJ3hk",
+    "googleGeoCodeApiEndpoint": "https://maps.googleapis.com/maps/api/geocode/json"
   }
 }
