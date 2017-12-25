@@ -51,14 +51,9 @@ module.exports = function (config, logger) {
                 form.on('part', function (part) {
                     if (part.filename) {
                         var size = part.byteCount;
-                        var filename = part.filename;
-                        //filename = "test";
-
-                        var extension = ".data";
+                        var filename = part.name;
                         var indexOfdot = filename.lastIndexOf('.');
-                        if (indexOfdot > 0) {
-                            extension = filename.substr(indexOfdot).toLowerCase();
-                        }
+                        var extension = (indexOfdot > 0) ? filename.substr(indexOfdot).toLowerCase() : '.data';
 
                         if (blobSizeLimitInBytes < size) {
                             throw new BadRequestException("Size of file to upload is bigger than " + blobSizeLimitInMB + " MB", errorcode.FileUploadSizeLimit);
