@@ -305,7 +305,8 @@ module.exports = {
             var results = yield* this.forwardHttpRequest(options, "");
             var geoLocation = JSON.parse(results);
             if (geoLocation.status === 'OK') {
-                entity.geoLocation = geoLocation.results[0].geometry.location;
+                var geoLocation = geoLocation.results[0].geometry.location;
+                entity.geoLocation =  { type: "Point", coordinates: [geoLocation.lng, geoLocation.lat] };
             }
         }
     }
