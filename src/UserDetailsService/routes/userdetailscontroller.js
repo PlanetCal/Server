@@ -53,6 +53,7 @@ module.exports = function (config, logger) {
         res.status(201).json({ id: documentResponse.resource.id });
     }));
 
+    //Adding a group with groupId to the list of subscribed groups
     router.post('/:id/followingGroups/:groupId', helpers.wrap(function* (req, res) {
         checkCallerPermission(req, req.params.id);
         checkCallerPermission(req, req.body.id);
@@ -72,13 +73,14 @@ module.exports = function (config, logger) {
             var documentResponse = yield dal.updateAsync(req.params.id, userDetails);
             logger.get().debug({ req: req, userDetails: documentResponse.resource }, 'userDetails object updated successfully.');
 
-            res.status(200).json({ id: documentResponse.resource.id });
+            res.status(200).json({ id: req.params.groupId });
         }
         else {
-            res.status(202).json({ id: req.params.id });
+            res.status(202).json({ id: req.params.groupId });
         }
     }));
 
+    //Deleting a group with groupId to the list of subscribed groups
     router.delete('/:id/followingGroups/:groupId', helpers.wrap(function* (req, res) {
         checkCallerPermission(req, req.params.id);
         checkCallerPermission(req, req.body.id);
@@ -88,7 +90,7 @@ module.exports = function (config, logger) {
 
         userDetails.modifiedTime = (new Date()).toUTCString();
         if (!userDetails.followingGroups) {
-            res.status(202).json({ id: req.params.id });
+            res.status(202).json({ id: req.params.groupId });
         }
         else {
             var index = userDetails.followingGroups.indexOf(req.params.groupId);
@@ -99,7 +101,7 @@ module.exports = function (config, logger) {
             logger.get().info({ req: req }, 'Removing a new group from following');
             var documentResponse = yield dal.updateAsync(req.params.id, userDetails);
             logger.get().debug({ req: req, userDetails: documentResponse.resource }, 'userDetails object updated successfully.');
-            res.status(200).json({ id: documentResponse.resource.id });
+            res.status(200).json({ id: req.params.groupId });
         }
     }));
 
