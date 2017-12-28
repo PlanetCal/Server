@@ -30,27 +30,77 @@ module.exports = function (config, logger) {
         // TODO: Validate userdetails objects in body
         var userDetails = req.body;
 
-        //adding a default group ref. It is created after creating the user details object.
-        userDetails.followingGroups = [userDetails.id];
-        checkCallerPermission(req, req.body.id);
+        // //adding a default group ref. It is created after creating the user details object.
+        // userDetails.followingGroups = [userDetails.id];
+        // checkCallerPermission(req, req.body.id);
 
-        logger.get().debug({ req: req }, 'Creating userDetails object.');
+        logger.get().info({ req: req }, 'Creating userDetails object.');
         var documentResponse = yield dal.insertAsync(userDetails, {});
-        logger.get().debug({ req: req, userDetails: documentResponse.resource }, 'userDetails object created successfully.');
+        logger.get().info({ req: req, userDetails: documentResponse.resource }, 'userDetails object created successfully.');
 
-        //Creating the default group.
-        var defaultGroup = {
-            id: userDetails.id,
-            privacy: "Closed",
-            category: "Personal",
-            name: "My personal Group",
-            description: "The default group assigned to me for creating private events. Nobody else can see it unless I share it with my friends, using share option.",
-        };
-        req.body = defaultGroup;
-        var options = helpers.getRequestOption(req, config.groupsServiceEndpoint + '/' + urlNames.groups, 'POST');
-        var results = yield* helpers.forwardHttpRequest(options, serviceNames.groupsServiceName);
+        // //Creating the default group.
+        // var defaultGroup = {
+        //     id: userDetails.id,
+        //     privacy: "Closed",
+        //     category: "Personal",
+        //     name: "My personal Group",
+        //     description: "The default group assigned to me for creating private events. Nobody else can see it unless I share it with my friends, using share option.",
+        // };
+        // req.body = defaultGroup;
+        // var options = helpers.getRequestOption(req, config.groupsServiceEndpoint + '/' + urlNames.groups, 'POST');
+        // var results = yield* helpers.forwardHttpRequest(options, serviceNames.groupsServiceName);
 
         res.status(201).json({ id: documentResponse.resource.id });
+    }));
+
+    router.post('/:id/followingGroups/:groupId', helpers.wrap(function* (req, res) {
+        checkCallerPermission(req, req.params.id);
+        checkCallerPermission(req, req.body.id);
+
+        //obtain the existing saved object.        
+        var userDetails = yield* getUserDetailsBasicAsync(req);
+
+        userDetails.modifiedTime = (new Date()).toUTCString();
+        if (!userDetails.followingGroups) {
+            userDetails.followingGroups = [];
+        }
+
+        var index = userDetails.followingGroups.indexOf(req.params.groupId);
+        if (index == -1) {
+            userDetails.followingGroups.push(req.params.groupId);
+            logger.get().info({ req: req }, 'Adding a new group to follow');
+            var documentResponse = yield dal.updateAsync(req.params.id, userDetails);
+            logger.get().debug({ req: req, userDetails: documentResponse.resource }, 'userDetails object updated successfully.');
+
+            res.status(200).json({ id: documentResponse.resource.id });
+        }
+        else {
+            res.status(202).json({ id: req.params.id });
+        }
+    }));
+
+    router.delete('/:id/followingGroups/:groupId', helpers.wrap(function* (req, res) {
+        checkCallerPermission(req, req.params.id);
+        checkCallerPermission(req, req.body.id);
+
+        //obtain the existing saved object.        
+        var userDetails = yield* getUserDetailsBasicAsync(req);
+
+        userDetails.modifiedTime = (new Date()).toUTCString();
+        if (!userDetails.followingGroups) {
+            res.status(202).json({ id: req.params.id });
+        }
+        else {
+            var index = userDetails.followingGroups.indexOf(req.params.groupId);
+            if (index != -1) {
+                userDetails.followingGroups.splice(index, 1);
+            }
+
+            logger.get().info({ req: req }, 'Removing a new group from following');
+            var documentResponse = yield dal.updateAsync(req.params.id, userDetails);
+            logger.get().debug({ req: req, userDetails: documentResponse.resource }, 'userDetails object updated successfully.');
+            res.status(200).json({ id: documentResponse.resource.id });
+        }
     }));
 
     router.put('/:id', helpers.wrap(function* (req, res) {

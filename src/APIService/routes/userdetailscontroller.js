@@ -79,6 +79,20 @@ module.exports = function (config, logger) {
         res.status(201).json(JSON.parse(results));
     }));
 
+    router.post('/:id/followingGroups/:groupId', cors(corsOptions), helpers.wrap(function* (req, res) {
+        var userDetailsRequestOptions = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/' + req.params.id + '/followingGroups/' + req.params.groupId, 'POST');
+        var results = yield* helpers.forwardHttpRequest(userDetailsRequestOptions, serviceNames.userDetailsServiceName);
+        res.setHeader('Etag', etag(results));
+        res.status(200).json(JSON.parse(results));
+    }));
+
+    router.delete('/:id/followingGroups/:groupId', cors(corsOptions), helpers.wrap(function* (req, res) {
+        var userDetailsRequestOptions = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/' + req.params.id + '/followingGroups/' + req.params.groupId, 'DELETE');
+        var results = yield* helpers.forwardHttpRequest(userDetailsRequestOptions, serviceNames.userDetailsServiceName);
+        res.setHeader('Etag', etag(results));
+        res.status(200).json(JSON.parse(results));
+    }));
+
     router.put('/:id', cors(corsOptions), helpers.wrap(function* (req, res) {
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/' + req.params.id, 'PUT');
         var results = yield* helpers.forwardHttpRequest(options, serviceNames.userDetailsServiceName);
