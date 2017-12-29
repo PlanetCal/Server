@@ -26,33 +26,6 @@ module.exports = function (config, logger) {
         res.status(200).json(result);
     }));
 
-    router.post('/', helpers.wrap(function* (req, res) {
-        // TODO: Validate userdetails objects in body
-        var userDetails = req.body;
-
-        // //adding a default group ref. It is created after creating the user details object.
-        // userDetails.followingGroups = [userDetails.id];
-        // checkCallerPermission(req, req.body.id);
-
-        logger.get().info({ req: req }, 'Creating userDetails object.');
-        var documentResponse = yield dal.insertAsync(userDetails, {});
-        logger.get().info({ req: req, userDetails: documentResponse.resource }, 'userDetails object created successfully.');
-
-        // //Creating the default group.
-        // var defaultGroup = {
-        //     id: userDetails.id,
-        //     privacy: "Closed",
-        //     category: "Personal",
-        //     name: "My personal Group",
-        //     description: "The default group assigned to me for creating private events. Nobody else can see it unless I share it with my friends, using share option.",
-        // };
-        // req.body = defaultGroup;
-        // var options = helpers.getRequestOption(req, config.groupsServiceEndpoint + '/' + urlNames.groups, 'POST');
-        // var results = yield* helpers.forwardHttpRequest(options, serviceNames.groupsServiceName);
-
-        res.status(201).json({ id: documentResponse.resource.id });
-    }));
-
     //Adding a group with groupId to the list of subscribed groups
     router.post('/:id/followingGroups/:groupId', helpers.wrap(function* (req, res) {
         checkCallerPermission(req, req.params.id);
@@ -61,7 +34,13 @@ module.exports = function (config, logger) {
         //obtain the existing saved object.        
         var userDetails = yield* getUserDetailsBasicAsync(req);
 
+        var newCreation = (!userDetails || !userDetails.id);
+        if (newCreation) {
+            userDetails = { id: req.params.id };
+            userDetails.createdTime = (new Date()).toUTCString();
+        }
         userDetails.modifiedTime = (new Date()).toUTCString();
+
         if (!userDetails.followingGroups) {
             userDetails.followingGroups = [];
         }
@@ -70,9 +49,12 @@ module.exports = function (config, logger) {
         if (index == -1) {
             userDetails.followingGroups.push(req.params.groupId);
             logger.get().info({ req: req }, 'Adding a new group to follow');
-            var documentResponse = yield dal.updateAsync(req.params.id, userDetails);
-            logger.get().debug({ req: req, userDetails: documentResponse.resource }, 'userDetails object updated successfully.');
 
+            var documentResponse = newCreation ?
+                documentResponse = yield dal.insertAsync(userDetails, {}) :
+                documentResponse = yield dal.updateAsync(req.params.id, userDetails);
+
+            logger.get().debug({ req: req, userDetails: documentResponse.resource }, 'userDetails object updated successfully.');
             res.status(200).json({ id: req.params.groupId });
         }
         else {
@@ -115,15 +97,22 @@ module.exports = function (config, logger) {
         //obtain the existing saved object.        
         var currentUserDetails = yield* getUserDetailsBasicAsync(req);
 
-        userDetails.modifiedTime = (new Date()).toUTCString();
-        if (!userDetails.followingGroups) {
+        if (!userDetails.followingGroups && currentUserDetails && currentUserDetails.id) {
             userDetails.followingGroups = currentUserDetails.followingGroups;
         }
+        userDetails.modifiedTime = (new Date()).toUTCString();
 
         logger.get().debug({ req: req }, 'Updating userDetails object.');
-        var documentResponse = yield dal.updateAsync(req.params.id, userDetails);
-        logger.get().debug({ req: req, userDetails: documentResponse.resource }, 'userDetails object updated successfully.');
+        var documentResponse = null;
+        if (currentUserDetails && currentUserDetails.id) {
+            documentResponse = yield dal.updateAsync(req.params.id, userDetails);
+        }
+        else {
+            userDetails.createdTime = (new Date()).toUTCString();
+            documentResponse = yield dal.insertAsync(userDetails, {});
+        }
 
+        logger.get().debug({ req: req, userDetails: documentResponse.resource }, 'userDetails object updated successfully.');
         res.status(200).json({ id: documentResponse.resource.id });
     }));
 

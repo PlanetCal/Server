@@ -73,12 +73,6 @@ module.exports = function (config, logger) {
         res.status(200).json(JSON.parse(groups));
     }));
 
-    router.post('/', cors(corsOptions), helpers.wrap(function* (req, res) {
-        var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/', 'POST');
-        var results = yield* helpers.forwardHttpRequest(options, serviceNames.userDetailsServiceName);
-        res.status(201).json(JSON.parse(results));
-    }));
-
     router.post('/:id/followingGroups/:groupId', cors(corsOptions), helpers.wrap(function* (req, res) {
         var userDetailsRequestOptions = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/' + req.params.id + '/followingGroups/' + req.params.groupId, 'POST');
         var results = yield* helpers.forwardHttpRequest(userDetailsRequestOptions, serviceNames.userDetailsServiceName);
@@ -93,6 +87,7 @@ module.exports = function (config, logger) {
         res.status(200).json(JSON.parse(results));
     }));
 
+    //this call will internally do post if needed.
     router.put('/:id', cors(corsOptions), helpers.wrap(function* (req, res) {
         var options = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/' + req.params.id, 'PUT');
         var results = yield* helpers.forwardHttpRequest(options, serviceNames.userDetailsServiceName);
