@@ -52,7 +52,7 @@ module.exports = function (config, logger) {
                 var results = yield* helpers.forwardHttpRequest(userDetailsRequestOptions, serviceNames.userDetailsServiceName);
                 var userDetails = JSON.parse(results);
 
-                if (userDetails.followingGroups) {
+                if (userDetails.followingGroups && userDetails.followingGroups.length > 0) {
                     var groups = yield* getChildGroups(userDetails.followingGroups, helpers, config, serviceNames, urlNames, req);
                     groupids = groups.concat(userDetails.followingGroups);
                 }
