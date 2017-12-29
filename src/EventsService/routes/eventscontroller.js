@@ -45,15 +45,17 @@ module.exports = function (config, logger) {
         var userId = req.headers['auth-identity'];
 
         if (!groupids) {
+            groupids = [];
             if (userId) {
                 //Get userDetails for the cureent user.        
                 var userDetailsRequestOptions = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/' + userId, 'GET');
                 var results = yield* helpers.forwardHttpRequest(userDetailsRequestOptions, serviceNames.userDetailsServiceName);
                 var userDetails = JSON.parse(results);
 
-                var groups = yield* getChildGroups(userDetails.followingGroups, helpers, config, serviceNames, urlNames, req);
-                groupids = groups.concat(userDetails.followingGroups);
-
+                if (userDetails.followingGroups) {
+                    var groups = yield* getChildGroups(userDetails.followingGroups, helpers, config, serviceNames, urlNames, req);
+                    groupids = groups.concat(userDetails.followingGroups);
+                }
                 if (groupids.length == 0) {
                     groupids.push('blah');
                 }
