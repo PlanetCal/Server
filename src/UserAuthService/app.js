@@ -25,6 +25,7 @@ var config = require('./common/config.json')[app.get('env') || 'production'];
 require('./userauthpassport.js')(passport, config, logger);
 var userLoginController = require('./routes/logincontroller.js')(passport, config, logger);
 var userAuthController = require('./routes/userauthcontroller.js')(passport, config, logger);
+var userDetailsController = require('./routes/userdetailscontroller.js')(config, logger);
 var helpers = require('./common/helpers.js');
 
 var NotFoundException = require('./common/error.js').NotFoundException;
@@ -39,6 +40,7 @@ app.use(passport.initialize());
 // login
 app.use('/login', userLoginController);
 app.use('/userauth', userAuthController);
+app.use('/userdetails', userDetailsController);
 
 // error handling for other routes
 app.use(function (req, res, next) {

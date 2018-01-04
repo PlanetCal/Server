@@ -28,8 +28,8 @@ client.createDatabaseAsync(dbDefinition)
     .then(function (triggerResponse)  {
                 var trigger =  triggerResponse.resource;
         console.log('Trigger ' + config.insertUniqueUserTriggerName + ' on collection ' + config.usersCollectionName + 'created successfully.');
-        console.log('Creating collection ' + config.userDetailsCollectionName + '....');
-        return  client.createCollectionAsync(database._self,  { id: config.userDetailsCollectionName });
+        //todo: Check this code.
+        
     })
     .then(function (collectionResponse)  {
                 var collection  =  collectionResponse.resource;
