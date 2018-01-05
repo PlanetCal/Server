@@ -48,7 +48,7 @@ module.exports = function (config, logger) {
             groupids = [];
             if (userId) {
                 //Get userDetails for the cureent user.        
-                var userDetailsRequestOptions = helpers.getRequestOption(req, config.userDetailsServiceEndpoint + '/' + urlNames.userdetails + '/' + userId, 'GET');
+                var userDetailsRequestOptions = helpers.getRequestOption(req, config.userAuthServiceEndpoint + '/' + urlNames.userdetails + '/' + userId, 'GET');
                 var results = yield* helpers.forwardHttpRequest(userDetailsRequestOptions, serviceNames.userDetailsServiceName);
                 var userDetails = JSON.parse(results);
 
