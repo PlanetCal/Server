@@ -151,7 +151,7 @@ function isOperationAuthorized(req) {
 
 function findUserByUserIdAsync(dal, userId) {
     var querySpec = {
-        query: "SELECT e.id, e.email, e.name, e.passwordHash, e.emailValidation, e.newPasswordHash, e.newEmailValidation, e.createdTime, e.updatedTime FROM root e WHERE e.id = @userId",
+        query: "SELECT * FROM root e WHERE e.id = @userId",
         parameters: [
             {
                 name: "@userId",
@@ -164,7 +164,7 @@ function findUserByUserIdAsync(dal, userId) {
 
 function findUserByEmailAsync(dal, email) {
     var querySpec = {
-        query: "SELECT e.id, e.email, e.name, e.passwordHash, e.emailValidation, e.createdTime, e.updatedTime FROM root e WHERE e.email = @email",
+        query: "SELECT * FROM root e WHERE e.email = @email",
         parameters: [
             {
                 name: "@email",

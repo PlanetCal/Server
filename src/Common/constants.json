@@ -2,7 +2,6 @@
     "serviceNames": {
         "apiServiceName": "APIService",
         "userAuthServiceName": "UserAuthService",
-        "userDetailsServiceName": "UserDetailsService",
         "groupsServiceName": "GroupsService",
         "groupLinksServiceName": "GroupLinksService",
         "groupsRecommendationServiceName": "groupsRecommendationService",
