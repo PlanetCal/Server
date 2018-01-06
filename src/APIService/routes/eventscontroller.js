@@ -185,6 +185,7 @@ module.exports = function (config, logger) {
             if (group && group.id === event.groupId) {
 
                 var permissionGranted = (group.createdBy && group.createdBy === req.headers['auth-identity']) ||
+                    (group.administrators && group.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0) ||
                     (group.administrators && group.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0);
 
                 if (!permissionGranted) {

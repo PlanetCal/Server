@@ -257,8 +257,10 @@ module.exports = function (config, logger) {
         if (existingGroup.childGroups) {
             throw new BadRequestException('Specified group contains childGroups. First delete the child groups before deleting this group. Can not delete it.', errorcode.GroupHasChildGroups);
         }
+
         var permissionGranted = (existingGroup.createdBy && existingGroup.createdBy === req.headers['auth-identity']) ||
-            (existingGroup.modifiedBy && existingGroup.modifiedBy === req.headers['auth-identity']);
+            (existingGroup.modifiedBy && existingGroup.modifiedBy === req.headers['auth-identity']) ||
+            (existingGroup.administrators && existingGroup.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0);
 
         if (!permissionGranted) {
             throw new BadRequestException('User is not authorized to update the group with id ' + existingGroup.id, errorcode.UserNotAuthorized);
@@ -273,7 +275,8 @@ module.exports = function (config, logger) {
             }
             var permissionGranted = parentGroup.privacy === "Open" ||
                 (parentGroup.createdBy && parentGroup.createdBy === req.headers['auth-identity']) ||
-                (parentGroup.modifiedBy && parentGroup.modifiedBy === req.headers['auth-identity']);
+                (parentGroup.modifiedBy && parentGroup.modifiedBy === req.headers['auth-identity']) ||
+                (parentGroup.administrators && parentGroup.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0);
 
             if (!permissionGranted) {
                 throw new BadRequestException('User is not authorized to create a group under the group with id ' + parentGroup.id, errorcode.UserNotAuthorized);
@@ -306,6 +309,7 @@ module.exports = function (config, logger) {
         logger.get().debug({ req: req }, 'group object deleted successfully. id: %s', req.params.id);
         res.status(200).json({ id: req.params.id });
     }));
+
 
     function findGroupByKeywordsAsync(keywords, fields, userId) {
         var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
