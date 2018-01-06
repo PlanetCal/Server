@@ -262,7 +262,7 @@ module.exports = function (config, logger) {
             throw new BadRequestException('Specified group does not exist in the database. Can not delete it.', errorcode.GroupNotExistant);
         }
 
-        if (existingGroup.childGroups) {
+        if (existingGroup.childGroups && existingGroup.childGroups.length > 0) {
             throw new BadRequestException('Specified group contains childGroups. First delete the child groups before deleting this group. Can not delete it.', errorcode.GroupHasChildGroups);
         }
 
