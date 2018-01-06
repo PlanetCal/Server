@@ -37,5 +37,7 @@
     "GroupShouldContainPrivacySetting": "GroupShouldContainPrivacySetting",
     "ChildGroupsChanged": "ChildGroupsChanged",
     "GroupHasChildGroups": "GroupHasChildGroups",
+    "CagegoryChangeNotAllowedDueToChildGroups": "CagegoryChangeNotAllowedDueToChildGroups",
+    "PrivacyChangeNotAllowedDueToChildGroups": "PrivacyChangeNotAllowedDueToChildGroups",
     "InvalidEmail": "InvalidEmail"
 }

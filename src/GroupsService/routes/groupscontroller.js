@@ -174,6 +174,14 @@ module.exports = function (config, logger) {
             throw new BadRequestException('ChildGroups information has changed during update. It should remain same.', errorcode.ChildGroupsChanged);
         }
 
+        if (group.category != existingGroup.category) {
+            throw new BadRequestException('Group category should remain same, since it has child groups', errorcode.CategoryChangeNotAllowedDueToChildGroups);
+        }
+
+        if (group.privacy != existingGroup.privacy) {
+            throw new BadRequestException('Group privacy should remain same, since it has child groups', errorcode.PrivacyChangeNotAllowedDueToChildGroups);
+        }
+
         var permissionGranted = (existingGroup.createdBy && existingGroup.createdBy === req.headers['auth-identity']) ||
             (existingGroup.administrators && existingGroup.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0);
 

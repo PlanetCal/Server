@@ -200,6 +200,13 @@ module.exports = {
             return true;
         }
 
+        if (!array1) {
+            array1 = [];
+        }
+        if (!array2) {
+            array2 = [];
+        }
+
         if (!array1 || !array2 || array1.length !== array2.length) {
             return false;
         }
@@ -306,7 +313,7 @@ module.exports = {
             var geoLocation = JSON.parse(results);
             if (geoLocation.status === 'OK') {
                 var geoLocation = geoLocation.results[0].geometry.location;
-                entity.geoLocation =  { type: "Point", coordinates: [geoLocation.lng, geoLocation.lat] };
+                entity.geoLocation = { type: "Point", coordinates: [geoLocation.lng, geoLocation.lat] };
             }
         }
     }
