@@ -123,18 +123,20 @@ module.exports = function (config, logger) {
     router.post('/deleteGroupsEvents', helpers.wrap(function* (req, res) {
 
         var groups = req.body.groups;
-        logger.get().debug({ req: req }, 'Retrieving event objects by ids...');
+        let deletedBy = req.headers['auth-email'];
+        logger.get().info(`${deletedBy} deleting events for the groups ${groups}`);
+
         var documentResponse = yield findEventsByGroupsIdsAsync(dal, groups, ["groupId"], null);
 
         var results = documentResponse.feed;
         var filteredResults = helpers.removeDuplicatedItemsById(results);
 
-        logger.get().debug({ req: req, events: filteredResults }, 'Event objects retrieved successfully.');
+        logger.get().info({ events: filteredResults }, 'Event objects retrieved successfully for deletion.');
 
         for (var eventIndex in filteredResults) {
             var event = filteredResults[eventIndex];
             yield dal.removeAsync(event.id, { partitionKey: [event.groupId] });
-            logger.get().debug({ req: req }, 'Event object deleted successfully. id: %s', event.id);
+            logger.get().info(`Event with id ${event.id} deleted successfully.`);
         }
         res.status(200).json(filteredResults);
     }));

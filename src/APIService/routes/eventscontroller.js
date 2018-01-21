@@ -161,10 +161,12 @@ module.exports = function (config, logger) {
     }));
 
     router.delete('/:id', cors(corsOptions), helpers.wrap(function* (req, res) {
+        let deletedBy = req.headers['auth-email'];
+        logger.get().info(`Event delete request issued by user ${deletedBy}. EventId: ${req.params.id}`);
 
         //first get the event from database to retrieve its groups.
         var eventsUrl = endpoint + '/' + urlNames.events + '/' + req.params.id
-        eventsUrl += '?fields=groupId|createdBy|modifiedBy';
+        eventsUrl += '?fields=name|groupId|createdBy|modifiedBy';
         var options = helpers.getRequestOption(req, eventsUrl, 'GET');
         var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
         var event = JSON.parse(results);
@@ -195,7 +197,7 @@ module.exports = function (config, logger) {
         }
 
         var documentResponse = yield dal.removeAsync(req.params.id, { partitionKey: [event.groupId] });
-        logger.get().debug({ req: req }, 'Event object deleted successfully. id: %s', req.params.id);
+        logger.get().info(`Event deleted successfully by user ${deletedBy}. Event name:${event.name}, EventId: ${event.id}`);
 
         // var options = helpers.getRequestOption(req, endpoint + '/' + urlNames.events + '/' + req.params.id, 'DELETE');
         // var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);

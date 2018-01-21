@@ -255,6 +255,8 @@ module.exports = function (config, logger) {
 
     router.delete('/:id', helpers.wrap(function* (req, res) {
         var userId = req.headers['auth-identity'];
+        let deletedBy = req.headers['auth-email'];
+        logger.get().info(`Group delete request issued by user ${deletedBy}. GroupId: ${req.params.id}`);
         //fetch existing group from the database so that we can check permissions        
         var documentResponse = yield findGroupsByGroupIdsAsync([req.params.id], allowedGroupFields, userId);
         var existingGroup = documentResponse.feed.length > 0 ? documentResponse.feed[0] : {};
@@ -310,11 +312,11 @@ module.exports = function (config, logger) {
 
         sendEmailsToAddedAndRemovedAdmins(logger, helpers, existingGroup.administrators, [], req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, existingGroup.name);
 
-        logger.get().debug({ req: req }, 'Deleting group object...');
 
         var documentResponse = yield dal.removeAsync(req.params.id);
 
-        logger.get().debug({ req: req }, 'group object deleted successfully. id: %s', req.params.id);
+        logger.get().info(`Group deleted successfully by user ${deletedBy}. Group name:${existingGroup.name}, GroupId: ${existingGroup.id}`);
+
         res.status(200).json({ id: req.params.id });
     }));
 
