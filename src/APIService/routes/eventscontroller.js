@@ -17,6 +17,8 @@ module.exports = function (config, logger) {
     var collectionName = config.eventsCollectionName;
     var documentdbEndpoint = config.documentdbEndpoint;
     var documentdbAuthKey = config.documentdbAuthKey;
+    var eventServiceEndpoint = config.eventsServiceEndpoint;
+    var apiServiceEndpoint = config.apiServiceEndpoint;
 
     var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
     var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
@@ -31,10 +33,10 @@ module.exports = function (config, logger) {
         credentials: true
     };
 
-    var endpoint = config.eventsServiceEndpoint;
+
 
     router.get('/:id', cors(corsOptions), helpers.wrap(function* (req, res) {
-        var url = endpoint + '/' + urlNames.events + '/' + req.params.id;
+        var url = eventServiceEndpoint + '/' + urlNames.events + '/' + req.params.id;
         if (req.query) {
             url += '?' + qs.stringify(req.query);
         }
@@ -48,7 +50,7 @@ module.exports = function (config, logger) {
         var url;
         var queryString = qs.stringify(req.query);
 
-        url = endpoint + '/' + urlNames.events;
+        url = eventServiceEndpoint + '/' + urlNames.events;
 
         if (queryString && queryString.length > 0) {
             url += '?' + queryString;
@@ -82,7 +84,7 @@ module.exports = function (config, logger) {
             throw new BadRequestException('User is not authorized to create an event under the group with id ' + req.body.groupId, errorcode.UserNotAuthorized);
         }
 
-        var options = helpers.getRequestOption(req, endpoint + '/' + urlNames.events, 'POST');
+        var options = helpers.getRequestOption(req, eventServiceEndpoint + '/' + urlNames.events, 'POST');
         var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
         res.status(201).json(JSON.parse(results));
     }));
@@ -97,7 +99,7 @@ module.exports = function (config, logger) {
         }
 
         //first get the event from database to retrieve its groups.
-        var eventsUrl = endpoint + '/' + urlNames.events + '/' + req.params.id
+        var eventsUrl = eventServiceEndpoint + '/' + urlNames.events + '/' + req.params.id
         eventsUrl += '?fields=groupId|createdBy|createdTime|modifiedBy';
         var options = helpers.getRequestOption(req, eventsUrl, 'GET');
         var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
@@ -155,7 +157,7 @@ module.exports = function (config, logger) {
         }
 
         // forth, update the event.
-        var eventOptions = helpers.getRequestOption(req, endpoint + '/' + urlNames.events + '/' + req.params.id, 'PUT');
+        var eventOptions = helpers.getRequestOption(req, eventServiceEndpoint + '/' + urlNames.events + '/' + req.params.id, 'PUT');
         var eventResults = yield* helpers.forwardHttpRequest(eventOptions, serviceNames.eventsServiceName);
         res.status(200).json({ id: req.params.id });
     }));
@@ -165,8 +167,8 @@ module.exports = function (config, logger) {
         logger.get().info(`Event delete request issued by user ${deletedBy}. EventId: ${req.params.id}`);
 
         //first get the event from database to retrieve its groups.
-        var eventsUrl = endpoint + '/' + urlNames.events + '/' + req.params.id
-        eventsUrl += '?fields=name|groupId|createdBy|modifiedBy';
+        var eventsUrl = eventServiceEndpoint + '/' + urlNames.events + '/' + req.params.id
+        eventsUrl += '?fields=name|groupId|createdBy|modifiedBy|icon';
         var options = helpers.getRequestOption(req, eventsUrl, 'GET');
         var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
         var event = JSON.parse(results);
@@ -185,7 +187,6 @@ module.exports = function (config, logger) {
             var results = yield* helpers.forwardHttpRequest(options, serviceNames.groupsServiceName);
             var group = JSON.parse(results);
             if (group && group.id === event.groupId) {
-
                 var permissionGranted = (group.createdBy && group.createdBy === req.headers['auth-identity']) ||
                     (group.administrators && group.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0) ||
                     (group.administrators && group.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0);
@@ -196,11 +197,16 @@ module.exports = function (config, logger) {
             }
         }
 
+        if (event.icon) {
+            let iconSegments = event.icon.split('/');
+            let fileName = iconSegments[iconSegments.length - 1];
+            let blobUrl = `${apiServiceEndpoint}/${urlNames.blob}/${config.blobEventContainer}/${fileName}`;
+            options = helpers.getRequestOption(req, blobUrl, 'DELETE');
+            results = yield* helpers.forwardHttpRequest(options, serviceNames.apiServiceName);
+        }
+
         var documentResponse = yield dal.removeAsync(req.params.id, { partitionKey: [event.groupId] });
         logger.get().info(`Event deleted successfully by user ${deletedBy}. Event name:${event.name}, EventId: ${event.id}`);
-
-        // var options = helpers.getRequestOption(req, endpoint + '/' + urlNames.events + '/' + req.params.id, 'DELETE');
-        // var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
         res.status(200).json({ id: req.params.id });
     }));
 

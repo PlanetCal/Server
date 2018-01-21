@@ -38,6 +38,7 @@ module.exports = {
                 'auth-email': req.headers['auth-email'],
                 'auth-name': req.headers['auth-name'],
                 'version': req.headers['version'],
+                'authorization': req.headers['authorization'],
                 'activityid': req.headers['activityid']
             },
             url: targetEndpoint,
