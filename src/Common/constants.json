@@ -25,7 +25,7 @@
     },
     "emailConstants": {
         "adminEmail": "1482d59e24657b713c69eb18e6ef1394b80187bbdd",
-        "adminPassword": "2485909b00663b2166",
+        "adminPassword": "2485909b62202e2168",
         "smtpHost": "smtp-mail.outlook.com",
         "smtpCiphers": "SSLv3"
     },
