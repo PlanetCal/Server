@@ -312,6 +312,14 @@ module.exports = function (config, logger) {
 
         sendEmailsToAddedAndRemovedAdmins(logger, helpers, existingGroup.administrators, [], req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, existingGroup.name);
 
+        if (existingGroup.icon) {
+            var apiServiceEndpoint = config.apiServiceEndpoint;
+            let iconSegments = existingGroup.icon.split('/');
+            let fileName = iconSegments[iconSegments.length - 1];
+            let blobUrl = `${apiServiceEndpoint}/${urlNames.blob}/${config.blobGroupContainer}/${fileName}`;
+            options = helpers.getRequestOption(req, blobUrl, 'DELETE');
+            helpers.forwardHttpRequest(options, serviceNames.apiServiceName);
+        }
 
         var documentResponse = yield dal.removeAsync(req.params.id);
 

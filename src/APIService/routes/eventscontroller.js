@@ -18,7 +18,6 @@ module.exports = function (config, logger) {
     var documentdbEndpoint = config.documentdbEndpoint;
     var documentdbAuthKey = config.documentdbAuthKey;
     var eventServiceEndpoint = config.eventsServiceEndpoint;
-    var apiServiceEndpoint = config.apiServiceEndpoint;
 
     var DataAccessLayer = require('../common/dal.js').DataAccessLayer;
     var dal = new DataAccessLayer(databaseName, collectionName, documentdbEndpoint, documentdbAuthKey);
@@ -200,9 +199,10 @@ module.exports = function (config, logger) {
         if (event.icon) {
             let iconSegments = event.icon.split('/');
             let fileName = iconSegments[iconSegments.length - 1];
+            let apiServiceEndpoint = config.apiServiceEndpoint;
             let blobUrl = `${apiServiceEndpoint}/${urlNames.blob}/${config.blobEventContainer}/${fileName}`;
             options = helpers.getRequestOption(req, blobUrl, 'DELETE');
-            results = yield* helpers.forwardHttpRequest(options, serviceNames.apiServiceName);
+            helpers.forwardHttpRequest(options, serviceNames.apiServiceName);
         }
 
         var documentResponse = yield dal.removeAsync(req.params.id, { partitionKey: [event.groupId] });

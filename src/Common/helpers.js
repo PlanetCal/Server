@@ -29,21 +29,8 @@ module.exports = {
         }
     },
 
-    'getRequestOption': function getRequestOption(req, targetEndpoint, method) {
-        return {
-            method: method,
-            headers: {
-                'content-type': 'application/json; charset=utf-8',
-                'auth-identity': req.headers['auth-identity'],
-                'auth-email': req.headers['auth-email'],
-                'auth-name': req.headers['auth-name'],
-                'version': req.headers['version'],
-                'authorization': req.headers['authorization'],
-                'activityid': req.headers['activityid']
-            },
-            url: targetEndpoint,
-            body: JSON.stringify(req.body)
-        };
+    'deleteBlobImage': function deleteBlobImage(req, container, blobUrl) {
+
     },
 
     'removeDuplicatedItemsById': function removeDuplicatedItemsById(results) {
