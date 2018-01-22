@@ -312,6 +312,7 @@ module.exports = function (config, logger) {
 
         sendEmailsToAddedAndRemovedAdmins(logger, helpers, existingGroup.administrators, [], req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, existingGroup.name);
 
+        yield* helpers.deleteBlobImage(req, config.apiServiceEndpoint, urlNames.blob, serviceNames.apiServiceName, config.blobGroupContainer, existingGroup.icon);
 
         var documentResponse = yield dal.removeAsync(req.params.id);
 

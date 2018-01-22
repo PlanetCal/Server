@@ -126,7 +126,7 @@ module.exports = function (config, logger) {
         let deletedBy = req.headers['auth-email'];
         logger.get().info(`${deletedBy} deleting events for the groups ${groups}`);
 
-        var documentResponse = yield findEventsByGroupsIdsAsync(dal, groups, ["groupId"], null);
+        var documentResponse = yield findEventsByGroupsIdsAsync(dal, groups, ["groupId", "icon"], null);
 
         var results = documentResponse.feed;
         var filteredResults = helpers.removeDuplicatedItemsById(results);
@@ -135,6 +135,7 @@ module.exports = function (config, logger) {
 
         for (var eventIndex in filteredResults) {
             var event = filteredResults[eventIndex];
+            yield* helpers.deleteBlobImage(req, config.apiServiceEndpoint, urlNames.blob, serviceNames.apiServiceName, config.blobEventContainer, event.icon);
             yield dal.removeAsync(event.id, { partitionKey: [event.groupId] });
             logger.get().info(`Event with id ${event.id} deleted successfully.`);
         }

@@ -31,6 +31,23 @@ module.exports = function (config, logger) {
         credentials: true
     };
 
+    router.delete('/:blobContainer/:blob', cors(corsOptions), helpers.wrap(function* (req, res) {
+        let blobService = azure.createBlobService(blobStorage, blobStorageAccessKey);
+        let blobContainer = req.params.blobContainer;
+        let fileName = req.params.blob;
+        blobService.deleteBlobIfExists(blobContainer, fileName,
+            function (error) {
+                if (error) {
+                    throw new Error(error);
+                } else {
+                    logger.get().info(`Deleted ${fileName} successfully.`);
+                    res.status(200).json({ blob: fileName });
+                }
+            }
+        );
+    }));
+
+
     router.post('/', cors(corsOptions), helpers.wrap(function* (req, res) {
 
         var groupId = req.headers['groupid'];
@@ -59,13 +76,13 @@ module.exports = function (config, logger) {
                             throw new BadRequestException("Size of file to upload is bigger than " + blobSizeLimitInMB + " MB", errorcode.FileUploadSizeLimit);
                         }
 
-                        logger.get().debug({ req: req }, 'Uploading file: ' + filename);
+                        logger.get().info(`uploading ${filename}.`);
                         var newFileName = fileFirstPart + extension;
                         blobService.createBlockBlobFromStream(blobContainer, newFileName, part, size, function (error) {
                             if (error) {
                                 throw new Error(error);
                             } else {
-                                logger.get().debug({ req: req }, 'uploaded successfully: ' + filename);
+                                logger.get().info(`uploaded ${filename} successfully.`);
                                 var url = "https://" + blobStorage + ".blob.core.windows.net/" + blobContainer + "/" + newFileName;
                                 res.status(200).json({ url: url, size: size });
                             }
