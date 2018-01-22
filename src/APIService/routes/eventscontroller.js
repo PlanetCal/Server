@@ -196,15 +196,7 @@ module.exports = function (config, logger) {
             }
         }
 
-        if (event.icon) {
-            let iconSegments = event.icon.split('/');
-            let fileName = iconSegments[iconSegments.length - 1];
-            let apiServiceEndpoint = config.apiServiceEndpoint;
-            let blobUrl = `${apiServiceEndpoint}/${urlNames.blob}/${config.blobEventContainer}/${fileName}`;
-            options = helpers.getRequestOption(req, blobUrl, 'DELETE');
-            helpers.forwardHttpRequest(options, serviceNames.apiServiceName);
-        }
-
+        yield* helpers.deleteBlobImage(req, config.apiServiceEndpoint, urlNames.blob, serviceNames.apiServiceName, config.blobEventContainer, event.icon);
         var documentResponse = yield dal.removeAsync(req.params.id, { partitionKey: [event.groupId] });
         logger.get().info(`Event deleted successfully by user ${deletedBy}. Event name:${event.name}, EventId: ${event.id}`);
         res.status(200).json({ id: req.params.id });

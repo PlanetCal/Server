@@ -29,8 +29,31 @@ module.exports = {
         }
     },
 
-    'deleteBlobImage': function deleteBlobImage(req, container, blobUrl) {
+    'getRequestOption': function getRequestOption(req, targetEndpoint, method) {
+        return {
+            method: method,
+            headers: {
+                'content-type': 'application/json; charset=utf-8',
+                'auth-identity': req.headers['auth-identity'],
+                'auth-email': req.headers['auth-email'],
+                'auth-name': req.headers['auth-name'],
+                'version': req.headers['version'],
+                'authorization': req.headers['authorization'],
+                'activityid': req.headers['activityid']
+            },
+            url: targetEndpoint,
+            body: JSON.stringify(req.body)
+        };
+    },
 
+    'deleteBlobImage': function* deleteBlobImage(req, apiServiceEndpoint, blobUrlSegment, apiServiceName, container, blobUrl) {
+        if (blobUrl) {
+            let iconSegments = blobUrl.split('/');
+            let fileName = iconSegments[iconSegments.length - 1];
+            let deleteBlobEndpoint = `${apiServiceEndpoint}/${blobUrlSegment}/${container}/${fileName}`;
+            let options = this.getRequestOption(req, deleteBlobEndpoint, 'DELETE');
+            return yield* this.forwardHttpRequest(options, apiServiceName);
+        }
     },
 
     'removeDuplicatedItemsById': function removeDuplicatedItemsById(results) {
