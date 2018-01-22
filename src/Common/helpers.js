@@ -178,7 +178,8 @@ module.exports = {
             if (!extractedException) {
                 extractedException = err;
             }
-            throw new HttpRequestException('Request to ' + serviceName + ' failed.', options.url, extractedException);
+            throw extractedException;
+            //throw new HttpRequestException('Request to ' + serviceName + ' failed.', options.url, extractedException);
         });
     },
 
