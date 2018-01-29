@@ -103,7 +103,7 @@ module.exports = function (config, logger) {
         logger.get().debug({ req: req }, 'Updating event...');
         var documentResponse = yield dal.updateAsync(req.params.id, event);
         logger.get().debug({ req: req, event: documentResponse.resource }, 'Event updated successfully.');
-        res.status(200).json({ id: documentResponse.resource.id });
+        res.status(200).json(event);
     }));
 
     router.post('/', helpers.wrap(function* (req, res) {
@@ -117,7 +117,7 @@ module.exports = function (config, logger) {
         logger.get().debug({ req: req }, 'Creating event object...');
         var documentResponse = yield dal.insertAsync(event, {});
         logger.get().debug({ req: req, event: documentResponse.resource }, 'Event object created successfully.');
-        res.status(200).json({ id: documentResponse.resource.id });
+        res.status(200).json(event);
     }));
 
     router.post('/deleteGroupsEvents', helpers.wrap(function* (req, res) {

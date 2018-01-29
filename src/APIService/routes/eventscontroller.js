@@ -158,7 +158,7 @@ module.exports = function (config, logger) {
         // forth, update the event.
         var eventOptions = helpers.getRequestOption(req, eventServiceEndpoint + '/' + urlNames.events + '/' + req.params.id, 'PUT');
         var eventResults = yield* helpers.forwardHttpRequest(eventOptions, serviceNames.eventsServiceName);
-        res.status(200).json({ id: req.params.id });
+        res.status(200).json(JSON.parse(eventResults));
     }));
 
     router.delete('/:id', cors(corsOptions), helpers.wrap(function* (req, res) {
