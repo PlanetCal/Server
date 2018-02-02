@@ -465,15 +465,15 @@ function* sendGroupEmail(logger, helpers, currentUserEmail, currentUserName, pla
     if (added) {
         subject = "You have been made administrator of PlanetCal group '" + groupName + "'";
         messageBody += "<p>Congratulations!</p>";
-        messageBody += "<p>You have been enrolled as an administrator of the PlanetCal group " + groupName + " by " + currentUserName + "</p>";
+        messageBody += "<p>You have been enrolled as an administrator of the PlanetCal group '" + groupName + "' by " + currentUserName + "</p>";
         messageBody += "<p>You can now edit this group, add or remove events under it.</p>";
         messageBody += "<p>If you are already a member of PlanetCal. You can login any time to view the groups you are an administrator of, and much more.</p>";
         messageBody += "<p>But if you are not a member of PlanetCal...</p>";
         messageBody += "<p>Please register yourself by clicking on the following link.</p>";
     }
     else {
-        subject = "You are no longer an administrator of a PlanetCal group " + groupName;
-        messageBody += "<p>You have been removed as an administrator of the PlanetCal group " + groupName + " by " + currentUserName + "</p>";
+        subject = "You are no longer an administrator of a PlanetCal group '" + groupName + "'";
+        messageBody += "<p>You have been removed as an administrator of the PlanetCal group '" + groupName + "' by " + currentUserName + "</p>";
         messageBody += "<p>If you are already a member of PlanetCal. You can login any time to publish your own events for others, view other groups, create your own, and much more.</p>";
         messageBody += "<p>If you are not a member of PlanetCal, you can still register to explore it further...</p>";
         messageBody += "<p>Please complete the registration process by clicking on the following link, and chosing to register.</p>";
