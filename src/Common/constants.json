@@ -34,8 +34,9 @@
         "googleGeoCodeApiEndpoint": "https://maps.googleapis.com/maps/api/geocode/json"
     },
     "sendGrid": {
+        "adminEmail": "sachin.kumar.v@gmail.com",
         "useSendGridForEmails": "true",
-        "sendGridEndpoint": "https://sendgrid.com",
+        "sendGridEndpoint": "https://api.sendgrid.com/v3/mail/send",
         "sendGridApiKey": "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"
     },
     "nodeLinksUpdateStoredProcName": "nodeLinksUpdateStoredProc",

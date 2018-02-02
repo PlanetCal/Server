@@ -291,10 +291,33 @@ module.exports = {
 
     'sendEmailUsingSendGrid': function* updateEntityGeoLocation(logger, toAddress, subject, messageHtmlText, ccAddress) {
         var url = `${sendGridConstants.sendGridEndpoint}`;
+        var body = {
+            personalizations:
+                [{
+                    to: [{ email: toAddress }]
+                }],
+            from: { email: sendGridConstants.adminEmail },
+            subject: subject,
+            content:
+                [{
+                    type: "text/html",
+                    value: messageHtmlText
+                }]
+        }
+        if (ccAddress) {
+            body.personalizations[0].cc = [{ email: ccAddress }];
+        }
+
         var options = {
-            method: 'GET',
-            url: url
+            method: 'POST',
+            url: url,
+            headers: {
+                'content-type': 'application/json; charset=utf-8',
+                'authorization': `Bearer ${sendGridConstants.sendGridApiKey}`
+            },
+            body: JSON.stringify(body)
         };
+
         return yield* this.forwardHttpRequest(options, "");
     },
 
