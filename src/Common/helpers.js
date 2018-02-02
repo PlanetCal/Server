@@ -297,7 +297,10 @@ module.exports = {
                 [{
                     to: [{ email: toAddress }]
                 }],
-            from: { email: sendGridConstants.adminEmail },
+            from: {
+                email: sendGridConstants.adminEmail,
+                name: sendGridConstants.adminName,
+            },
             subject: subject,
             content:
                 [{
