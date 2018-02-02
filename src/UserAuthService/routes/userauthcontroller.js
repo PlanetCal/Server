@@ -44,7 +44,7 @@ module.exports = function (passport, config, logger) {
 
         logger.get().debug({ req: req, userAuth: documentResponse.resource }, 'userAuth object created successfully.');
 
-        sendValidationEmail(helpers, logger, req.body.name, email, apiServiceEndpoint, userAuthUrl, documentResponse.resource.id, newGuid, true);
+        yield* sendValidationEmail(helpers, logger, req.body.name, email, apiServiceEndpoint, userAuthUrl, documentResponse.resource.id, newGuid, true);
         res.status(201).json({ email: documentResponse.resource.email, id: documentResponse.resource.id, name: documentResponse.resource.name });
     }));
 
@@ -175,7 +175,7 @@ function findUserByEmailAsync(dal, email) {
     return dal.getAsync(querySpec);
 }
 
-function sendValidationEmail(helpers, logger, name, email, apiServiceEndpoint, userAuthUrl, documentid, guid, isNewRegistration) {
+function* sendValidationEmail(helpers, logger, name, email, apiServiceEndpoint, userAuthUrl, documentid, guid, isNewRegistration) {
     var toAddress = name + ' <' + email + '>';
     var subject = "";
 
@@ -204,5 +204,5 @@ function sendValidationEmail(helpers, logger, name, email, apiServiceEndpoint, u
     messageBody += "<p>Thank you</p>";
     messageBody += "<p>PlanetCal team.</p>";
 
-    helpers.sendEmail(logger, toAddress, subject, messageBody);
+    yield* helpers.sendEmail(logger, toAddress, subject, messageBody);
 }

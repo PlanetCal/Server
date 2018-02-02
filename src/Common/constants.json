@@ -29,6 +29,14 @@
         "smtpHost": "smtp-mail.outlook.com",
         "smtpCiphers": "SSLv3"
     },
+    "google": {
+        "googleApiKey": "AIzaSyBx8ndUQXUz_yfEpqlinriZelb9lxrJ3hk",
+        "googleGeoCodeApiEndpoint": "https://maps.googleapis.com/maps/api/geocode/json"
+    },
+    "sendGrid": {
+        "useSendGridForEmails": "true",
+        "sendGridApiKey": "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"
+    },
     "nodeLinksUpdateStoredProcName": "nodeLinksUpdateStoredProc",
     "nodeLinksQueryStoredProcName": "nodeLinksQueryStoredProc",
     "emptyGuid": "00000000-0000-0000-0000-000000000000"
