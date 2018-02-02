@@ -312,8 +312,8 @@ module.exports = {
             method: 'POST',
             url: url,
             headers: {
-                'content-type': 'application/json; charset=utf-8',
-                'authorization': `Bearer ${sendGridConstants.sendGridApiKey}`
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${sendGridConstants.sendGridApiKey}`
             },
             body: JSON.stringify(body)
         };
