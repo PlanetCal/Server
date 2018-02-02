@@ -35,6 +35,7 @@
     },
     "sendGrid": {
         "useSendGridForEmails": "true",
+        "sendGridEndpoint": "https://sendgrid.com",
         "sendGridApiKey": "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"
     },
     "nodeLinksUpdateStoredProcName": "nodeLinksUpdateStoredProc",

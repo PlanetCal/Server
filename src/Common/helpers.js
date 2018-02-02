@@ -250,8 +250,8 @@ module.exports = {
 
     // Documentation: https://github.com/eleith/emailjs    
     'sendEmail': function* sendEmail(logger, toAddress, subject, messageHtmlText, ccAddress) {
-        if (sendGridConstants.sendEmailUsingSendGrid) {
-            yield* sendEmailUsingSendGrid(logger, toAddress, subject, messageHtmlText, ccAddress);
+        if (sendGridConstants.useSendGridForEmails) {
+            yield* this.sendEmailUsingSendGrid(logger, toAddress, subject, messageHtmlText, ccAddress);
         }
 
         var adminUser = this.decrypt(emailConstants.adminEmail);
@@ -290,24 +290,12 @@ module.exports = {
     },
 
     'sendEmailUsingSendGrid': function* updateEntityGeoLocation(logger, toAddress, subject, messageHtmlText, ccAddress) {
-        if (entity.address) {
-            var normalizedAddress = "address=" + entity.address;
-            normalizedAddress = normalizedAddress.replace(/ /g, '+');
-
-            var url = `${googleConstants.googleGeoCodeApiEndpoint}?${normalizedAddress}&key=${googleConstants.googleApiKey}`;
-
-            var options = {
-                method: 'GET',
-                url: url
-            };
-
-            var results = yield* this.forwardHttpRequest(options, "");
-            var geoLocation = JSON.parse(results);
-            if (geoLocation.status === 'OK') {
-                var geoLocation = geoLocation.results[0].geometry.location;
-                entity.geoLocation = { type: "Point", coordinates: [geoLocation.lng, geoLocation.lat] };
-            }
-        }
+        var url = `${sendGridConstants.sendGridEndpoint}`;
+        var options = {
+            method: 'GET',
+            url: url
+        };
+        return yield* this.forwardHttpRequest(options, "");
     },
 
     'isEmailValid': function isEmailValid(email) {

@@ -124,7 +124,7 @@ module.exports = function (passport, config, logger) {
             logger.get().debug({ userAuth: documentResponse.resource }, 'userAuth object updated successfully.');
 
             logger.get().debug('Inside UserAuth Put, About to send the validation email');
-            sendValidationEmail(helpers, logger, result.name, result.email, apiServiceEndpoint, userAuthUrl, result.id, newGuid, false);
+            yield* sendValidationEmail(helpers, logger, result.name, result.email, apiServiceEndpoint, userAuthUrl, result.id, newGuid, false);
 
             res.status(200).json({ id: documentResponse.resource.id });
         }
