@@ -6,6 +6,8 @@ var email = require('emailjs');
 var crypto = require('crypto');
 var emailConstants = require('./constants.json')['emailConstants'];
 var encryptConstants = require('./constants.json')['encryptConstants'];
+var googleConstants = require('./constants.json')['google'];
+var sendGridConstants = require('./constants.json')['sendGrid'];
 var ForbiddenException = require('./error.js').ForbiddenException;
 var UnauthorizedException = require('./error.js').UnauthorizedException;
 var InternalServerException = require('./error.js').InternalServerException;
@@ -247,7 +249,11 @@ module.exports = {
     },
 
     // Documentation: https://github.com/eleith/emailjs    
-    'sendEmail': function sendEmail(logger, toAddress, subject, messageHtmlText, ccAddress) {
+    'sendEmail': function* sendEmail(logger, toAddress, subject, messageHtmlText, ccAddress) {
+        if (sendGridConstants.useSendGridForEmails) {
+            yield* this.sendEmailUsingSendGrid(logger, toAddress, subject, messageHtmlText, ccAddress);
+        }
+
         var adminUser = this.decrypt(emailConstants.adminEmail);
         var adminPassword = this.decrypt(emailConstants.adminPassword);
 
@@ -283,6 +289,42 @@ module.exports = {
         logger.get().info('Inside Helper.SendEmail, sent an email message');
     },
 
+    'sendEmailUsingSendGrid': function* updateEntityGeoLocation(logger, toAddress, subject, messageHtmlText, ccAddress) {
+        var url = `${sendGridConstants.sendGridEndpoint}`;
+        var sendGridApiKey = this.decrypt(sendGridConstants.encryptedSendGridApiKey);
+        var body = {
+            personalizations:
+                [{
+                    to: [{ email: toAddress }]
+                }],
+            from: {
+                email: sendGridConstants.adminEmail,
+                name: sendGridConstants.adminName,
+            },
+            subject: subject,
+            content:
+                [{
+                    type: "text/html",
+                    value: messageHtmlText
+                }]
+        }
+        if (ccAddress) {
+            body.personalizations[0].cc = [{ email: ccAddress }];
+        }
+
+        var options = {
+            method: 'POST',
+            url: url,
+            headers: {
+                'content-type': 'application/json',
+                'Authorization': `Bearer ${sendGridApiKey}`
+            },
+            body: JSON.stringify(body)
+        };
+
+        return yield* this.forwardHttpRequest(options, "");
+    },
+
     'isEmailValid': function isEmailValid(email) {
         var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
         return regex.test(email);
@@ -304,17 +346,12 @@ module.exports = {
         res.status(err.code || 500).json(exception);
     },
 
-    'updateEntityGeoLocation': function* updateEntityGeoLocation(entity, googleGeoCodeApiEndpoint, googleApiKey) {
+    'updateEntityGeoLocation': function* updateEntityGeoLocation(entity) {
         if (entity.address) {
             var normalizedAddress = "address=" + entity.address;
             normalizedAddress = normalizedAddress.replace(/ /g, '+');
 
-            var url = googleGeoCodeApiEndpoint
-                + '?' +
-                normalizedAddress +
-                '&key='
-                + googleApiKey;
-
+            var url = `${googleConstants.googleGeoCodeApiEndpoint}?${normalizedAddress}&key=${googleConstants.googleApiKey}`;
             var options = {
                 method: 'GET',
                 url: url

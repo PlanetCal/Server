@@ -122,9 +122,9 @@ module.exports = function (config, logger) {
         group.createdBy = req.headers['auth-identity'];
         group.createdTime = (new Date()).toUTCString();
 
-        sendEmailsToAddedAndRemovedAdmins(logger, helpers, [], group.administrators, req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, group.name);
+        yield* sendEmailsToAddedAndRemovedAdmins(logger, helpers, [], group.administrators, req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, group.name);
 
-        yield* helpers.updateEntityGeoLocation(group, config.googleGeoCodeApiEndpoint, config.googleApiKey);
+        yield* helpers.updateEntityGeoLocation(group);
 
         logger.get().debug({ req: req, group: group }, 'Creating group object...');
 
@@ -189,7 +189,7 @@ module.exports = function (config, logger) {
             throw new BadRequestException('User is not authorized to update the group with id ' + existingGroup.id, errorcode.UserNotAuthorized);
         }
 
-        sendEmailsToAddedAndRemovedAdmins(logger, helpers, existingGroup.administrators, group.administrators, req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, group.name);
+        yield* sendEmailsToAddedAndRemovedAdmins(logger, helpers, existingGroup.administrators, group.administrators, req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, group.name);
 
         group.createdBy = existingGroup.createdBy;
         group.createdTime = existingGroup.createdTime;
@@ -243,7 +243,8 @@ module.exports = function (config, logger) {
             yield dal.updateAsync(newParentGroup.id, newParentGroup);
             yield dal.updateAsync(existingParentGroup.id, existingParentGroup);
         }
-        yield* helpers.updateEntityGeoLocation(group, config.googleGeoCodeApiEndpoint, config.googleApiKey);
+
+        yield* helpers.updateEntityGeoLocation(group);
 
         logger.get().debug({ req: req, group: group }, 'Updating group object...');
 
@@ -310,7 +311,7 @@ module.exports = function (config, logger) {
         var options = helpers.getRequestOption(req, eventsUrl, 'POST');
         var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
 
-        sendEmailsToAddedAndRemovedAdmins(logger, helpers, existingGroup.administrators, [], req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, existingGroup.name);
+        yield* sendEmailsToAddedAndRemovedAdmins(logger, helpers, existingGroup.administrators, [], req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, existingGroup.name);
 
         yield* helpers.deleteBlobImage(req, config.apiServiceEndpoint, urlNames.blob, serviceNames.apiServiceName, config.blobGroupContainer, existingGroup.icon);
 
@@ -438,20 +439,20 @@ module.exports = function (config, logger) {
     return router;
 }
 
-function sendEmailsToAddedAndRemovedAdmins(logger, helpers, originalGroup, updatedGroup, currentUserEmail, currentUserName, planetCalWebSiteLink, groupName) {
+function* sendEmailsToAddedAndRemovedAdmins(logger, helpers, originalGroup, updatedGroup, currentUserEmail, currentUserName, planetCalWebSiteLink, groupName) {
     var adminsAdded = helpers.getItemsfromFirstArrayAndNotInSecondArray(updatedGroup, originalGroup);
     var adminsRemoved = helpers.getItemsfromFirstArrayAndNotInSecondArray(originalGroup, updatedGroup);
 
     for (var i = 0; i < adminsAdded.length; i++) {
-        sendGroupEmail(logger, helpers, currentUserEmail, currentUserName, planetCalWebSiteLink, adminsAdded[i], groupName, true);
+        yield* sendGroupEmail(logger, helpers, currentUserEmail, currentUserName, planetCalWebSiteLink, adminsAdded[i], groupName, true);
     }
 
     for (var i = 0; i < adminsRemoved.length; i++) {
-        sendGroupEmail(logger, helpers, currentUserEmail, currentUserName, planetCalWebSiteLink, adminsRemoved[i], groupName, false);
+        yield* sendGroupEmail(logger, helpers, currentUserEmail, currentUserName, planetCalWebSiteLink, adminsRemoved[i], groupName, false);
     }
 }
 
-function sendGroupEmail(logger, helpers, currentUserEmail, currentUserName, planetCalWebSiteLink, adminEmail, groupName, added) {
+function* sendGroupEmail(logger, helpers, currentUserEmail, currentUserName, planetCalWebSiteLink, adminEmail, groupName, added) {
     if (!helpers.isEmailValid(adminEmail)) {
         return;
     }
@@ -464,15 +465,15 @@ function sendGroupEmail(logger, helpers, currentUserEmail, currentUserName, plan
     if (added) {
         subject = "You have been made administrator of PlanetCal group '" + groupName + "'";
         messageBody += "<p>Congratulations!</p>";
-        messageBody += "<p>You have been enrolled as an administrator of the PlanetCal group " + groupName + " by " + currentUserName + "</p>";
+        messageBody += "<p>You have been enrolled as an administrator of the PlanetCal group '" + groupName + "' by " + currentUserName + "</p>";
         messageBody += "<p>You can now edit this group, add or remove events under it.</p>";
         messageBody += "<p>If you are already a member of PlanetCal. You can login any time to view the groups you are an administrator of, and much more.</p>";
         messageBody += "<p>But if you are not a member of PlanetCal...</p>";
         messageBody += "<p>Please register yourself by clicking on the following link.</p>";
     }
     else {
-        subject = "You are no longer an administrator of a PlanetCal group " + groupName;
-        messageBody += "<p>You have been removed as an administrator of the PlanetCal group " + groupName + " by " + currentUserName + "</p>";
+        subject = "You are no longer an administrator of a PlanetCal group '" + groupName + "'";
+        messageBody += "<p>You have been removed as an administrator of the PlanetCal group '" + groupName + "' by " + currentUserName + "</p>";
         messageBody += "<p>If you are already a member of PlanetCal. You can login any time to publish your own events for others, view other groups, create your own, and much more.</p>";
         messageBody += "<p>If you are not a member of PlanetCal, you can still register to explore it further...</p>";
         messageBody += "<p>Please complete the registration process by clicking on the following link, and chosing to register.</p>";
@@ -482,6 +483,6 @@ function sendGroupEmail(logger, helpers, currentUserEmail, currentUserName, plan
     messageBody += "<p>Thank you</p>";
     messageBody += "<p>PlanetCal team.</p>";
 
-    helpers.sendEmail(logger, toAddress, subject, messageBody, ccAddress);
+    yield* helpers.sendEmail(logger, toAddress, subject, messageBody, ccAddress);
 }
 
