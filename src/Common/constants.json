@@ -34,7 +34,7 @@
         "googleGeoCodeApiEndpoint": "https://maps.googleapis.com/maps/api/geocode/json"
     },
     "sendGrid": {
-        "adminEmail": "no_reply@planetCal.com>",
+        "adminEmail": "no_reply@planetcal.com>",
         "adminName": "PlanetCal Admin",
         "encryptedSendGridApiKey": "37a99a86256435250347e63ce8c813a8b27f90a7c9b7e56e73e7405898bd7779b954c1d2a98d9c49f69e331988588fd0aa1086e0580ae02a9c848db6797cc376987866cefa",
         "sendGridEndpoint": "https://api.sendgrid.com/v3/mail/send",
