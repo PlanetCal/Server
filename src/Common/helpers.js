@@ -291,6 +291,7 @@ module.exports = {
 
     'sendEmailUsingSendGrid': function* updateEntityGeoLocation(logger, toAddress, subject, messageHtmlText, ccAddress) {
         var url = `${sendGridConstants.sendGridEndpoint}`;
+        var sendGridApiKey = this.decrypt(sendGridConstants.encryptedSendGridApiKey);
         var body = {
             personalizations:
                 [{
@@ -313,7 +314,7 @@ module.exports = {
             url: url,
             headers: {
                 'content-type': 'application/json',
-                'Authorization': `Bearer ${sendGridConstants.sendGridApiKey}`
+                'Authorization': `Bearer ${sendGridApiKey}`
             },
             body: JSON.stringify(body)
         };
