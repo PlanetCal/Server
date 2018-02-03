@@ -55,6 +55,14 @@ module.exports = function (config, logger) {
         }
     }));
 
+    router.post('/:id/incrementOwnedGroupsCount', helpers.wrap(function* (req, res) {
+        yield* updateOwnedGroupsCount(req, res, config, logger, true);
+    }));
+
+    router.post('/:id/decrementOwnedGroupsCount', helpers.wrap(function* (req, res) {
+        yield* updateOwnedGroupsCount(req, res, config, logger, false);
+    }));
+
     //Deleting a group with groupId to the list of subscribed groups
     router.delete('/:id/followingGroups/:groupId', helpers.wrap(function* (req, res) {
         checkCallerPermission(req, req.params.id);
@@ -107,6 +115,38 @@ module.exports = function (config, logger) {
             throw new ForbiddenException('Forbidden');
         } 
         */
+    }
+
+    function* updateOwnedGroupsCount(req, res, config, logger, increment) {
+        checkCallerPermission(req, req.params.id);
+        checkCallerPermission(req, req.body.id);
+
+        //obtain the existing saved object.        
+        var user = yield* getUserBasicAsync(req);
+
+        user.modifiedTime = (new Date()).toUTCString();
+        if (!user.ownedGroupsCount) {
+            user.ownedGroupsCount = 0;
+        }
+        if (!user.ownedGroupsLimit) {
+            user.ownedGroupsLimit = config.defaultOwnedGroupsLimit;
+        }
+
+        if (increment) {
+            if (user.ownedGroupsCount === user.ownedGroupsLimit) {
+                throw new BadRequestException(`Reached Groups Count Limit of ${user.ownedGroupsLimit}.`, errorcode.OwnedGroupsLimitReached);
+            } else {
+                user.ownedGroupsCount++;
+            }
+        }
+        else {
+            if (user.ownedGroupsCount > 0) {
+                user.ownedGroupsCount--;
+            }
+        }
+        var documentResponse = yield dal.updateAsync(req.params.id, user);
+        logger.get().debug({ req: req, user: documentResponse.resource }, 'user object updated successfully.');
+        res.status(200).json({ id: req.params.groupId });
     }
 
     function* getUserBasicAsync(req) {

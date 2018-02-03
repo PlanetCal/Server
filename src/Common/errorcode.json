@@ -39,5 +39,6 @@
     "GroupHasChildGroups": "GroupHasChildGroups",
     "CagegoryChangeNotAllowedDueToChildGroups": "CagegoryChangeNotAllowedDueToChildGroups",
     "PrivacyChangeNotAllowedDueToChildGroups": "PrivacyChangeNotAllowedDueToChildGroups",
-    "InvalidEmail": "InvalidEmail"
+    "InvalidEmail": "InvalidEmail",
+    "OwnedGroupsLimitReached": "OwnedGroupsLimitReached"
 }

@@ -110,6 +110,8 @@ module.exports = function (config, logger) {
                 throw new BadRequestException('User is not authorized to create a group under the group with id ' + parentGroup.id, errorcode.UserNotAuthorized);
             }
 
+            yield* updateUsersOwnedGroupsCount(req, logger, config, urlNames, helpers, true);
+
             parentGroup.modifiedBy = req.headers['auth-identity'];
             parentGroup.modifiedTime = (new Date()).toUTCString();
             if (!parentGroup.childGroups) {
@@ -311,6 +313,8 @@ module.exports = function (config, logger) {
         var options = helpers.getRequestOption(req, eventsUrl, 'POST');
         var results = yield* helpers.forwardHttpRequest(options, serviceNames.eventsServiceName);
 
+        yield* updateUsersOwnedGroupsCount(req, logger, config, urlNames, helpers, false);
+
         yield* sendEmailsToAddedAndRemovedAdmins(logger, helpers, existingGroup.administrators, [], req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, existingGroup.name);
 
         yield* helpers.deleteBlobImage(req, config.apiServiceEndpoint, urlNames.blob, serviceNames.apiServiceName, config.blobGroupContainer, existingGroup.icon);
@@ -437,6 +441,14 @@ module.exports = function (config, logger) {
         return dal.getAsync(querySpec);
     }
     return router;
+}
+function* updateUsersOwnedGroupsCount(req, logger, config, urlNames, helpers, increment) {
+    var userId = req.headers['auth-identity'];
+    var url = `${config.userAuthServiceEndpoint}/${urlNames.userdetails}/${userId}/`;
+    url += increment ? "incrementOwnedGroupsCount" : "decrementOwnedGroupsCount";
+    req.body = {};
+    var options = helpers.getRequestOption(req, url, 'POST');
+    yield* helpers.forwardHttpRequest(options, '');
 }
 
 function* sendEmailsToAddedAndRemovedAdmins(logger, helpers, originalGroup, updatedGroup, currentUserEmail, currentUserName, planetCalWebSiteLink, groupName) {
