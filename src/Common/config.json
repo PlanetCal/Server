@@ -45,7 +45,7 @@
     "groupsCollectionName": "groupsCollection",
     "groupLinksCollectionName": "groupLinksCollection",
     "apiServicePort": 80,
-    "apiServiceEndpoint": "http://calapisvc.azurewebsites.net",
+    "apiServiceEndpoint": "https://calapisvc.azurewebsites.net",
     "userAuthServicePort": 80,
     "userAuthServiceEndpoint": "http://userauthsvc.azurewebsites.net",
     "groupsServicePort": 80,
@@ -56,7 +56,7 @@
     "eventsServiceEndpoint": "http://eventssvc.azurewebsites.net",
     "groupsRecommendationServicePort": 1343,
     "groupsRecommendationServiceEndpoint": "http://localhost:1343",
-    "planetCalLoginUrl": "http://azurepolymerclient.azurewebsites.net/login",
+    "planetCalLoginUrl": "https://www.planetCal.com/login",
     "defaultOwnedGroupsLimit": 5
   }
 }
