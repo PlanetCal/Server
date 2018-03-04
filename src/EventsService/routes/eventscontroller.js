@@ -56,13 +56,15 @@ module.exports = function (config, logger) {
                     var groups = yield* getChildGroups(userDetails.followingGroups, helpers, config, serviceNames, urlNames, req);
                     groupids = groups.concat(userDetails.followingGroups);
                 }
-                if (groupids.length == 0) {
-                    groupids.push('blah');
-                }
+
             } else {
                 //unauthenticated scenario.
                 // In this case, just pull the information about the public groups, and use that to display the data.
                 groupids = yield* getPublicGroups(helpers, config, serviceNames, urlNames, req);
+            }
+
+            if (groupids.length == 0) {
+                groupids.push('blah');
             }
         }
 

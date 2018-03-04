@@ -14,9 +14,9 @@ module.exports = function (config, logger) {
     var helpers = require('../common/helpers.js');
     var BadRequestException = require('../common/error.js').BadRequestException;
     var errorcode = require('../common/errorcode.json');
-    var allowedCategories = ["School", "Work", "Sports", "Local", "Personal"];
+    var allowedCategories = ["School", "Work", "Sports", "Local", "Religious"];
     var allowedGroupFields = ["name", "description", "icon", "parentGroup", "administrators", "location", "address", "contact", "website", "createdBy", "privacy", "category", "childGroups", "deleted"];
-    var allowedPrivacySettings = ["Open", "Closed"];
+    var allowedPrivacySettings = ["Private", "Public"];
     var serviceNames = require('../common/constants.json')['serviceNames'];
     var urlNames = require('../common/constants.json')['urlNames'];
 
@@ -102,15 +102,13 @@ module.exports = function (config, logger) {
             if (parentGroup.id != group.parentGroup) {
                 throw new BadRequestException('Specified parent group in payload does not exist.', errorcode.GroupNotExistant);
             }
-            var permissionGranted = parentGroup.privacy === "Open" ||
+            var permissionGranted = parentGroup.privacy === "Public" ||
                 (parentGroup.createdBy && parentGroup.createdBy === req.headers['auth-identity']) ||
                 (parentGroup.modifiedBy && parentGroup.modifiedBy === req.headers['auth-identity']);
 
             if (!permissionGranted) {
                 throw new BadRequestException('User is not authorized to create a group under the group with id ' + parentGroup.id, errorcode.UserNotAuthorized);
             }
-
-            yield* updateUsersOwnedGroupsCount(req, logger, config, urlNames, helpers, true);
 
             parentGroup.modifiedBy = req.headers['auth-identity'];
             parentGroup.modifiedTime = (new Date()).toUTCString();
@@ -123,6 +121,8 @@ module.exports = function (config, logger) {
 
         group.createdBy = req.headers['auth-identity'];
         group.createdTime = (new Date()).toUTCString();
+
+        yield* updateUsersOwnedGroupsCount(req, logger, config, urlNames, helpers, true);
 
         yield* sendEmailsToAddedAndRemovedAdmins(logger, helpers, [], group.administrators, req.headers['auth-email'], req.headers['auth-name'], config.planetCalLoginUrl, group.name);
 
@@ -233,7 +233,7 @@ module.exports = function (config, logger) {
                 }
                 parentGroup.modifiedBy = req.headers['auth-identity'];
                 parentGroup.modifiedTime = (new Date()).toUTCString();
-                var permissionGranted = parentGroup.privacy === "Open" ||
+                var permissionGranted = parentGroup.privacy === "Public" ||
                     (parentGroup.createdBy && parentGroup.createdBy === req.headers['auth-identity']) ||
                     (parentGroup.modifiedBy && parentGroup.modifiedBy === req.headers['auth-identity']);
 
@@ -286,7 +286,7 @@ module.exports = function (config, logger) {
             if (parentGroup.id != existingGroup.parentGroup) {
                 throw new BadRequestException('Specified parent group in payload does not exist.', errorcode.GroupNotExistant);
             }
-            var permissionGranted = parentGroup.privacy === "Open" ||
+            var permissionGranted = parentGroup.privacy === "Public" ||
                 (parentGroup.createdBy && parentGroup.createdBy === req.headers['auth-identity']) ||
                 (parentGroup.modifiedBy && parentGroup.modifiedBy === req.headers['auth-identity']) ||
                 (parentGroup.administrators && parentGroup.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0);
@@ -330,7 +330,7 @@ module.exports = function (config, logger) {
     function findGroupByKeywordsAsync(keywords, fields, userId) {
         var constraints = helpers.convertFieldSelectionToConstraints('e', fields);
         var querySpec = {
-            query: "SELECT e.id" + constraints + " e.keywords FROM e JOIN k IN e.keywords WHERE ARRAY_CONTAINS(@keywords, k) and (e.owner=@userId or e.privacy != @privacy)",
+            query: "SELECT e.id" + constraints + " e.keywords FROM e JOIN k IN e.keywords WHERE ARRAY_CONTAINS(@keywords, k) and (e.createdBy=@userId or e.privacy != @privacy)",
             parameters: [
                 {
                     name: '@keywords',
@@ -355,7 +355,7 @@ module.exports = function (config, logger) {
 
         var filterExpressionParsed = helpers.convertFilterExpressionToParameters('e', filterExpression, '', ' AND ');
 
-        var queryStatement = "SELECT e.id" + constraints + " FROM root e WHERE " + filterExpressionParsed.filterExpression + "(e.owner = @userId or e.privacy != @privacy)";
+        var queryStatement = "SELECT e.id" + constraints + " FROM root e WHERE " + filterExpressionParsed.filterExpression + "(e.createdBy = @userId or e.privacy != @privacy)";
 
         var parameters = filterExpressionParsed.parameters;
 
@@ -411,7 +411,7 @@ module.exports = function (config, logger) {
         ];
 
         var querySpec = {
-            query: "SELECT e.id" + constraints + " FROM root e WHERE ARRAY_CONTAINS(@groupIds, e.id) and (e.owner=@userId or e.privacy != @privacy)",
+            query: "SELECT e.id" + constraints + " FROM root e WHERE ARRAY_CONTAINS(@groupIds, e.id) and (e.createdBy=@userId or e.privacy != @privacy)",
             parameters: parameters
         };
         return dal.getAsync(querySpec);
@@ -435,7 +435,7 @@ module.exports = function (config, logger) {
         ];
 
         var querySpec = {
-            query: "SELECT e.id" + constraints + " FROM root e WHERE e.id = @groupId and (e.owner=@userId or e.privacy != @privacy)",
+            query: "SELECT e.id" + constraints + " FROM root e WHERE e.id = @groupId and (e.createdBy=@userId or e.privacy != @privacy)",
             parameters: parameters
         };
         return dal.getAsync(querySpec);

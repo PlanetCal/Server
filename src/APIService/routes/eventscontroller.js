@@ -75,7 +75,7 @@ module.exports = function (config, logger) {
             throw new BadRequestException('Group with the id ' + req.body.groupId + ' does not exist', errorcode.GroupNotExistant);
         }
 
-        var permissionGranted = group.privacy === "Open" ||
+        var permissionGranted = group.privacy === "Public" ||
             (group.createdBy && group.createdBy === req.headers['auth-identity']) ||
             (group.administrators && group.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0);
 
@@ -146,7 +146,7 @@ module.exports = function (config, logger) {
                 throw new BadRequestException('Groupid ' + req.body.groupId + ' does not exist', errorcode.GroupNotExistant);
             }
 
-            var permissionGranted = newGroup.privacy === "Open" ||
+            var permissionGranted = newGroup.privacy === "Public" ||
                 (newGroup.createdBy && newGroup.createdBy === req.headers['auth-identity']) ||
                 (newGroup.administrators && newGroup.administrators.indexOf(req.headers['auth-email'].toLowerCase()) >= 0);
 
