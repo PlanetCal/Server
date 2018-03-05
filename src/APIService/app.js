@@ -79,8 +79,11 @@ var defaultCorsOptions = {
 
 // all requests are subject to version header check
 app.use('/', cors(defaultCorsOptions), function (req, res, next) {
+    logger.get().info({ req: req }, 'About to check API version: Info mode');
+    logger.get().debug({ req: req }, 'About to check API version: Debug mode');
+
     if (!req.headers['version'] && !req.query.version) {
-        throw new BadRequestException('Cannot find version.', errorcode.VersionNotFound);
+        throw new BadRequestException('Can not find version.', errorcode.VersionNotFound);
     }
     else {
         next();
