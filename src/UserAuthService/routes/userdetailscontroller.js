@@ -34,7 +34,7 @@ module.exports = function (config, logger) {
         //obtain the existing saved object.        
         var user = yield* getUserBasicAsync(req);
 
-        user.modifiedTime = (new Date()).toUTCString();
+        user.modifiedTime = (new Date()).toISOString();
 
         if (!user.followingGroups) {
             user.followingGroups = [];
@@ -71,7 +71,7 @@ module.exports = function (config, logger) {
         //obtain the existing saved object.        
         var user = yield* getUserBasicAsync(req);
 
-        user.modifiedTime = (new Date()).toUTCString();
+        user.modifiedTime = (new Date()).toISOString();
         if (!user.followingGroups) {
             res.status(202).json({ id: req.params.groupId });
         }
@@ -99,7 +99,7 @@ module.exports = function (config, logger) {
         var currentUser = yield* getUserBasicAsync(req);
 
         currentUser.followingGroups = user.followingGroups;
-        currentUser.modifiedTime = (new Date()).toUTCString();
+        currentUser.modifiedTime = (new Date()).toISOString();
 
         logger.get().debug({ req: req }, 'Updating user object.');
         var documentResponse = yield dal.updateAsync(req.params.id, currentUser);
@@ -124,7 +124,7 @@ module.exports = function (config, logger) {
         //obtain the existing saved object.        
         var user = yield* getUserBasicAsync(req);
 
-        user.modifiedTime = (new Date()).toUTCString();
+        user.modifiedTime = (new Date()).toISOString();
         if (!user.ownedGroupsCount) {
             user.ownedGroupsCount = 0;
         }

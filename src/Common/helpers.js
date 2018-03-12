@@ -146,6 +146,13 @@ module.exports = {
         }
     },
 
+    'cleanSecondsFromDate': function cleanSecondsFromDate(dataTimeString) {
+        if (!dataTimeString) {
+            throw new BadRequestException('The startDateTime or endDateTime can not be null for an event.', errorcode.EventDateMissing);
+        }
+        return dataTimeString.replace(/\:\d{2}\.\d{3}z/i, ':00Z');
+    },
+
     'constructResponseJsonFromExceptionRecursive': function constructResponseJsonFromExceptionRecursive(exceptionObject, logStack) {
         var returnedJson;
         if (exceptionObject) {

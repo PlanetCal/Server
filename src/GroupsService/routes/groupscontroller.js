@@ -111,7 +111,7 @@ module.exports = function (config, logger) {
             }
 
             parentGroup.modifiedBy = req.headers['auth-identity'];
-            parentGroup.modifiedTime = (new Date()).toUTCString();
+            parentGroup.modifiedTime = (new Date()).toISOString();
             if (!parentGroup.childGroups) {
                 parentGroup.childGroups = [];
             }
@@ -120,7 +120,7 @@ module.exports = function (config, logger) {
         }
 
         group.createdBy = req.headers['auth-identity'];
-        group.createdTime = (new Date()).toUTCString();
+        group.createdTime = (new Date()).toISOString();
 
         yield* updateUsersOwnedGroupsCount(req, logger, config, urlNames, helpers, true);
 
@@ -161,7 +161,7 @@ module.exports = function (config, logger) {
         };
 
         group.modifiedBy = req.headers['auth-identity'];
-        group.modifiedTime = (new Date()).toUTCString();
+        group.modifiedTime = (new Date()).toISOString();
 
         var userId = req.headers['auth-identity'];
 
@@ -232,7 +232,7 @@ module.exports = function (config, logger) {
                     newParentGroup.childGroups.push(group.id)
                 }
                 parentGroup.modifiedBy = req.headers['auth-identity'];
-                parentGroup.modifiedTime = (new Date()).toUTCString();
+                parentGroup.modifiedTime = (new Date()).toISOString();
                 var permissionGranted = parentGroup.privacy === "Public" ||
                     (parentGroup.createdBy && parentGroup.createdBy === req.headers['auth-identity']) ||
                     (parentGroup.modifiedBy && parentGroup.modifiedBy === req.headers['auth-identity']);
@@ -296,7 +296,7 @@ module.exports = function (config, logger) {
             }
 
             parentGroup.modifiedBy = req.headers['auth-identity'];
-            parentGroup.modifiedTime = (new Date()).toUTCString();
+            parentGroup.modifiedTime = (new Date()).toISOString();
             if (!parentGroup.childGroups) {
                 parentGroup.childGroups = [];
             } else {

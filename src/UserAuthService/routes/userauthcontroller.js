@@ -31,7 +31,7 @@ module.exports = function (passport, config, logger) {
         var passwordHash = passwordCrypto.generateHash(req.body.password);
         var options = { preTriggerInclude: config.insertUniqueUserTriggerName };
         var newGuid = helpers.generateGuid();
-        var currentUtcDateTime = (new Date()).toUTCString();
+        var currentUtcDateTime = (new Date()).toISOString();
         var email = req.body.email.toLowerCase();
         var documentResponse = yield dal.insertAsync(
             {
@@ -86,7 +86,7 @@ module.exports = function (passport, config, logger) {
                 successMessage = "Congratulations! Your planetCal account is now ready to use.";
             }
             result.emailValidation = true;
-            result.modifiedTime = (new Date()).toUTCString();
+            result.modifiedTime = (new Date()).toISOString();
             var documentWriteResponse = yield dal.updateAsync(userId, result);
             res.status(200).json({ "Message": successMessage });
         }
@@ -115,7 +115,7 @@ module.exports = function (passport, config, logger) {
 
             var newGuid = helpers.generateGuid();
             result.newPasswordHash = passwordHash;
-            result.modifiedTime = (new Date()).toUTCString();
+            result.modifiedTime = (new Date()).toISOString();
             result.newEmailValidation = newGuid;
 
             logger.get().debug({ resultId: result.id }, 'Inside UserAuth Put, About to update the document.');

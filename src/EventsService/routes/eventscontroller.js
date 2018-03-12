@@ -98,8 +98,9 @@ module.exports = function (config, logger) {
         // TODO: Validate event object in body         
         var event = req.body;
         event.modifiedBy = req.headers['auth-identity'];
-        event.modifiedTime = (new Date()).toUTCString();
-
+        event.modifiedTime = (new Date()).toISOString();
+        event.startDateTime = helpers.cleanSecondsFromDate(event.startDateTime);
+        event.endDateTime = helpers.cleanSecondsFromDate(event.endDateTime);
         yield* helpers.updateEntityGeoLocation(event);
 
         logger.get().debug({ req: req }, 'Updating event...');
@@ -112,18 +113,34 @@ module.exports = function (config, logger) {
         var event = req.body;
 
         event.createdBy = req.headers['auth-identity'];
-        event.createdTime = (new Date()).toUTCString();
+        event.createdTime = (new Date()).toISOString();
+        event.startDateTime = helpers.cleanSecondsFromDate(event.startDateTime);
+        event.endDateTime = helpers.cleanSecondsFromDate(event.endDateTime);
 
-        event.id = helpers.generateGuid();
+        let filterCondition = `name=${event.name}$AND$endDateTime=${event.endDateTime}$AND$startDateTime=${event.startDateTime}`;
+        //let filterCondition = `name=${event.name}`;
+        let existingEventsResponse = yield findEventsByGroupsIdsAsync(dal, [event.groupId], ["name", "startDateTime", "endDateTime"], filterCondition);
+        var existingEvents = existingEventsResponse.feed;
+
         yield* helpers.updateEntityGeoLocation(event);
-        logger.get().debug({ req: req }, 'Creating event object...');
-        var documentResponse = yield dal.insertAsync(event, {});
-        logger.get().debug({ req: req, event: documentResponse.resource }, 'Event object created successfully.');
-        res.status(200).json(event);
+
+        if (existingEvents.length >= 1) {
+            event.id = existingEvents[0].id;
+            logger.get().debug({ req: req }, 'Updating event...');
+            var documentResponse = yield dal.updateAsync(event.id, event);
+            logger.get().debug({ req: req, event: documentResponse.resource }, 'Event updated successfully.');
+            res.status(200).json(event);
+        }
+        else {
+            event.id = helpers.generateGuid();
+            logger.get().debug({ req: req }, 'Creating event object...');
+            var documentResponse = yield dal.insertAsync(event, {});
+            logger.get().debug({ req: req, event: documentResponse.resource }, 'Event object created successfully.');
+            res.status(200).json(event);
+        }
     }));
 
     router.post('/deleteGroupsEvents', helpers.wrap(function* (req, res) {
-
         var groups = req.body.groups;
         let deletedBy = req.headers['auth-email'];
         logger.get().info(`${deletedBy} deleting events for the groups ${groups}`);

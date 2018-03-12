@@ -40,5 +40,6 @@
     "CagegoryChangeNotAllowedDueToChildGroups": "CagegoryChangeNotAllowedDueToChildGroups",
     "PrivacyChangeNotAllowedDueToChildGroups": "PrivacyChangeNotAllowedDueToChildGroups",
     "InvalidEmail": "InvalidEmail",
-    "OwnedGroupsLimitReached": "OwnedGroupsLimitReached"
+    "OwnedGroupsLimitReached": "OwnedGroupsLimitReached",
+    "EventDateMissing": "EventDateMissing"
 }
