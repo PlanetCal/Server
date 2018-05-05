@@ -24,11 +24,16 @@ module.exports = function (config, logger) {
     router.get('/:id', helpers.wrap(function* (req, res) {
         var fields = req.query.fields ? req.query.fields.split('|') : null;
 
-        logger.get().debug({ req: req }, 'Retriving event object...');
+        logger.get().debug({
+            req: req
+        }, 'Retriving event object...');
         var documentResponse = yield findEventByEventIdAsync(dal, req.params.id, fields);
         var result = documentResponse.feed.length <= 0 ? {} : documentResponse.feed[0];
 
-        logger.get().debug({ req: req, event: result }, 'Event object successfully retrieved.');
+        logger.get().debug({
+            req: req,
+            event: result
+        }, 'Event object successfully retrieved.');
         // TODO: assert when results has more than 1 element.
         res.status(200).json(result);
     }));
@@ -72,11 +77,14 @@ module.exports = function (config, logger) {
 
         var documentResponse;
         if (!groupids && !fields) {
-            logger.get().debug({ req: req }, 'Retrieving all event objects...');
+            logger.get().debug({
+                req: req
+            }, 'Retrieving all event objects...');
             documentResponse = yield findAllEvents(dal, filterExpression);
-        }
-        else {
-            logger.get().debug({ req: req }, 'Retrieving event objects by ids...');
+        } else {
+            logger.get().debug({
+                req: req
+            }, 'Retrieving event objects by ids...');
             documentResponse = yield findEventsByGroupsIdsAsync(dal, groupids, fields, filterExpression);
         }
 
@@ -90,7 +98,10 @@ module.exports = function (config, logger) {
             return a < b ? -1 : a > b ? 1 : 0;
         });
 
-        logger.get().debug({ req: req, events: results }, 'Event objects retrieved successfully.');
+        logger.get().debug({
+            req: req,
+            events: results
+        }, 'Event objects retrieved successfully.');
         res.status(200).json(results);
     }));
 
@@ -103,9 +114,14 @@ module.exports = function (config, logger) {
         event.endDateTime = helpers.cleanSecondsFromDate(event.endDateTime);
         yield* helpers.updateEntityGeoLocation(event);
 
-        logger.get().debug({ req: req }, 'Updating event...');
+        logger.get().debug({
+            req: req
+        }, 'Updating event...');
         var documentResponse = yield dal.updateAsync(req.params.id, event);
-        logger.get().debug({ req: req, event: documentResponse.resource }, 'Event updated successfully.');
+        logger.get().debug({
+            req: req,
+            event: documentResponse.resource
+        }, 'Event updated successfully.');
         res.status(200).json(event);
     }));
 
@@ -126,16 +142,25 @@ module.exports = function (config, logger) {
 
         if (existingEvents.length >= 1) {
             event.id = existingEvents[0].id;
-            logger.get().debug({ req: req }, 'Updating event...');
+            logger.get().debug({
+                req: req
+            }, 'Updating event...');
             var documentResponse = yield dal.updateAsync(event.id, event);
-            logger.get().debug({ req: req, event: documentResponse.resource }, 'Event updated successfully.');
+            logger.get().debug({
+                req: req,
+                event: documentResponse.resource
+            }, 'Event updated successfully.');
             res.status(200).json(event);
-        }
-        else {
+        } else {
             event.id = helpers.generateGuid();
-            logger.get().debug({ req: req }, 'Creating event object...');
+            logger.get().debug({
+                req: req
+            }, 'Creating event object...');
             var documentResponse = yield dal.insertAsync(event, {});
-            logger.get().debug({ req: req, event: documentResponse.resource }, 'Event object created successfully.');
+            logger.get().debug({
+                req: req,
+                event: documentResponse.resource
+            }, 'Event object created successfully.');
             res.status(200).json(event);
         }
     }));
@@ -150,12 +175,16 @@ module.exports = function (config, logger) {
         var results = documentResponse.feed;
         var filteredResults = helpers.removeDuplicatedItemsById(results);
 
-        logger.get().info({ events: filteredResults }, 'Event objects retrieved successfully for deletion.');
+        logger.get().info({
+            events: filteredResults
+        }, 'Event objects retrieved successfully for deletion.');
 
         for (var eventIndex in filteredResults) {
             var event = filteredResults[eventIndex];
             yield* helpers.deleteBlobImage(req, config.apiServiceEndpoint, urlNames.blob, serviceNames.apiServiceName, config.blobEventContainer, event.icon);
-            yield dal.removeAsync(event.id, { partitionKey: [event.groupId] });
+            yield dal.removeAsync(event.id, {
+                partitionKey: [event.groupId]
+            });
             logger.get().info(`Event with id ${event.id} deleted successfully.`);
         }
         res.status(200).json(filteredResults);
@@ -174,12 +203,10 @@ module.exports = function (config, logger) {
         console.log('constraints: ' + constraints);
         var querySpec = {
             query: "SELECT e.id" + constraints + " FROM e WHERE e.id = @eventId",
-            parameters: [
-                {
-                    name: '@eventId',
-                    value: eventId
-                }
-            ]
+            parameters: [{
+                name: '@eventId',
+                value: eventId
+            }]
         };
 
         return dal.getAsync(querySpec);
@@ -259,7 +286,7 @@ function* getChildGroups(groups, helpers, config, serviceNames, urlNames, req) {
 }
 
 function* getPublicGroups(helpers, config, serviceNames, urlNames, req) {
-    var getGroupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '?filter=privacy=Open&fields=privacy';
+    var getGroupsUrl = config.groupsServiceEndpoint + '/' + urlNames.groups + '?filter=privacy=Public&fields=privacy';
     var groupsRequestOptions = helpers.getRequestOption(req, getGroupsUrl, 'GET');
     var results = yield* helpers.forwardHttpRequest(groupsRequestOptions, serviceNames.groupsServiceName);
     var groupsInfo = JSON.parse(results);
